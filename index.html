@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - Ultimate Edition</title>
+    <title>Poker Pro Hub - Cloud Sync & Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -27,30 +27,36 @@
         .brush-active { outline: 2px solid white; outline-offset: 2px; transform: scale(1.05); }
         .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
         
-        /* Stili Tabelle */
         .poker-table th { background-color: #475569; color: white; text-align: left; padding: 8px; font-size: 0.8rem; }
         .poker-table td { background-color: #e2e8f0; color: #0f172a; padding: 8px; font-size: 0.8rem; border-bottom: 1px solid #cbd5e1; }
         
         input { text-transform: uppercase; }
         input::placeholder { text-transform: none; }
         
-        /* Card Keyboard */
         .key-btn { background: #1e293b; border: 1px solid #334155; color: white; border-radius: 4px; font-weight: bold; font-size: 1.1rem; padding: 8px 0; transition: background 0.1s; }
         .key-btn:active { background: #3b82f6; }
         .suit-s { color: #cbd5e1; }
         .suit-h { color: #ef4444; }
         .suit-d { color: #3b82f6; }
         .suit-c { color: #10b981; }
+
+        @keyframes pulse-sync { 0% { opacity: 1; } 50% { opacity: 0.5; color: #3b82f6; } 100% { opacity: 1; } }
+        .syncing { animation: pulse-sync 1s infinite; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-2 md:p-6 pb-24">
 
-    <!-- NAVIGAZIONE -->
-    <nav class="flex gap-4 mb-6 border-b border-slate-800 pb-2 overflow-x-auto">
-        <button onclick="switchTab('ranges')" id="tab-ranges" class="px-4 py-2 font-bold uppercase nav-active whitespace-nowrap">🎴 Crea Range</button>
-        <button onclick="switchTab('bankroll')" id="tab-bankroll" class="px-4 py-2 font-bold uppercase text-slate-400 whitespace-nowrap">💰 Bankroll</button>
-        <button onclick="switchTab('calc')" id="tab-calc" class="px-4 py-2 font-bold uppercase text-slate-400 whitespace-nowrap">🧮 Strumenti & Odds</button>
-    </nav>
+    <!-- HEADER & SYNC STATUS -->
+    <div class="flex justify-between items-center mb-4">
+        <div class="flex gap-4 overflow-x-auto">
+            <button onclick="switchTab('ranges')" id="tab-ranges" class="px-4 py-2 font-bold uppercase nav-active whitespace-nowrap">🎴 Crea Range</button>
+            <button onclick="switchTab('bankroll')" id="tab-bankroll" class="px-4 py-2 font-bold uppercase text-slate-400 whitespace-nowrap">💰 Bankroll</button>
+            <button onclick="switchTab('calc')" id="tab-calc" class="px-4 py-2 font-bold uppercase text-slate-400 whitespace-nowrap">🧮 Strumenti & Odds</button>
+        </div>
+        <div id="cloud-status" class="text-xs font-bold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-700 whitespace-nowrap">
+            ☁️ Inizializzazione...
+        </div>
+    </div>
 
     <main class="max-w-7xl mx-auto w-full">
         
@@ -123,9 +129,9 @@
                 <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 self-start">
                     <h3 class="font-bold mb-4 text-blue-400 uppercase tracking-wide text-sm">Registra Torneo</h3>
                     <div class="space-y-4">
-                        <input id="t-buyin" type="number" placeholder="Buy-in (€)" class="w-full bg-slate-950 p-3 rounded border border-slate-700 outline-none">
-                        <input id="t-win" type="number" placeholder="Vincita Totale (€)" class="w-full bg-slate-950 p-3 rounded border border-slate-700 outline-none">
-                        <button onclick="addTournament()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold transition mt-2">Salva</button>
+                        <input id="t-buyin" type="number" placeholder="Buy-in (€)" class="w-full bg-slate-950 p-3 rounded border border-slate-700 outline-none mt-1">
+                        <input id="t-win" type="number" placeholder="Vincita Totale (€)" class="w-full bg-slate-950 p-3 rounded border border-slate-700 outline-none mt-1">
+                        <button onclick="addTournament()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold transition mt-2">Salva in Cloud</button>
                     </div>
                 </div>
                 
@@ -139,22 +145,18 @@
         <!-- ==================== SEZIONE STRUMENTI & ODDS ==================== -->
         <section id="sec-calc" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- COLONNA SINISTRA: Calcolatori -->
+                <!-- COLONNA SINISTRA -->
                 <div class="space-y-6">
-                    
-                    <!-- Monte Carlo & Visual Keyboard -->
                     <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-lg">
                         <h2 class="text-xl font-black text-blue-400 uppercase mb-4">Simulatore Equity</h2>
-                        
                         <div class="grid grid-cols-3 gap-2 mb-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">Hero</label>
-                                <input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="w-full bg-slate-950 p-2 rounded border border-slate-700 focus:border-blue-500 outline-none text-center font-mono">
+                                <input id="mc-hero" type="text" placeholder="As Kh" onfocus="setActiveInput(this)" class="w-full bg-slate-950 p-2 rounded border border-slate-700 focus:border-blue-500 outline-none text-center font-mono">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">Board</label>
-                                <input id="mc-board" type="text" placeholder="Es. 7d 8c 2s" onfocus="setActiveInput(this)" class="w-full bg-slate-950 p-2 rounded border border-slate-700 focus:border-yellow-500 outline-none text-center font-mono">
+                                <input id="mc-board" type="text" placeholder="7d 8c 2s" onfocus="setActiveInput(this)" class="w-full bg-slate-950 p-2 rounded border border-slate-700 focus:border-yellow-500 outline-none text-center font-mono">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">Villain</label>
@@ -162,33 +164,24 @@
                             </div>
                         </div>
 
-                        <!-- Visual Keyboard -->
+                        <!-- Keyboard -->
                         <div class="bg-slate-950 p-3 rounded-lg mb-4">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-2 text-center">Tastiera Carte (Clicca campo sopra, poi usa questi)</p>
                             <div class="grid grid-cols-7 gap-1 mb-1">
-                                <button onclick="typeCard('A')" class="key-btn">A</button>
-                                <button onclick="typeCard('K')" class="key-btn">K</button>
-                                <button onclick="typeCard('Q')" class="key-btn">Q</button>
-                                <button onclick="typeCard('J')" class="key-btn">J</button>
-                                <button onclick="typeCard('T')" class="key-btn">T</button>
-                                <button onclick="typeCard('9')" class="key-btn">9</button>
+                                <button onclick="typeCard('A')" class="key-btn">A</button><button onclick="typeCard('K')" class="key-btn">K</button>
+                                <button onclick="typeCard('Q')" class="key-btn">Q</button><button onclick="typeCard('J')" class="key-btn">J</button>
+                                <button onclick="typeCard('T')" class="key-btn">T</button><button onclick="typeCard('9')" class="key-btn">9</button>
                                 <button onclick="typeCard('8')" class="key-btn">8</button>
                             </div>
                             <div class="grid grid-cols-6 gap-1 mb-2">
-                                <button onclick="typeCard('7')" class="key-btn">7</button>
-                                <button onclick="typeCard('6')" class="key-btn">6</button>
-                                <button onclick="typeCard('5')" class="key-btn">5</button>
-                                <button onclick="typeCard('4')" class="key-btn">4</button>
-                                <button onclick="typeCard('3')" class="key-btn">3</button>
-                                <button onclick="typeCard('2')" class="key-btn">2</button>
+                                <button onclick="typeCard('7')" class="key-btn">7</button><button onclick="typeCard('6')" class="key-btn">6</button>
+                                <button onclick="typeCard('5')" class="key-btn">5</button><button onclick="typeCard('4')" class="key-btn">4</button>
+                                <button onclick="typeCard('3')" class="key-btn">3</button><button onclick="typeCard('2')" class="key-btn">2</button>
                             </div>
                             <div class="grid grid-cols-4 gap-1">
-                                <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (s)</button>
-                                <button onclick="typeCard('h ')" class="key-btn suit-h">♥ (h)</button>
-                                <button onclick="typeCard('d ')" class="key-btn suit-d">♦ (d)</button>
-                                <button onclick="typeCard('c ')" class="key-btn suit-c">♣ (c)</button>
+                                <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (s)</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥ (h)</button>
+                                <button onclick="typeCard('d ')" class="key-btn suit-d">♦ (d)</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣ (c)</button>
                             </div>
-                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-slate-800 text-xs py-1 rounded text-slate-400">Cancella Campo Selezionato</button>
+                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-slate-800 text-xs py-1 rounded text-slate-400">Cancella Selezione</button>
                         </div>
 
                         <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-black uppercase transition">Calcola % Vittoria</button>
@@ -209,19 +202,17 @@
                         </div>
                     </div>
 
-                    <!-- Calcolatori Rapidi: Pot Odds & Outs -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
                             <h3 class="font-bold text-yellow-500 mb-2">Pot Odds</h3>
                             <input id="pot-size" type="number" placeholder="Piatto Attuale" class="w-full bg-slate-950 p-2 text-sm rounded border border-slate-700 outline-none mb-2">
                             <input id="call-size" type="number" placeholder="Da chiamare" class="w-full bg-slate-950 p-2 text-sm rounded border border-slate-700 outline-none mb-2">
-                            <button onclick="calcOdds()" class="w-full bg-yellow-600 py-2 rounded text-sm font-bold">Calcola Equity Req.</button>
+                            <button onclick="calcOdds()" class="w-full bg-yellow-600 py-2 rounded text-sm font-bold">Calcola</button>
                             <div id="odds-result" class="hidden mt-2 text-sm text-center"></div>
                         </div>
-
                         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-                            <h3 class="font-bold text-emerald-500 mb-2">Outs (Regola x2/x4)</h3>
-                            <input id="num-outs" type="number" placeholder="N° Outs (es. 8)" class="w-full bg-slate-950 p-2 text-sm rounded border border-slate-700 outline-none mb-2">
+                            <h3 class="font-bold text-emerald-500 mb-2">Outs (x2/x4)</h3>
+                            <input id="num-outs" type="number" placeholder="N° Outs" class="w-full bg-slate-950 p-2 text-sm rounded border border-slate-700 outline-none mb-2">
                             <div class="flex gap-1 mb-2">
                                 <button onclick="calcEquityRule(4)" class="flex-1 bg-emerald-600 py-2 rounded text-xs font-bold">Flop x4</button>
                                 <button onclick="calcEquityRule(2)" class="flex-1 bg-emerald-700 py-2 rounded text-xs font-bold">Turn x2</button>
@@ -229,33 +220,27 @@
                             <div id="rule-result" class="text-center font-bold text-emerald-400 text-lg"></div>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- COLONNA DESTRA: Tabelle Cheat Sheet -->
+                <!-- COLONNA DESTRA -->
                 <div class="space-y-6">
                     <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 overflow-x-auto">
                         <h3 class="font-black text-white uppercase mb-3">I progetti e i loro out</h3>
                         <table class="w-full poker-table border-collapse">
-                            <thead>
-                                <tr><th>Progetto</th><th>Out</th></tr>
-                            </thead>
+                            <thead><tr><th>Progetto</th><th>Out</th></tr></thead>
                             <tbody>
-                                <tr><td><strong>Progetto di colore:</strong><br><span class="text-xs text-slate-600">Es. 2 carte a ♥ in mano + 2 a ♥ sul board</span></td><td><strong>9</strong></td></tr>
-                                <tr><td><strong>Progetto scala bilaterale:</strong><br><span class="text-xs text-slate-600">Es. Hai 7-6, Board 5-8-A</span></td><td><strong>8</strong></td></tr>
-                                <tr><td><strong>Due over-card:</strong><br><span class="text-xs text-slate-600">Es. Hai A-Q, Board J-6-2</span></td><td><strong>6</strong></td></tr>
-                                <tr><td><strong>Doppia coppia / Tris:</strong><br><span class="text-xs text-slate-600">Hai coppia, board senza minacce evidenti</span></td><td><strong>5</strong></td></tr>
-                                <tr><td><strong>Gut-shot (Scala incastro):</strong><br><span class="text-xs text-slate-600">Es. Hai 4-A, Board T-5-2 (serve il 3)</span></td><td><strong>4</strong></td></tr>
+                                <tr><td><strong>Progetto di colore:</strong></td><td><strong>9</strong></td></tr>
+                                <tr><td><strong>Progetto scala bilaterale:</strong></td><td><strong>8</strong></td></tr>
+                                <tr><td><strong>Due over-card:</strong></td><td><strong>6</strong></td></tr>
+                                <tr><td><strong>Doppia coppia / Tris:</strong></td><td><strong>5</strong></td></tr>
+                                <tr><td><strong>Gut-shot:</strong></td><td><strong>4</strong></td></tr>
                             </tbody>
                         </table>
                     </div>
-
                     <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 overflow-x-auto">
-                        <h3 class="font-black text-white uppercase mb-3">Tabella delle odds nel poker</h3>
+                        <h3 class="font-black text-white uppercase mb-3">Tabella delle odds</h3>
                         <table class="w-full poker-table border-collapse text-xs">
-                            <thead>
-                                <tr><th>Out</th><th>Odds Flop-Turn<br>/ Turn-River</th><th>Odds<br>Flop-River</th><th>Esempio</th></tr>
-                            </thead>
+                            <thead><tr><th>Out</th><th>Odds F-T / T-R</th><th>Odds F-R</th><th>Esempio</th></tr></thead>
                             <tbody>
                                 <tr><td>1</td><td>46:1</td><td>22.5:1</td><td>Colore backdoor</td></tr>
                                 <tr><td>2</td><td>22.5:1</td><td>11:1</td><td>Coppia a Set</td></tr>
@@ -271,46 +256,111 @@
                         </table>
                     </div>
                 </div>
-
             </div>
         </section>
 
     </main>
 
     <script>
-        // --- NAVIGAZIONE ---
-        function switchTab(tabId) {
-            ['ranges', 'bankroll', 'calc'].forEach(t => {
-                document.getElementById('sec-' + t).classList.add('hidden');
-                document.getElementById('tab-' + t).classList.remove('nav-active', 'text-white');
-                document.getElementById('tab-' + t).classList.add('text-slate-400');
-            });
-            document.getElementById('sec-' + tabId).classList.remove('hidden');
-            document.getElementById('tab-' + tabId).classList.add('nav-active', 'text-white');
-            document.getElementById('tab-' + tabId).classList.remove('text-slate-400');
-        }
+        // --- CREDENZIALI CLOUD ---
+        const BIN_ID = '69ee094336566621a8f2a9fe';
+        const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
+        const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        // --- GESTIONE RANGES ---
+        // DATI
+        let customRanges = {};
+        let tournaments = [];
+        let syncTimeout;
+
+        // COSTANTI STRUTTURA
         const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
         const bbs = ["10", "20", "40", "60", "80", "100"];
         const poses = ["UTG", "MP", "CO", "BTN", "SB", "BB"];
         let state = { bb: "100", pos: "UTG", brush: "raise" };
-        let customRanges = {};
         let isDrawing = false;
 
-        function initRanges() {
-            let saved = localStorage.getItem('poker_ranges_v4');
-            if (saved) customRanges = JSON.parse(saved);
-            else {
-                bbs.forEach(b => { customRanges[b] = {}; poses.forEach(p => { customRanges[b][p] = { raise: [], call: [], push: [] }; }); });
-            }
-            generateMatrix();
-            updateMatrixUI();
+        // --- SISTEMA SALVATAGGIO CLOUD ---
+        function setCloudStatus(msg, syncing = false) {
+            const el = document.getElementById('cloud-status');
+            el.innerText = msg;
+            if(syncing) el.classList.add('syncing', 'text-blue-400');
+            else el.classList.remove('syncing', 'text-blue-400');
         }
 
+        // --- IL RIPARATORE DI STRUTTURA ---
+        // Garantisce che l'oggetto abbia sempre i livelli BB, POS e array azioni 
+        // per impedire i blocchi di selezione al click.
+        function validateAndFixRanges() {
+            if (!customRanges || typeof customRanges !== 'object') customRanges = {};
+            
+            bbs.forEach(b => {
+                if (!customRanges[b]) customRanges[b] = {};
+                poses.forEach(p => {
+                    if (!customRanges[b][p]) customRanges[b][p] = { raise: [], call: [], push: [] };
+                    // Controlla che le liste interne esistano
+                    if (!customRanges[b][p].raise) customRanges[b][p].raise = [];
+                    if (!customRanges[b][p].call) customRanges[b][p].call = [];
+                    if (!customRanges[b][p].push) customRanges[b][p].push = [];
+                });
+            });
+        }
+
+        async function loadFromCloud() {
+            setCloudStatus('☁️ Connessione...', true);
+            try {
+                const response = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': MASTER_KEY }});
+                if(!response.ok) throw new Error("Errore API JSONBin");
+                const result = await response.json();
+                
+                if (result.record) {
+                    if (result.record.ranges) customRanges = result.record.ranges;
+                    if (result.record.bankroll) tournaments = result.record.bankroll;
+                }
+                setCloudStatus('☁️ Sincronizzato');
+            } catch (error) {
+                console.error("Cloud error", error);
+                setCloudStatus('☁️ Offline (Dati Locali)');
+                customRanges = JSON.parse(localStorage.getItem('poker_r_safe')) || {};
+                tournaments = JSON.parse(localStorage.getItem('poker_b_safe')) || [];
+            }
+            
+            // Ripara eventuali danni alla struttura dei dati JSON scaricati
+            validateAndFixRanges(); 
+            
+            // Salva backup sicuro locale
+            localStorage.setItem('poker_r_safe', JSON.stringify(customRanges));
+            localStorage.setItem('poker_b_safe', JSON.stringify(tournaments));
+        }
+
+        async function pushToCloud() {
+            setCloudStatus('☁️ Salvataggio in corso...', true);
+            try {
+                const response = await fetch(BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                    body: JSON.stringify({ ranges: customRanges, bankroll: tournaments })
+                });
+                if(!response.ok) throw new Error("Errore salvataggio");
+                setCloudStatus('☁️ Salvato in Cloud');
+            } catch (error) {
+                setCloudStatus('⚠️ Errore Cloud - Salvato Locale');
+            }
+        }
+
+        function triggerCloudSave() {
+            localStorage.setItem('poker_r_safe', JSON.stringify(customRanges));
+            localStorage.setItem('poker_b_safe', JSON.stringify(tournaments));
+            clearTimeout(syncTimeout);
+            setCloudStatus('☁️ In attesa di invio...');
+            syncTimeout = setTimeout(pushToCloud, 2000);
+        }
+
+        // --- GESTIONE RANGES ---
         function generateMatrix() {
             const container = document.getElementById('matrix');
             container.innerHTML = '';
+            
+            // Listener globali per fermare la pittura se si rilascia fuori dalla griglia
             document.addEventListener('mouseup', () => isDrawing = false);
             document.addEventListener('touchend', () => isDrawing = false);
 
@@ -339,12 +389,15 @@
 
         function applyBrush(combo) {
             let data = customRanges[state.bb][state.pos];
+            if(!data) return; // Rete di sicurezza aggiuntiva
+            
             data.raise = data.raise.filter(c => c !== combo);
             data.call = data.call.filter(c => c !== combo);
             data.push = data.push.filter(c => c !== combo);
             if (state.brush !== 'fold') data[state.brush].push(combo);
-            localStorage.setItem('poker_ranges_v4', JSON.stringify(customRanges));
+            
             document.getElementById(`cell-${combo}`).className = 'cell ' + (state.brush === 'fold' ? 'act-fold' : `act-${state.brush}`);
+            triggerCloudSave();
         }
 
         function updateMatrixUI() {
@@ -354,9 +407,9 @@
                 ranks.forEach((r2, j) => {
                     const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
                     let cell = document.getElementById(`cell-${combo}`);
-                    if (data.raise.includes(combo)) cell.className = 'cell act-raise';
-                    else if (data.call.includes(combo)) cell.className = 'cell act-call';
-                    else if (data.push.includes(combo)) cell.className = 'cell act-push';
+                    if (data && data.raise.includes(combo)) cell.className = 'cell act-raise';
+                    else if (data && data.call.includes(combo)) cell.className = 'cell act-call';
+                    else if (data && data.push.includes(combo)) cell.className = 'cell act-push';
                     else cell.className = 'cell act-fold';
                 });
             });
@@ -389,24 +442,25 @@
         function clearCurrentGrid() {
             if(confirm("Vuoi cancellare tutto questo range?")) {
                 customRanges[state.bb][state.pos] = { raise: [], call: [], push: [] };
-                localStorage.setItem('poker_ranges_v4', JSON.stringify(customRanges));
                 updateMatrixUI();
+                triggerCloudSave();
             }
         }
 
         // --- GESTIONE BANKROLL ---
-        let tournaments = JSON.parse(localStorage.getItem('poker_br_v4')) || [];
         let brChartInstance;
 
         function addTournament() {
             const buyin = parseFloat(document.getElementById('t-buyin').value) || 0;
             const win = parseFloat(document.getElementById('t-win').value) || 0;
             if (buyin === 0 && win === 0) return;
+            
             tournaments.push({ buyin: buyin, win: win, profit: win - buyin });
-            localStorage.setItem('poker_br_v4', JSON.stringify(tournaments));
             document.getElementById('t-buyin').value = '';
             document.getElementById('t-win').value = '';
+            
             updateBankrollUI();
+            triggerCloudSave();
         }
 
         function updateBankrollUI() {
@@ -436,46 +490,31 @@
             Chart.defaults.color = '#64748b';
             brChartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Profitto (€)', data: dataPts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.2, pointRadius: 3 }]
-                },
+                data: { labels: labels, datasets: [{ label: 'Profitto (€)', data: dataPts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.2, pointRadius: 3 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#1e293b' } }, x: { grid: { display: false } } } }
             });
         }
 
         // --- GESTIONE STRUMENTI & ODDS ---
         let activeInput = null;
-        
-        function setActiveInput(el) {
-            activeInput = el;
-        }
+        function setActiveInput(el) { activeInput = el; }
 
         function typeCard(val) {
-            if(!activeInput) {
-                activeInput = document.getElementById('mc-hero');
-                activeInput.focus();
-            }
+            if(!activeInput) { activeInput = document.getElementById('mc-hero'); activeInput.focus(); }
             activeInput.value += val;
             activeInput.focus();
         }
 
         function clearActiveInput() {
-            if(activeInput) {
-                activeInput.value = '';
-                activeInput.focus();
-            }
+            if(activeInput) { activeInput.value = ''; activeInput.focus(); }
         }
 
         function calcOdds() {
             const pot = parseFloat(document.getElementById('pot-size').value);
             const call = parseFloat(document.getElementById('call-size').value);
             if(!pot || !call) return;
-
-            const finalPot = pot + call;
-            const equityNeeded = (call / finalPot) * 100;
             const ratio = (pot / call).toFixed(1);
-            
+            const equityNeeded = (call / (pot + call)) * 100;
             const res = document.getElementById('odds-result');
             res.classList.remove('hidden');
             res.innerHTML = `Pot Odds: <span class="text-white font-bold">1:${ratio}</span> | Eq. Req: <span class="text-yellow-400 font-bold">${equityNeeded.toFixed(1)}%</span>`;
@@ -486,8 +525,7 @@
             const res = document.getElementById('rule-result');
             if(outs >= 0) {
                 let eq = outs * mult;
-                if(eq > 100) eq = 100;
-                res.innerText = `~ ${eq}% Equity`;
+                res.innerText = `~ ${eq > 100 ? 100 : eq}% Equity`;
             } else res.innerText = '';
         }
 
@@ -507,8 +545,7 @@
 
             let ur = [...new Set(ranks)].sort((a,b)=>a-b);
             if(ur.includes(12)) ur.unshift(-1); 
-            let isStraight = false, sHigh = -1;
-            let streak = 1;
+            let isStraight = false, sHigh = -1, streak = 1;
             for(let i=1; i<ur.length; i++){
                 if(ur[i] === ur[i-1]+1) streak++; else streak=1;
                 if(streak>=5) { isStraight = true; sHigh = ur[i]; }
@@ -547,10 +584,7 @@
             let boardStr = document.getElementById('mc-board').value.trim();
             
             let hero = heroStr ? heroStr.split(/\s+/) : [];
-            if(hero.length !== 2) {
-                alert("Inserisci esattamente due carte per Hero (es. 'Ah Kd') usando la tastiera a schermo o digitandole.");
-                return;
-            }
+            if(hero.length !== 2) { alert("Inserisci due carte Hero."); return; }
 
             let btn = document.getElementById('btn-sim');
             btn.innerText = "Calcolando...";
@@ -563,12 +597,10 @@
 
                 let villain = villainStr ? villainStr.split(/\s+/) : [];
                 let board = boardStr ? boardStr.split(/\s+/) : [];
-
                 let known = [...hero, ...villain, ...board].map(c => c.toLowerCase());
                 deck = deck.filter(c => !known.includes(c.toLowerCase()));
 
                 let wins = 0, ties = 0, runs = 2000;
-
                 for(let i=0; i<runs; i++){
                     let simDeck = [...deck];
                     for(let j=simDeck.length-1; j>0; j--){
@@ -592,21 +624,31 @@
 
                 let winPct = (wins/runs)*100;
                 let tiePct = (ties/runs)*100;
-                let lossPct = 100 - winPct - tiePct;
-
                 document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%';
                 document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%';
-                document.getElementById('res-villain').innerText = lossPct.toFixed(1) + '%';
-                
+                document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%';
                 document.getElementById('eq-results').classList.remove('hidden');
                 btn.innerText = "Calcola % Vittoria";
             }, 50);
         }
 
-        window.onload = () => {
-            initRanges();
+        // --- AVVIO APP ---
+        function switchTab(tabId) {
+            ['ranges', 'bankroll', 'calc'].forEach(t => {
+                document.getElementById('sec-' + t).classList.add('hidden');
+                document.getElementById('tab-' + t).classList.remove('nav-active', 'text-white');
+                document.getElementById('tab-' + t).classList.add('text-slate-400');
+            });
+            document.getElementById('sec-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.add('nav-active', 'text-white');
+            document.getElementById('tab-' + tabId).classList.remove('text-slate-400');
+        }
+
+        window.onload = async () => {
+            await loadFromCloud();
+            generateMatrix();
+            updateMatrixUI();
             updateBankrollUI();
-            // Focus su Hero di default per la tastiera
             activeInput = document.getElementById('mc-hero');
         };
     </script>
