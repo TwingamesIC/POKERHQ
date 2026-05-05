@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - Custom Engine v8</title>
+    <title>Poker Pro Hub - Custom Engine v9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -28,17 +28,15 @@
         .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
         
         /* Categorie Pennelli */
-        .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #1a1d24; border: 1px solid #333; border-radius: 4px; margin-bottom: 4px; cursor: pointer; }
-        .brush-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.2); }
+        .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #1a1d24; border: 1px solid #333; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: all 0.1s; }
+        .brush-item:hover { background: #232730; }
+        .brush-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.2); background: #232730; }
         .color-box { width: 20px; height: 20px; border-radius: 3px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.2); }
 
         /* Card Keypad */
         .key-btn { background: #1a1d24; border: 1px solid #333; color: white; font-weight: bold; font-size: 1.1rem; padding: 8px 0; border-radius: 4px; }
         .key-btn:active { background: #333; }
         .suit-s { color: #cbd5e1; } .suit-h { color: #ef4444; } .suit-d { color: #3b82f6; } .suit-c { color: #10b981; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; color: #3b82f6; } 100% { opacity: 1; } }
-        .syncing { animation: pulse 1s infinite; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-2 md:p-6 pb-24">
@@ -67,32 +65,33 @@
                     <select id="spot-selector" onchange="loadSpot()" class="mb-3 text-sm font-bold"></select>
                     
                     <div class="flex gap-2 mt-2">
-                        <input id="new-spot-name" type="text" placeholder="Es. UTG vs BB 30x" class="text-xs py-2">
+                        <input id="new-spot-name" type="text" placeholder="Es. UTG vs BB 30x" class="text-xs py-2" onkeypress="if(event.key === 'Enter') createSpot()">
                         <button onclick="createSpot()" class="bg-[#3b82f6] text-white px-3 py-2 rounded font-bold text-xs hover:bg-blue-600 transition">+</button>
                     </div>
                     <button onclick="deleteCurrentSpot()" class="w-full mt-3 text-xs text-red-400 border border-red-900/50 py-1.5 rounded hover:bg-red-900/20">Elimina Spot Corrente</button>
                 </div>
 
-                <!-- 2. GESTORE COLORI / AZIONI -->
+                <!-- 2. GESTORE COLORI / AZIONI (GLOBALI) -->
                 <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                    <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Colori & Azioni</h3>
+                    <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Pennelli Globali</h3>
+                    <p class="text-[9px] text-gray-500 mb-3 leading-tight">Questi colori sono permanenti e applicabili in qualsiasi Spot tu crei.</p>
                     
                     <!-- Form aggiunta colore -->
                     <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
-                        <input type="color" id="new-color-hex" value="#22c55e" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
-                        <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1">
-                        <button onclick="addCategory()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
+                        <input type="color" id="new-color-hex" value="#ef4444" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
+                        <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
+                        <button onclick="addPaletteColor()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
                     </div>
 
-                    <!-- Lista Pennelli Dinamica -->
+                    <!-- Lista Pennelli Globale Dinamica -->
                     <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
                     
                     <!-- Tasto per Cancellare/Fold -->
-                    <div onclick="setBrush('erase')" id="brush-erase" class="brush-item">
-                        <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella (Fold)</span></div>
+                    <div onclick="setBrush('erase')" id="brush-erase" class="brush-item brush-active mt-2">
+                        <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella Selezione</span></div>
                     </div>
                     
-                    <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Griglia</button>
+                    <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Matrice</button>
                 </div>
             </aside>
 
@@ -258,23 +257,51 @@
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        // --- 2. STATO E DATI (NUOVA STRUTTURA DINAMICA v8) ---
+        // --- 2. STATO E DATI (NUOVA STRUTTURA DINAMICA v9 CON PALETTE GLOBALE) ---
         let appData = {
-            spots: [],      // Array di oggetti { id, name, categories, matrix }
-            bankroll: []    // Array di { buyin, win, profit }
+            palette: [],    // Array { id, name, color } - LA TAVOLOZZA GLOBALE
+            spots: [],      // Array { id, name, matrix: { "id_colore": ["AKs", "AA"] } }
+            bankroll: []    // Array { buyin, win, profit }
         };
         
         let activeSpotId = null;
-        let activeBrushId = "erase"; // id categoria o "erase"
+        let activeBrushId = "erase"; // id colore o "erase"
         let isDrawing = false;
         let syncTimeout;
 
-        // Genera ID unici
         const genId = () => Math.random().toString(36).substr(2, 9);
         const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
-        // --- 3. CLOUD SYNC ---
+        // --- 3. CLOUD SYNC & VALIDAZIONE DATI ---
         function setCloudStatus(msg) { document.getElementById('cloud-status').innerText = msg; }
+
+        function validateData() {
+            // Se la palette globale non esiste, creiamola di default
+            if (!appData.palette || !Array.isArray(appData.palette)) {
+                appData.palette = [
+                    { id: "p-raise", name: "Raise / 3-Bet", color: "#22c55e" },
+                    { id: "p-call", name: "Call / Limp", color: "#facc15" }
+                ];
+            }
+            if (!appData.spots) appData.spots = [];
+            if (!appData.bankroll) appData.bankroll = [];
+            
+            // Migrazione automatica se l'utente ha salvataggi vecchi della v8
+            appData.spots.forEach(spot => {
+                if (!spot.matrix) spot.matrix = {};
+                if (spot.categories) { // Formato vecchio
+                    spot.categories.forEach(cat => {
+                        let existingPal = appData.palette.find(p => p.name === cat.name);
+                        if (!existingPal) {
+                            existingPal = { id: genId(), name: cat.name, color: cat.color };
+                            appData.palette.push(existingPal);
+                        }
+                        if (cat.combos) spot.matrix[existingPal.id] = cat.combos;
+                    });
+                    delete spot.categories; // Elimina la vecchia struttura obsoleta
+                }
+            });
+        }
 
         async function initCloud() {
             setCloudStatus('☁️ Connessione al Cloud...');
@@ -283,25 +310,23 @@
                 const res = await fetch(url, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
                 if(res.ok) {
                     const data = await res.json();
-                    if(data.record && data.record.spots) {
-                        appData = data.record; // Carica dati dal cloud
-                    }
+                    if(data.record) appData = data.record;
                 }
-                setCloudStatus('☁️ Sincronizzato (v8)');
+                setCloudStatus('☁️ Sincronizzato (v9)');
             } catch (e) {
                 setCloudStatus('⚠️ Modalità Offline (Uso locale)');
-                let local = localStorage.getItem('poker_v8_data');
+                let local = localStorage.getItem('poker_v9_data');
                 if(local) appData = JSON.parse(local);
             }
             
-            // Inizializzazione UI post-caricamento
+            validateData(); // Controlla e corregge la struttura
+
             if(appData.spots.length > 0) activeSpotId = appData.spots[0].id;
             updateSpotDropdown();
             loadSpot();
             updateBankrollUI();
             
-            // Salva backup locale sicuro
-            localStorage.setItem('poker_v8_data', JSON.stringify(appData));
+            localStorage.setItem('poker_v9_data', JSON.stringify(appData));
         }
 
         async function pushToCloud() {
@@ -319,34 +344,25 @@
         }
 
         function triggerSave() {
-            localStorage.setItem('poker_v8_data', JSON.stringify(appData));
+            localStorage.setItem('poker_v9_data', JSON.stringify(appData));
             clearTimeout(syncTimeout);
             setCloudStatus('☁️ In attesa di inviare...');
-            syncTimeout = setTimeout(pushToCloud, 2000);
+            syncTimeout = setTimeout(pushToCloud, 1500);
         }
 
-
-        // --- 4. GESTIONE SCENARI E COLORI DINAMICI ---
-        function getActiveSpot() {
-            return appData.spots.find(s => s.id === activeSpotId);
-        }
+        // --- 4. GESTIONE SCENARI E PALETTE GLOBALE ---
+        function getActiveSpot() { return appData.spots.find(s => s.id === activeSpotId); }
 
         function createSpot() {
             const name = document.getElementById('new-spot-name').value.trim();
             if(!name) { alert("Inserisci un nome per lo spot (Es. UTG vs BB)"); return; }
             
-            const newSpot = {
-                id: genId(),
-                name: name,
-                categories: [
-                    { id: genId(), name: "Raise", color: "#22c55e", combos: [] },
-                    { id: genId(), name: "Call", color: "#facc15", combos: [] }
-                ]
-            };
+            const newSpot = { id: genId(), name: name, matrix: {} };
+            appData.palette.forEach(p => newSpot.matrix[p.id] = []);
             appData.spots.push(newSpot);
             activeSpotId = newSpot.id;
-            document.getElementById('new-spot-name').value = '';
             
+            document.getElementById('new-spot-name').value = '';
             updateSpotDropdown();
             loadSpot();
             triggerSave();
@@ -385,67 +401,47 @@
             
             const spot = getActiveSpot();
             const title = document.getElementById('matrix-title');
-            const list = document.getElementById('brush-list');
-            list.innerHTML = '';
             
             if(!spot) {
                 title.innerText = "Crea uno spot per iniziare!";
                 renderMatrixEmpty();
+                renderBrushList(); // Mostra comunque i pennelli
                 return;
             }
 
             title.innerText = spot.name;
-            activeBrushId = "erase"; // Reset pennello
-            setBrush('erase');
-
-            // Renderizza i pennelli (Categorie) di questo spot
-            spot.categories.forEach(cat => {
-                let div = document.createElement('div');
-                div.className = "brush-item";
-                div.id = `brush-${cat.id}`;
-                div.onclick = () => setBrush(cat.id);
-                
-                // Calcolo peso % in tempo reale
-                let weight = 0;
-                cat.combos.forEach(c => weight += getComboWeight(c));
-                let pct = ((weight / 1326) * 100).toFixed(1);
-
-                div.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="color-box" style="background-color: ${cat.color}"></div>
-                        <span class="text-sm font-bold text-white">${cat.name}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400 font-mono">${pct}%</span>
-                        <button onclick="event.stopPropagation(); deleteCategory('${cat.id}')" class="text-red-500 hover:text-white px-1">✕</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-
+            renderBrushList();
             renderMatrixColors();
         }
 
-        function addCategory() {
-            const spot = getActiveSpot();
-            if(!spot) { alert("Crea prima uno Spot!"); return; }
-            
+        // --- AGGIUNTA COLORI ALLA PALETTE GLOBALE ---
+        function addPaletteColor() {
             const name = document.getElementById('new-color-name').value.trim();
             const color = document.getElementById('new-color-hex').value;
             if(!name) return;
 
-            spot.categories.push({ id: genId(), name: name, color: color, combos: [] });
-            document.getElementById('new-color-name').value = '';
+            const newId = genId();
+            appData.palette.push({ id: newId, name: name, color: color });
             
-            loadSpot(); // Ricarica UI pennelli
+            // Inizializza l'array vuoto per questo nuovo colore in tutti gli spot
+            appData.spots.forEach(s => {
+                if(!s.matrix) s.matrix = {};
+                s.matrix[newId] = [];
+            });
+
+            document.getElementById('new-color-name').value = '';
+            setBrush(newId); // Seleziona in automatico il pennello appena creato
+            loadSpot();
             triggerSave();
         }
 
-        function deleteCategory(catId) {
-            const spot = getActiveSpot();
-            if(!spot) return;
-            if(confirm("Eliminare questo colore e rimuoverlo dalla griglia?")) {
-                spot.categories = spot.categories.filter(c => c.id !== catId);
+        function deletePaletteColor(id) {
+            if(confirm("Eliminare questo colore da TUTTI gli spot? Le celle colorate con questo colore torneranno vuote ovunque.")) {
+                appData.palette = appData.palette.filter(p => p.id !== id);
+                appData.spots.forEach(s => {
+                    if(s.matrix && s.matrix[id]) delete s.matrix[id];
+                });
+                if(activeBrushId === id) setBrush('erase');
                 loadSpot();
                 triggerSave();
             }
@@ -456,6 +452,37 @@
             document.querySelectorAll('.brush-item').forEach(el => el.classList.remove('brush-active'));
             let activeEl = document.getElementById(`brush-${id}`);
             if(activeEl) activeEl.classList.add('brush-active');
+        }
+
+        function renderBrushList() {
+            const list = document.getElementById('brush-list');
+            list.innerHTML = '';
+            const spot = getActiveSpot();
+
+            appData.palette.forEach(p => {
+                let div = document.createElement('div');
+                div.className = "brush-item " + (activeBrushId === p.id ? "brush-active" : "");
+                div.id = `brush-${p.id}`;
+                div.onclick = () => setBrush(p.id);
+                
+                let weight = 0;
+                if(spot && spot.matrix && spot.matrix[p.id]) {
+                    spot.matrix[p.id].forEach(c => weight += getComboWeight(c));
+                }
+                let pct = ((weight / 1326) * 100).toFixed(1);
+
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="color-box" style="background-color: ${p.color}"></div>
+                        <span class="text-sm font-bold text-white">${p.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 font-mono">${pct}%</span>
+                        <button onclick="event.stopPropagation(); deletePaletteColor('${p.id}')" class="text-red-500 hover:text-white px-2 py-1 font-bold rounded hover:bg-[#333]">✕</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
         }
 
 
@@ -491,19 +518,19 @@
 
         function paintCell(combo) {
             const spot = getActiveSpot();
-            if(!spot) return;
+            if(!spot) { alert("Crea prima uno spot in cui disegnare!"); return; }
 
-            // Rimuovi la combo da TUTTE le categorie
-            spot.categories.forEach(cat => {
-                cat.combos = cat.combos.filter(c => c !== combo);
+            // Rimuovi la combo da TUTTI i colori in questo spot (così un colore sovrascrive l'altro)
+            appData.palette.forEach(p => {
+                if(spot.matrix[p.id]) {
+                    spot.matrix[p.id] = spot.matrix[p.id].filter(c => c !== combo);
+                }
             });
 
-            // Se il pennello NON è "erase", aggiungi la combo alla categoria selezionata
+            // Se il pennello NON è "Cancella", aggiungi la combo al colore selezionato
             if(activeBrushId !== "erase") {
-                let targetCat = spot.categories.find(c => c.id === activeBrushId);
-                if(targetCat && !targetCat.combos.includes(combo)) {
-                    targetCat.combos.push(combo);
-                }
+                if(!spot.matrix[activeBrushId]) spot.matrix[activeBrushId] = [];
+                spot.matrix[activeBrushId].push(combo);
             }
 
             renderMatrixColors();
@@ -514,29 +541,27 @@
             const spot = getActiveSpot();
             if(!spot) return;
 
-            // Mappa combo -> colore per rendering veloce
             let colorMap = {};
-            spot.categories.forEach(cat => {
-                cat.combos.forEach(c => { colorMap[c] = cat.color; });
+            appData.palette.forEach(p => {
+                if(spot.matrix[p.id]) {
+                    spot.matrix[p.id].forEach(c => colorMap[c] = p.color);
+                }
             });
 
             ranks.forEach((r1, i) => {
                 ranks.forEach((r2, j) => {
                     const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
                     let cell = document.getElementById(`cell-${combo}`);
-                    
                     if(colorMap[combo]) {
                         cell.style.backgroundColor = colorMap[combo];
                         cell.classList.add('cell-colored');
                     } else {
-                        cell.style.backgroundColor = '#1a1d24'; // Colore vuoto (Fold)
+                        cell.style.backgroundColor = '#1a1d24';
                         cell.classList.remove('cell-colored');
                     }
                 });
             });
-            
-            // Aggiorna percentuali pennelli
-            loadSpot(); // Ricarica la lista per aggiornare i numeretti %
+            renderBrushList(); // Aggiorna le percentuali a fianco dei pennelli
         }
 
         function renderMatrixEmpty() {
@@ -546,8 +571,8 @@
         function clearMatrix() {
             const spot = getActiveSpot();
             if(!spot) return;
-            if(confirm("Svuotare l'intera griglia?")) {
-                spot.categories.forEach(cat => cat.combos = []);
+            if(confirm("Svuotare l'intera matrice per questo spot?")) {
+                appData.palette.forEach(p => spot.matrix[p.id] = []);
                 renderMatrixColors();
                 triggerSave();
             }
@@ -611,10 +636,9 @@
             const equity = parseFloat(eqStr) / 100;
 
             if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) {
-                alert("Compila Piatto, Costo Call ed Equity per procedere."); return;
+                alert("Compila Piatto, Costo Call ed Equity per calcolare l'EV."); return;
             }
 
-            // Formula EV base per un Call: (ProbVittoria * PiattoTotaleDopoCall) - CostoDelCall
             const totalPotIfCall = pot + callAmt;
             const ev = (equity * totalPotIfCall) - callAmt;
 
@@ -631,13 +655,13 @@
                 verdictNode.innerText = "CALL (+EV)";
                 verdictNode.style.color = "#22c55e";
                 valNode.style.color = "#22c55e";
-                expNode.innerText = `Chiamare ti farà guadagnare in media ${ev.toFixed(2)} fiches/euro ogni volta che fai questa mossa nel lungo periodo.`;
+                expNode.innerText = `Matematicamente profittevole. In media guadagni ${ev.toFixed(2)} chips/euro per ogni volta che fai questo call.`;
             } else {
                 box.style.borderColor = "#ef4444";
                 verdictNode.innerText = "FOLD (-EV)";
                 verdictNode.style.color = "#ef4444";
                 valNode.style.color = "#ef4444";
-                expNode.innerText = `Chiamare ti farà perdere in media ${Math.abs(ev).toFixed(2)} fiches/euro ogni volta. Le pot odds matematicamente non giustificano il call.`;
+                expNode.innerText = `Non hai abbastanza odds. Perdi in media ${Math.abs(ev).toFixed(2)} chips/euro se chiami.`;
             }
         }
 
@@ -727,7 +751,7 @@
 
         window.onload = async () => {
             createMatrixDOM();
-            await initCloud(); // Carica la nuova architettura dinamica (v8) dal JSONBin
+            await initCloud();
             activeInput = document.getElementById('mc-hero');
         };
     </script>
