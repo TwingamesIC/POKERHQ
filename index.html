@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v12 Protected</title>
+    <title>Poker Pro Hub - v13 ICM Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { background-color: #0f1115; color: #e2e8f0; font-family: 'Inter', sans-serif; touch-action: manipulation; }
         
+        /* Griglia Matrix */
         .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; background: #1e222a; border-radius: 4px; border: 1px solid #333; touch-action: none; aspect-ratio: 1; width: 100%; max-width: 650px; margin: auto; }
         .cell { 
             display: flex; align-items: center; justify-content: center; 
@@ -19,12 +20,21 @@
         .cell:hover { filter: brightness(1.4); }
         .cell-colored { color: #fff; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); }
 
-        input[type="text"], input[type="number"], input[type="password"], select { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
-        input:focus, select:focus { border-color: #3b82f6; }
+        /* Componenti UI */
+        input[type="text"], input[type="number"], input[type="password"] { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
+        input:focus { border-color: #3b82f6; }
         
         .nav-btn { padding: 10px 16px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
         .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
         
+        /* Pulsanti Toggle GTO */
+        .btn-filter { background: #1a1d24; border: 1px solid #333; color: #64748b; padding: 6px 4px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; transition: all 0.1s; text-transform: uppercase; }
+        .btn-filter:hover { border-color: #555; color: #e2e8f0; }
+        .btn-active-stage { background: #8b5cf6 !important; border-color: #a78bfa !important; color: white !important; }
+        .btn-active-bb { background: #facc15 !important; border-color: #fef08a !important; color: black !important; }
+        .btn-active-pos { background: #3b82f6 !important; border-color: #93c5fd !important; color: white !important; }
+        
+        /* Pennelli */
         .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #1a1d24; border: 1px solid #333; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: all 0.1s; }
         .brush-item:hover { background: #232730; }
         .brush-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.2); background: #232730; }
@@ -37,9 +47,9 @@
 </head>
 <body class="bg-[#0f1115]">
 
-    <!-- SCHERMATA DI LOGIN (BLOCCO ACCESSO) -->
+    <!-- SCHERMATA DI LOGIN (Password: angelo2026) -->
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub</h1>
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#3b82f6] align-top">v13</span></h1>
         <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <div>
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-2">Inserisci Password</label>
@@ -50,72 +60,95 @@
         </div>
     </div>
 
-    <!-- CONTENUTO PRINCIPALE DELL'APP (NASCOSTO DI DEFAULT) -->
+    <!-- CONTENUTO APP -->
     <div id="app-content" class="min-h-screen flex flex-col p-2 md:p-6 pb-24 hidden">
+        
         <!-- HEADER & CLOUD CONTROLS -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#333] pb-4">
             <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
-                <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 Dynamic Ranges</button>
-                <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll & ABI</button>
-                <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Decision Maker (EV)</button>
+                <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 GTO Ranges</button>
+                <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll</button>
+                <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Strumenti (EV & ICM)</button>
             </div>
             <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
                 <div id="cloud-status" class="text-[10px] font-bold text-gray-400 bg-[#1a1d24] px-3 py-2 rounded border border-[#333]">☁️ Inizializzazione...</div>
                 <div class="flex gap-2">
-                    <button onclick="initCloud(true)" class="text-[10px] font-bold bg-[#333] hover:bg-[#444] text-white px-3 py-2 rounded transition" title="Scarica i dati dal Cloud">⬇️ Scarica</button>
-                    <button onclick="pushToCloud()" class="text-[10px] font-bold bg-[#3b82f6] hover:bg-blue-600 text-white px-4 py-2 rounded shadow-lg transition" title="Salva i dati online">☁️ SALVA IN CLOUD</button>
+                    <button onclick="initCloud(true)" class="text-[10px] font-bold bg-[#333] hover:bg-[#444] text-white px-3 py-2 rounded transition" title="Forza Download dal Cloud">⬇️ Scarica</button>
+                    <button onclick="pushToCloud()" class="text-[10px] font-bold bg-[#3b82f6] hover:bg-blue-600 text-white px-4 py-2 rounded shadow-lg transition" title="Salva i Dati Online">☁️ SALVA IN CLOUD</button>
                 </div>
             </div>
         </div>
 
         <main class="max-w-7xl mx-auto w-full">
             
-            <!-- SEZIONE 1: DYNAMIC RANGES -->
+            <!-- ==================== SEZIONE 1: GTO RANGES STRUTTURATI ==================== -->
             <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
                 <aside class="w-full lg:w-80 flex flex-col gap-6">
                     
+                    <!-- MENU SELEZIONE GERARCHICA -->
                     <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                        <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">1. Seleziona / Crea Spot</h3>
-                        <select id="spot-selector" onchange="loadSpot()" class="mb-3 text-sm font-bold"></select>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 text-center border-b border-[#333] pb-2">Configurazione Spot</h3>
                         
-                        <div class="flex gap-2 mt-2">
-                            <input id="new-spot-name" type="text" placeholder="Es. UTG vs BB 30x" class="text-xs py-2" onkeypress="if(event.key === 'Enter') createSpot()">
-                            <button onclick="createSpot()" class="bg-[#3b82f6] text-white px-3 py-2 rounded font-bold text-xs hover:bg-blue-600 transition">+</button>
+                        <p class="text-[10px] font-bold text-[#8b5cf6] uppercase mb-1">1. Fase Torneo</p>
+                        <div class="grid grid-cols-2 gap-1 mb-4">
+                            <button onclick="setSpot('stage', 'Early')" class="btn-filter btn-stage btn-active-stage" data-val="Early">Early</button>
+                            <button onclick="setSpot('stage', 'Middle')" class="btn-filter btn-stage" data-val="Middle">Middle</button>
+                            <button onclick="setSpot('stage', 'Bubble')" class="btn-filter btn-stage" data-val="Bubble">Bubble</button>
+                            <button onclick="setSpot('stage', 'FinalTable')" class="btn-filter btn-stage" data-val="FinalTable">Final Table</button>
                         </div>
-                        <button onclick="deleteCurrentSpot()" class="w-full mt-3 text-xs text-red-400 border border-red-900/50 py-1.5 rounded hover:bg-red-900/20">Elimina Spot Corrente</button>
+
+                        <p class="text-[10px] font-bold text-[#facc15] uppercase mb-1">2. Stack Effettivo (BB)</p>
+                        <div class="grid grid-cols-3 gap-1 mb-4">
+                            <button onclick="setSpot('bb', '10')" class="btn-filter btn-bb" data-val="10">10</button>
+                            <button onclick="setSpot('bb', '20')" class="btn-filter btn-bb" data-val="20">20</button>
+                            <button onclick="setSpot('bb', '40')" class="btn-filter btn-bb" data-val="40">40</button>
+                            <button onclick="setSpot('bb', '60')" class="btn-filter btn-bb" data-val="60">60</button>
+                            <button onclick="setSpot('bb', '80')" class="btn-filter btn-bb" data-val="80">80</button>
+                            <button onclick="setSpot('bb', '100')" class="btn-filter btn-bb btn-active-bb" data-val="100">100</button>
+                        </div>
+
+                        <p class="text-[10px] font-bold text-[#3b82f6] uppercase mb-1">3. Posizione</p>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button onclick="setSpot('pos', 'UTG')" class="btn-filter btn-pos btn-active-pos" data-val="UTG">UTG</button>
+                            <button onclick="setSpot('pos', 'MP')" class="btn-filter btn-pos" data-val="MP">MP</button>
+                            <button onclick="setSpot('pos', 'CO')" class="btn-filter btn-pos" data-val="CO">CO</button>
+                            <button onclick="setSpot('pos', 'BTN')" class="btn-filter btn-pos" data-val="BTN">BTN</button>
+                            <button onclick="setSpot('pos', 'SB')" class="btn-filter btn-pos" data-val="SB">SB</button>
+                            <button onclick="setSpot('pos', 'BB')" class="btn-filter btn-pos" data-val="BB">BB</button>
+                        </div>
                     </div>
 
+                    <!-- PENNELLI GLOBALI -->
                     <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                        <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Pennelli Globali</h3>
-                        <p class="text-[9px] text-gray-500 mb-3 leading-tight">Questi colori sono permanenti e applicabili in qualsiasi Spot.</p>
+                        <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">Tavolozza Azioni</h3>
                         
                         <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
                             <input type="color" id="new-color-hex" value="#ef4444" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
-                            <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
+                            <input type="text" id="new-color-name" placeholder="Nuova Azione" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
                             <button onclick="addPaletteColor()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
                         </div>
 
                         <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
                         
                         <div onclick="setBrush('erase')" id="brush-erase" class="brush-item brush-active mt-2">
-                            <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella Selezione</span></div>
+                            <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella (Fold)</span></div>
                         </div>
-                        
-                        <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Matrice</button>
+                        <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Matrice Corrente</button>
                     </div>
                 </aside>
 
                 <div class="flex-1 flex justify-center">
                     <div class="w-full">
                         <div class="flex justify-between items-center mb-2 px-1">
-                            <span id="matrix-title" class="font-black text-xl text-white">Seleziona uno spot...</span>
+                            <span id="matrix-title" class="font-black text-lg md:text-xl text-white uppercase tracking-wider">Early / 100 BB / UTG</span>
                         </div>
                         <div id="matrix" class="matrix-container shadow-2xl"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- SEZIONE 2: BANKROLL & ABI -->
+
+            <!-- ==================== SEZIONE 2: BANKROLL ==================== -->
             <section id="sec-bankroll" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -124,7 +157,7 @@
                             <p id="stat-profit" class="text-xl font-black text-white mt-1">€ 0.00</p>
                         </div>
                         <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#facc15]">
-                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I. (Avg Buy-in)</p>
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I.</p>
                             <p id="stat-abi" class="text-xl font-black text-white mt-1">€ 0.00</p>
                         </div>
                         <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#3b82f6]">
@@ -162,58 +195,48 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 3: DECISION MAKER (EV & EQUITY) -->
+
+            <!-- ==================== SEZIONE 3: EV, EQUITY & ICM ==================== -->
             <section id="sec-calc" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- CALCOLATORE EV -->
                     <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
-                        <h2 class="text-2xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
-                        <p class="text-xs text-gray-400 mb-6 border-b border-[#333] pb-4">Calcola se fare CALL in base alle probabilità e al piatto, scopri se la mossa ti farà guadagnare a lungo termine.</p>
+                        <h2 class="text-xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
+                        <p class="text-xs text-gray-400 mb-4 border-b border-[#333] pb-4">Calcola matematicamente se un Call ti farà guadagnare (EV+) o perdere (EV-) a lungo termine.</p>
                         
                         <div class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto Attuale</label>
-                                    <input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-lg text-[#facc15]">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-[#ef4444] font-bold uppercase">2. Costo del Call</label>
-                                    <input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-lg text-[#ef4444]">
-                                </div>
+                                <div><label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto</label><input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-[#facc15]"></div>
+                                <div><label class="text-xs text-[#ef4444] font-bold uppercase">2. Da Chiamare</label><input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-[#ef4444]"></div>
                             </div>
-                            
                             <div>
                                 <label class="text-xs text-[#3b82f6] font-bold uppercase flex justify-between">
-                                    <span>3. Tua Equity stimata (%)</span>
-                                    <button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white">⬅️ Copia da Simulatore</button>
+                                    <span>3. Tua Equity (%)</span>
+                                    <button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white hover:bg-[#444]">⬅️ Copia Eq.</button>
                                 </label>
-                                <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-lg text-[#3b82f6]">
+                                <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-[#3b82f6]">
                             </div>
-
-                            <button onclick="calculateCallEV()" class="w-full bg-white text-black py-4 rounded-lg font-black uppercase text-lg mt-4 hover:bg-gray-200 transition">Dammi il Verdetto</button>
+                            <button onclick="calculateCallEV()" class="w-full bg-white text-black py-3 rounded font-black uppercase hover:bg-gray-200 transition">Verdetto Call/Fold</button>
                         </div>
-
-                        <div id="ev-result-box" class="hidden mt-6 p-6 rounded-lg border-2 text-center bg-[#1a1d24]">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Risultato Matematico</h3>
-                            <div id="ev-verdict-text" class="text-5xl font-black mb-2 uppercase tracking-tighter">CALL</div>
-                            <p class="text-sm text-gray-300">Valore Atteso (EV): <span id="ev-value" class="font-mono font-bold text-xl ml-2"></span></p>
-                            <p id="ev-explanation" class="text-xs mt-3 px-4 text-gray-400"></p>
+                        <div id="ev-result-box" class="hidden mt-4 p-4 rounded border-2 text-center bg-[#1a1d24]">
+                            <div id="ev-verdict-text" class="text-3xl font-black mb-1 uppercase tracking-tighter">CALL</div>
+                            <p class="text-xs text-gray-300">EV: <span id="ev-value" class="font-mono font-bold text-lg ml-1"></span></p>
                         </div>
                     </div>
 
+                    <!-- MONTE CARLO -->
                     <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333]">
-                        <h2 class="text-lg font-black text-white uppercase mb-1 flex justify-between items-center">
-                            Simulatore Equity
-                            <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span>
-                        </h2>
-                        <p class="text-xs text-gray-400 mb-6">Usa questo strumento per calcolare la tua Equity esatta (Punto 3).</p>
+                        <h2 class="text-xl font-black text-white uppercase mb-1 flex justify-between">Simulatore Eq <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span></h2>
+                        <p class="text-xs text-gray-400 mb-4">Trova la percentuale di vittoria esatta allo showdown.</p>
                         
                         <div class="grid grid-cols-3 gap-2 mb-4">
-                            <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
-                            <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
-                            <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                            <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="As Kh" onfocus="setActiveInput(this)" class="text-center font-mono text-sm"></div>
+                            <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono text-sm"></div>
+                            <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono text-sm"></div>
                         </div>
 
-                        <div class="bg-[#1a1d24] p-3 rounded-lg border border-[#333] mb-4">
+                        <div class="bg-[#1a1d24] p-2 rounded border border-[#333] mb-4">
                             <div class="grid grid-cols-7 gap-1 mb-1">
                                 <button onclick="typeCard('A')" class="key-btn">A</button><button onclick="typeCard('K')" class="key-btn">K</button><button onclick="typeCard('Q')" class="key-btn">Q</button><button onclick="typeCard('J')" class="key-btn">J</button><button onclick="typeCard('T')" class="key-btn">T</button><button onclick="typeCard('9')" class="key-btn">9</button><button onclick="typeCard('8')" class="key-btn">8</button>
                             </div>
@@ -223,17 +246,49 @@
                             <div class="grid grid-cols-4 gap-1">
                                 <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (P)</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥ (C)</button><button onclick="typeCard('d ')" class="key-btn suit-d">♦ (Q)</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣ (F)</button>
                             </div>
-                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-2 rounded text-white font-bold hover:bg-[#444]">Cancella Casella</button>
+                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-1 rounded text-white">Cancella</button>
                         </div>
-                        
-                        <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase transition hover:bg-blue-600 shadow-lg">Calcola % Vittoria</button>
-                        
-                        <div id="eq-results" class="hidden mt-4 grid grid-cols-3 gap-2 text-center">
-                            <div class="p-3 rounded border border-[#3b82f6] bg-[#1a1d24]"><p class="text-[10px] text-[#3b82f6] uppercase font-bold">Hero</p><p id="res-hero" class="text-xl font-black text-white mt-1">0%</p></div>
-                            <div class="p-3 rounded border border-[#555] bg-[#1a1d24]"><p class="text-[10px] text-gray-400 uppercase font-bold">Split</p><p id="res-tie" class="text-xl font-bold text-gray-300 mt-1">0%</p></div>
-                            <div class="p-3 rounded border border-[#ef4444] bg-[#1a1d24]"><p class="text-[10px] text-[#ef4444] uppercase font-bold">Villain</p><p id="res-villain" class="text-xl font-black text-white mt-1">0%</p></div>
+                        <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-2 rounded font-bold uppercase hover:bg-blue-600 shadow">Simula % Vittoria</button>
+                        <div id="eq-results" class="hidden mt-3 grid grid-cols-3 gap-2 text-center">
+                            <div class="p-2 border border-[#3b82f6] bg-[#1a1d24]"><p class="text-[10px] text-[#3b82f6]">Hero</p><p id="res-hero" class="text-lg font-black text-white">0%</p></div>
+                            <div class="p-2 border border-[#555] bg-[#1a1d24]"><p class="text-[10px] text-gray-400">Split</p><p id="res-tie" class="text-lg font-bold text-gray-300">0%</p></div>
+                            <div class="p-2 border border-[#ef4444] bg-[#1a1d24]"><p class="text-[10px] text-[#ef4444]">Villain</p><p id="res-villain" class="text-lg font-black text-white">0%</p></div>
                         </div>
                     </div>
+
+                    <!-- CALCOLATORE I.C.M. (NUOVO) -->
+                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#8b5cf6] shadow-xl lg:col-span-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <h2 class="text-xl font-black text-white uppercase">Calcolatore I.C.M.</h2>
+                            <span class="text-[10px] bg-[#8b5cf6] text-white px-2 py-1 rounded">Malmuth-Harville</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-6 border-b border-[#333] pb-4">Scopri l'Equity monetaria (in €) del tuo stack in Bolla o al Tavolo Finale.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Inputs -->
+                            <div>
+                                <div class="grid grid-cols-12 gap-2 text-[10px] font-bold text-gray-500 uppercase mb-2">
+                                    <div class="col-span-1 text-center">#</div>
+                                    <div class="col-span-6">Stack (Chips)</div>
+                                    <div class="col-span-5">Premio Payout (€)</div>
+                                </div>
+                                <!-- 6 Giocatori -->
+                                <div class="space-y-2" id="icm-inputs">
+                                    <!-- Popolato via JS -->
+                                </div>
+                                <button onclick="calculateICM()" class="w-full bg-[#8b5cf6] text-white py-3 rounded font-black uppercase hover:bg-[#7c3aed] transition mt-4 shadow-lg">Calcola Valore Reale in €</button>
+                            </div>
+
+                            <!-- Risultati -->
+                            <div class="bg-[#1a1d24] p-4 rounded border border-[#333] flex flex-col justify-center">
+                                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">Equity I.C.M.</h3>
+                                <div id="icm-results" class="space-y-2 text-sm">
+                                    <p class="text-center text-gray-600 text-xs mt-4">Compila gli stack e i premi a sinistra per calcolare.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
@@ -241,7 +296,7 @@
     </div>
 
     <script>
-        // --- SISTEMA DI AUTENTICAZIONE PASSWORD ---
+        // --- AUTENTICAZIONE PASSWORD ---
         const SECRET_PASS = "angelo2026";
 
         function checkAuth() {
@@ -254,8 +309,7 @@
         }
 
         function checkPassword() {
-            const input = document.getElementById('login-pwd').value;
-            if (input === SECRET_PASS) {
+            if (document.getElementById('login-pwd').value === SECRET_PASS) {
                 localStorage.setItem('poker_auth', 'granted');
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
@@ -265,165 +319,124 @@
             }
         }
 
-
-        // --- SISTEMA CLOUD E LOGICA APP ---
+        // --- SISTEMA DATI & CLOUD ---
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        let appData = { palette: [], spots: [], bankroll: [] };
-        let activeSpotId = null;
+        // Nuova struttura: ranges usa le chiavi generate dai toggle (es. "Early_100_UTG")
+        let appData = { palette: [], ranges: {}, bankroll: [] };
+        
+        // Stato Toggle Matrix
+        let spotState = { stage: 'Early', bb: '100', pos: 'UTG' };
         let activeBrushId = "erase";
         let isDrawing = false;
-        let syncTimeout;
-
-        const genId = () => Math.random().toString(36).substr(2, 9);
         const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
         function setCloudStatus(msg, isError = false) { 
             const el = document.getElementById('cloud-status');
-            el.innerText = msg; 
-            el.style.color = isError ? '#ef4444' : '#9ca3af';
+            el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
         }
 
-        function validateData() {
-            if (!appData.palette || !Array.isArray(appData.palette)) appData.palette = [];
-            if (!appData.spots) appData.spots = [];
-            if (!appData.bankroll) appData.bankroll = [];
-        }
+        function getSpotKey() { return `${spotState.stage}_${spotState.bb}_${spotState.pos}`; }
 
-        function triggerLocalSave() {
-            localStorage.setItem('poker_v11_data', JSON.stringify(appData));
-        }
+        function triggerLocalSave() { localStorage.setItem('poker_v13_data', JSON.stringify(appData)); }
 
         async function initCloud(forceDownload = false) {
-            setCloudStatus('☁️ Sincronizzazione in corso...');
-
+            setCloudStatus('☁️ Sincronizzazione...');
             if (forceDownload) {
                 try {
                     const url = `${BIN_URL}/latest?nocache=${Date.now()}`;
                     const res = await fetch(url, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
-                    if(!res.ok) throw new Error("API Limit Reached");
+                    if(!res.ok) throw new Error("API Limit");
                     const data = await res.json();
-                    if(data.record && data.record.palette) {
-                        appData = data.record;
-                        triggerLocalSave(); 
+                    if(data.record) {
+                        appData = data.record; triggerLocalSave(); 
                         setCloudStatus('☁️ Dati Cloud scaricati!');
                         setTimeout(() => setCloudStatus('☁️ App Pronta (Dati Locali)'), 3000);
                     }
-                } catch (e) {
-                    alert("Impossibile scaricare dal Cloud. Riprova più tardi.");
-                    setCloudStatus('⚠️ Errore Rete (Uso Dati Locali)', true);
-                }
+                } catch (e) { alert("Impossibile scaricare dal Cloud. Riprova."); setCloudStatus('⚠️ Errore Rete', true); }
             } else {
                 try {
-                    const local = localStorage.getItem('poker_v11_data') || localStorage.getItem('poker_v10_data');
+                    // Cerca il salvataggio locale (fallback alla v11 se presente per non perdere bankroll e palette)
+                    const local = localStorage.getItem('poker_v13_data') || localStorage.getItem('poker_v11_data');
                     if(local) {
-                        const parsed = JSON.parse(local);
-                        if(parsed.palette) appData = parsed;
+                        let parsed = JSON.parse(local);
+                        appData.palette = parsed.palette || [];
+                        appData.bankroll = parsed.bankroll || [];
+                        // Se ha salvataggi V13 (ranges map), usali, altrimenti init vuoto
+                        if(parsed.ranges) appData.ranges = parsed.ranges; 
                     }
                 } catch(e) {}
                 setCloudStatus('☁️ App Pronta (Salvataggio automatico locale)');
             }
 
-            validateData();
-            if(appData.spots.length > 0 && !activeSpotId) activeSpotId = appData.spots[0].id;
+            if (!appData.palette) appData.palette = [];
+            if (!appData.ranges) appData.ranges = {};
+            if (!appData.bankroll) appData.bankroll = [];
             
-            updateSpotDropdown();
-            loadSpot();
-            updateBankrollUI();
+            updateSpotUI(); updateBankrollUI(); initICMInputs();
         }
 
         async function pushToCloud() {
-            setCloudStatus('☁️ Invio dati al server in corso...');
-            document.body.style.cursor = 'wait';
+            setCloudStatus('☁️ Invio al server...'); document.body.style.cursor = 'wait';
             try {
-                const res = await fetch(BIN_URL, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                    body: JSON.stringify(appData)
-                });
-                if(!res.ok) throw new Error("JSONBin API Error");
-                
-                setCloudStatus('☁️ SALVATO IN CLOUD CON SUCCESSO!');
-                setTimeout(() => setCloudStatus('☁️ App Pronta (Salvataggio automatico locale)'), 4000);
+                const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) });
+                if(!res.ok) throw new Error("API Error");
+                setCloudStatus('☁️ SALVATO IN CLOUD!');
+                setTimeout(() => setCloudStatus('☁️ App Pronta'), 4000);
             } catch (e) {
-                alert("Errore durante il salvataggio in Cloud. Riprova più tardi.\n(I tuoi dati sono comunque salvi sul tuo PC/Telefono!)");
-                setCloudStatus('⚠️ Errore salvataggio Cloud', true);
+                alert("Errore salvataggio in Cloud. Dati comunque salvi sul PC."); setCloudStatus('⚠️ Errore Cloud', true);
             }
             document.body.style.cursor = 'default';
         }
 
-        function getActiveSpot() { return appData.spots.find(s => s.id === activeSpotId); }
-
-        function createSpot() {
-            const name = document.getElementById('new-spot-name').value.trim();
-            if(!name) { alert("Inserisci un nome per lo spot (Es. UTG vs BB)"); return; }
-            
-            const newSpot = { id: genId(), name: name, matrix: {} };
-            appData.palette.forEach(p => newSpot.matrix[p.id] = []);
-            appData.spots.push(newSpot);
-            activeSpotId = newSpot.id;
-            
-            document.getElementById('new-spot-name').value = '';
-            updateSpotDropdown(); loadSpot(); triggerLocalSave();
-        }
-
-        function deleteCurrentSpot() {
-            if(!activeSpotId) return;
-            if(confirm("Eliminare questo Scenario?")) {
-                appData.spots = appData.spots.filter(s => s.id !== activeSpotId);
-                activeSpotId = appData.spots.length > 0 ? appData.spots[0].id : null;
-                updateSpotDropdown(); loadSpot(); triggerLocalSave();
-            }
-        }
-
-        function updateSpotDropdown() {
-            const sel = document.getElementById('spot-selector');
-            sel.innerHTML = '';
-            if(appData.spots.length === 0) {
-                sel.innerHTML = '<option value="">Nessuno spot creato...</option>'; return;
-            }
-            appData.spots.forEach(s => {
-                let opt = document.createElement('option'); opt.value = s.id; opt.innerText = s.name;
-                if(s.id === activeSpotId) opt.selected = true; sel.appendChild(opt);
+        // --- GESTIONE SPOT (TOGGLE BUTTONS) ---
+        function setSpot(type, val) {
+            spotState[type] = val;
+            document.querySelectorAll(`.btn-${type}`).forEach(b => {
+                b.classList.remove(`btn-active-${type}`);
+                if(b.dataset.val === val) b.classList.add(`btn-active-${type}`);
             });
+            updateSpotUI();
         }
 
-        function loadSpot() {
-            const sel = document.getElementById('spot-selector');
-            if(sel.value) activeSpotId = sel.value;
+        function updateSpotUI() {
+            let key = getSpotKey();
+            // Formattazione titolo
+            let sName = spotState.stage === 'FinalTable' ? 'Final Table' : spotState.stage;
+            document.getElementById('matrix-title').innerText = `${sName} / ${spotState.bb} BB / ${spotState.pos}`;
             
-            const spot = getActiveSpot();
-            const title = document.getElementById('matrix-title');
-            
-            if(!spot) {
-                title.innerText = "Crea uno spot per iniziare!";
-                renderMatrixEmpty(); renderBrushList(); return;
+            // Inizializza spot in ram se non esiste
+            if(!appData.ranges[key]) {
+                appData.ranges[key] = {};
+                appData.palette.forEach(p => appData.ranges[key][p.id] = []);
             }
-            title.innerText = spot.name;
             renderBrushList(); renderMatrixColors();
         }
+
+        // --- PENNELLI & MATRICE ---
+        const genIdP = () => Math.random().toString(36).substr(2, 9);
+        function getComboWeight(c) { return c.length === 2 ? 6 : (c.endsWith('s') ? 4 : 12); }
 
         function addPaletteColor() {
             const name = document.getElementById('new-color-name').value.trim();
             const color = document.getElementById('new-color-hex').value;
             if(!name) return;
-
-            const newId = genId();
+            const newId = genIdP();
             appData.palette.push({ id: newId, name: name, color: color });
-            appData.spots.forEach(s => { if(!s.matrix) s.matrix = {}; s.matrix[newId] = []; });
-
+            // Aggiunge la categoria in tutti i range esistenti
+            Object.keys(appData.ranges).forEach(k => appData.ranges[k][newId] = []);
             document.getElementById('new-color-name').value = '';
-            setBrush(newId); loadSpot(); triggerLocalSave();
+            setBrush(newId); updateSpotUI(); triggerLocalSave();
         }
 
         function deletePaletteColor(id) {
-            if(confirm("Eliminare questo colore da TUTTI gli spot?")) {
+            if(confirm("Eliminare questo colore in via definitiva?")) {
                 appData.palette = appData.palette.filter(p => p.id !== id);
-                appData.spots.forEach(s => { if(s.matrix && s.matrix[id]) delete s.matrix[id]; });
+                Object.keys(appData.ranges).forEach(k => { if(appData.ranges[k][id]) delete appData.ranges[k][id]; });
                 if(activeBrushId === id) setBrush('erase');
-                loadSpot(); triggerLocalSave();
+                updateSpotUI(); triggerLocalSave();
             }
         }
 
@@ -434,201 +447,179 @@
             if(activeEl) activeEl.classList.add('brush-active');
         }
 
-        function getComboWeight(c) { return c.length === 2 ? 6 : (c.endsWith('s') ? 4 : 12); }
-
         function renderBrushList() {
-            const list = document.getElementById('brush-list');
-            list.innerHTML = '';
-            const spot = getActiveSpot();
+            const list = document.getElementById('brush-list'); list.innerHTML = '';
+            const spotData = appData.ranges[getSpotKey()];
 
             appData.palette.forEach(p => {
                 let div = document.createElement('div');
                 div.className = "brush-item " + (activeBrushId === p.id ? "brush-active" : "");
-                div.id = `brush-${p.id}`;
-                div.onclick = () => setBrush(p.id);
-                
+                div.id = `brush-${p.id}`; div.onclick = () => setBrush(p.id);
                 let weight = 0;
-                if(spot && spot.matrix && spot.matrix[p.id]) {
-                    spot.matrix[p.id].forEach(c => weight += getComboWeight(c));
-                }
+                if(spotData && spotData[p.id]) spotData[p.id].forEach(c => weight += getComboWeight(c));
                 let pct = ((weight / 1326) * 100).toFixed(1);
-
                 div.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="color-box" style="background-color: ${p.color}"></div>
-                        <span class="text-sm font-bold text-white">${p.name}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400 font-mono">${pct}%</span>
-                        <button onclick="event.stopPropagation(); deletePaletteColor('${p.id}')" class="text-red-500 hover:text-white px-2 py-1 font-bold rounded hover:bg-[#333]">✕</button>
-                    </div>
-                `;
+                    <div class="flex items-center"><div class="color-box" style="background-color: ${p.color}"></div><span class="text-sm font-bold text-white">${p.name}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-xs text-gray-400 font-mono">${pct}%</span><button onclick="event.stopPropagation(); deletePaletteColor('${p.id}')" class="text-red-500 hover:text-white px-2 py-1 font-bold rounded hover:bg-[#333]">✕</button></div>`;
                 list.appendChild(div);
             });
         }
 
         function createMatrixDOM() {
-            const container = document.getElementById('matrix');
-            container.innerHTML = '';
-            document.addEventListener('mouseup', () => isDrawing = false);
-            document.addEventListener('touchend', () => isDrawing = false);
-
-            ranks.forEach((r1, i) => {
-                ranks.forEach((r2, j) => {
-                    const cell = document.createElement('div');
-                    const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
-                    cell.innerText = combo; cell.id = `cell-${combo}`; cell.dataset.combo = combo;
-                    cell.className = "cell";
-                    
-                    cell.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); });
-                    cell.addEventListener('mouseenter', () => { if(isDrawing) paintCell(combo); });
-                    cell.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); }, {passive: false});
-                    cell.addEventListener('touchmove', (e) => {
-                        e.preventDefault(); if(!isDrawing) return;
-                        let target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-                        if(target && target.dataset.combo) paintCell(target.dataset.combo);
-                    }, {passive: false});
-
-                    container.appendChild(cell);
-                });
-            });
+            const container = document.getElementById('matrix'); container.innerHTML = '';
+            document.addEventListener('mouseup', () => isDrawing = false); document.addEventListener('touchend', () => isDrawing = false);
+            ranks.forEach((r1, i) => { ranks.forEach((r2, j) => {
+                const cell = document.createElement('div');
+                const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
+                cell.innerText = combo; cell.id = `cell-${combo}`; cell.dataset.combo = combo; cell.className = "cell";
+                cell.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); });
+                cell.addEventListener('mouseenter', () => { if(isDrawing) paintCell(combo); });
+                cell.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); }, {passive: false});
+                cell.addEventListener('touchmove', (e) => { e.preventDefault(); if(!isDrawing) return; let t = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY); if(t && t.dataset.combo) paintCell(t.dataset.combo); }, {passive: false});
+                container.appendChild(cell);
+            });});
         }
 
         function paintCell(combo) {
-            const spot = getActiveSpot();
-            if(!spot) { alert("Crea prima uno spot in cui disegnare!"); return; }
-
-            appData.palette.forEach(p => {
-                if(spot.matrix[p.id]) spot.matrix[p.id] = spot.matrix[p.id].filter(c => c !== combo);
-            });
-
+            let key = getSpotKey();
+            let spot = appData.ranges[key];
+            appData.palette.forEach(p => { if(spot[p.id]) spot[p.id] = spot[p.id].filter(c => c !== combo); });
             if(activeBrushId !== "erase") {
-                if(!spot.matrix[activeBrushId]) spot.matrix[activeBrushId] = [];
-                spot.matrix[activeBrushId].push(combo);
+                if(!spot[activeBrushId]) spot[activeBrushId] = [];
+                spot[activeBrushId].push(combo);
             }
-
             renderMatrixColors(); triggerLocalSave();
         }
 
         function renderMatrixColors() {
-            const spot = getActiveSpot();
-            if(!spot) return;
-
+            let spot = appData.ranges[getSpotKey()];
             let colorMap = {};
-            appData.palette.forEach(p => {
-                if(spot.matrix[p.id]) spot.matrix[p.id].forEach(c => colorMap[c] = p.color);
-            });
-
-            ranks.forEach((r1, i) => {
-                ranks.forEach((r2, j) => {
-                    const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
-                    let cell = document.getElementById(`cell-${combo}`);
-                    if(colorMap[combo]) {
-                        cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored');
-                    } else {
-                        cell.style.backgroundColor = '#1a1d24'; cell.classList.remove('cell-colored');
-                    }
-                });
-            });
+            if(spot) { appData.palette.forEach(p => { if(spot[p.id]) spot[p.id].forEach(c => colorMap[c] = p.color); }); }
+            ranks.forEach((r1, i) => { ranks.forEach((r2, j) => {
+                const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
+                let cell = document.getElementById(`cell-${combo}`);
+                if(colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); } 
+                else { cell.style.backgroundColor = '#1a1d24'; cell.classList.remove('cell-colored'); }
+            });});
             renderBrushList();
         }
 
-        function renderMatrixEmpty() {
-            document.querySelectorAll('.cell').forEach(c => { c.style.backgroundColor = '#1a1d24'; c.classList.remove('cell-colored'); });
-        }
-
         function clearMatrix() {
-            const spot = getActiveSpot();
-            if(!spot) return;
-            if(confirm("Svuotare l'intera matrice per questo spot?")) {
-                appData.palette.forEach(p => spot.matrix[p.id] = []);
+            if(confirm("Svuotare l'intera matrice corrente?")) {
+                let spot = appData.ranges[getSpotKey()];
+                if(spot) appData.palette.forEach(p => spot[p.id] = []);
                 renderMatrixColors(); triggerLocalSave();
             }
         }
 
+        // --- GESTIONE BANKROLL ---
         let brChartInstance;
-
         function addTournament() {
             const buyin = parseFloat(document.getElementById('t-buyin').value) || 0;
             const win = parseFloat(document.getElementById('t-win').value) || 0;
             if (buyin === 0 && win === 0) return;
-            
             appData.bankroll.push({ buyin: buyin, win: win, profit: win - buyin });
             document.getElementById('t-buyin').value = ''; document.getElementById('t-win').value = '';
-            
             updateBankrollUI(); triggerLocalSave();
         }
-
         function updateBankrollUI() {
             let tProfit = 0, tBuyin = 0;
             appData.bankroll.forEach(t => { tProfit += t.profit; tBuyin += t.buyin; });
-            
-            let count = appData.bankroll.length;
-            let abi = count > 0 ? (tBuyin / count) : 0;
-            let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0;
-
-            let elP = document.getElementById('stat-profit');
-            elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444';
+            let count = appData.bankroll.length; let abi = count > 0 ? (tBuyin / count) : 0; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0;
+            let elP = document.getElementById('stat-profit'); elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444';
             document.getElementById('stat-abi').innerText = `€ ${abi.toFixed(2)}`;
-            let elR = document.getElementById('stat-roi');
-            elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444';
-            document.getElementById('stat-count').innerText = count;
-            document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`;
-            
+            let elR = document.getElementById('stat-roi'); elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444';
+            document.getElementById('stat-count').innerText = count; document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`;
             renderChart();
         }
-
         function renderChart() {
-            const ctx = document.getElementById('brChart').getContext('2d');
-            let cum = 0; const dataPts = [0];
+            const ctx = document.getElementById('brChart').getContext('2d'); let cum = 0; const dataPts = [0];
             appData.bankroll.forEach(t => { cum += t.profit; dataPts.push(cum); });
             const labels = dataPts.map((_, i) => i === 0 ? 'Start' : `Trn ${i}`);
-
-            if (brChartInstance) brChartInstance.destroy();
-            Chart.defaults.color = '#475569';
-            brChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { labels: labels, datasets: [{ label: 'Profit (€)', data: dataPts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } } }
-            });
+            if (brChartInstance) brChartInstance.destroy(); Chart.defaults.color = '#475569';
+            brChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Profit (€)', data: dataPts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } } } });
         }
 
-        function calculateCallEV() {
-            const pot = parseFloat(document.getElementById('ev-pot').value);
-            const callAmt = parseFloat(document.getElementById('ev-call').value);
-            const eqStr = document.getElementById('ev-eq').value.replace('%','');
-            const equity = parseFloat(eqStr) / 100;
-
-            if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) {
-                alert("Compila Piatto, Costo Call ed Equity per calcolare l'EV."); return;
+        // --- I.C.M. CALCULATOR (Malmuth-Harville Algoritmo) ---
+        function initICMInputs() {
+            const container = document.getElementById('icm-inputs');
+            let html = '';
+            for(let i=1; i<=6; i++) {
+                html += `
+                <div class="grid grid-cols-12 gap-2 items-center">
+                    <div class="col-span-1 text-center text-xs font-bold text-gray-500">${i}</div>
+                    <div class="col-span-6"><input id="icm-s${i}" type="number" placeholder="Chips Giocatore ${i}" class="text-xs py-2 px-2 text-[#8b5cf6]"></div>
+                    <div class="col-span-5"><input id="icm-p${i}" type="number" placeholder="€ Premio ${i}°" class="text-xs py-2 px-2 text-[#22c55e]"></div>
+                </div>`;
             }
+            container.innerHTML = html;
+        }
 
-            const totalPotIfCall = pot + callAmt;
-            const ev = (equity * totalPotIfCall) - callAmt;
-
-            const box = document.getElementById('ev-result-box');
-            const verdictNode = document.getElementById('ev-verdict-text');
-            const valNode = document.getElementById('ev-value');
-            const expNode = document.getElementById('ev-explanation');
+        function calculateICM() {
+            let stacksArr = []; let payoutsArr = [];
+            for(let i=1; i<=6; i++) {
+                let s = parseFloat(document.getElementById('icm-s'+i).value);
+                let p = parseFloat(document.getElementById('icm-p'+i).value);
+                if(s > 0) stacksArr.push({id: i, chips: s});
+                if(p > 0) payoutsArr.push(p);
+            }
             
-            box.classList.remove('hidden');
-            valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`;
-
-            if (ev > 0) {
-                box.style.borderColor = "#22c55e";
-                verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e";
-                expNode.innerText = `Matematicamente profittevole. In media guadagni ${ev.toFixed(2)} chips/euro per ogni volta che fai questo call.`;
-            } else {
-                box.style.borderColor = "#ef4444";
-                verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444";
-                expNode.innerText = `Non hai abbastanza odds. Perdi in media ${Math.abs(ev).toFixed(2)} chips/euro se chiami.`;
+            payoutsArr.sort((a,b)=>b-a);
+            
+            if(stacksArr.length < 2 || payoutsArr.length === 0) {
+                document.getElementById('icm-results').innerHTML = `<p class="text-red-500 text-xs text-center font-bold">Inserisci almeno 2 Stacks e 1 Premio per calcolare.</p>`; return;
             }
+
+            // M-H Core Logic
+            let chips = stacksArr.map(st => st.chips);
+            let results = icmRecursion(chips, payoutsArr, 0, 1.0, null);
+
+            let resHtml = '';
+            for(let i=0; i<stacksArr.length; i++) {
+                resHtml += `<div class="flex justify-between items-center p-2 bg-[#1a1d24] rounded border border-[#333]">
+                    <span class="text-gray-400 font-bold">P${stacksArr[i].id} Stack: <span class="text-white">${stacksArr[i].chips}</span></span>
+                    <span class="text-lg font-black text-[#22c55e]">€ ${results[i].toFixed(2)}</span>
+                </div>`;
+            }
+            document.getElementById('icm-results').innerHTML = resHtml;
+        }
+
+        function icmRecursion(stacks, payouts, depth, currentProb, results) {
+            if (results === null) results = new Array(stacks.length).fill(0);
+            if (depth >= payouts.length || depth >= stacks.length) return results;
+
+            let totalChips = stacks.reduce((a, b) => a + b, 0);
+            if (totalChips === 0) return results;
+
+            for (let i = 0; i < stacks.length; i++) {
+                if (stacks[i] > 0) {
+                    let probFirst = stacks[i] / totalChips;
+                    results[i] += currentProb * probFirst * payouts[depth];
+
+                    let savedStack = stacks[i];
+                    stacks[i] = 0; // Togli il giocatore dal calcolo della prossima posizione
+                    icmRecursion(stacks, payouts, depth + 1, currentProb * probFirst, results);
+                    stacks[i] = savedStack; // Ripristina (Backtrack)
+                }
+            }
+            return results;
+        }
+
+
+        // --- EV & MONTE CARLO ---
+        function calculateCallEV() {
+            const pot = parseFloat(document.getElementById('ev-pot').value); const callAmt = parseFloat(document.getElementById('ev-call').value); const eqStr = document.getElementById('ev-eq').value.replace('%',''); const equity = parseFloat(eqStr) / 100;
+            if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) { alert("Compila Piatto, Costo Call ed Equity per calcolare l'EV."); return; }
+            const ev = (equity * (pot + callAmt)) - callAmt;
+            const box = document.getElementById('ev-result-box'); const verdictNode = document.getElementById('ev-verdict-text'); const valNode = document.getElementById('ev-value');
+            box.classList.remove('hidden'); valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`;
+            if (ev > 0) { box.style.borderColor = "#22c55e"; verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e"; } 
+            else { box.style.borderColor = "#ef4444"; verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444"; }
         }
 
         function copyEquityFromMC() {
             let heroEq = document.getElementById('res-hero').innerText.replace('%', '');
-            if(heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq;
-            else alert("Esegui prima una simulazione Monte Carlo qui sotto!");
+            if(heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq; else alert("Esegui prima una simulazione Monte Carlo!");
         }
 
         let activeInput = null;
@@ -660,21 +651,14 @@
         }
 
         function runEquitySimulation() {
-            let heroStr = document.getElementById('mc-hero').value.trim();
-            let villainStr = document.getElementById('mc-villain').value.trim();
-            let boardStr = document.getElementById('mc-board').value.trim();
-            let hero = heroStr ? heroStr.split(/\s+/) : [];
-            if(hero.length !== 2) { alert("Inserisci 2 carte Hero valide."); return; }
-            
+            let heroStr = document.getElementById('mc-hero').value.trim(); let villainStr = document.getElementById('mc-villain').value.trim(); let boardStr = document.getElementById('mc-board').value.trim();
+            let hero = heroStr ? heroStr.split(/\s+/) : []; if(hero.length !== 2) { alert("Inserisci 2 carte Hero valide."); return; }
             let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando...";
-            
             setTimeout(() => {
                 let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA';
                 for(let r of rankStr) for(let s of suits) deck.push(r+s);
                 let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : [];
-                let known = [...hero, ...villain, ...board].map(c => c.toLowerCase());
-                deck = deck.filter(c => !known.includes(c.toLowerCase()));
-                
+                let known = [...hero, ...villain, ...board].map(c => c.toLowerCase()); deck = deck.filter(c => !known.includes(c.toLowerCase()));
                 let wins = 0, ties = 0, runs = 2000;
                 for(let i=0; i<runs; i++){
                     let simDeck = [...deck];
@@ -684,37 +668,20 @@
                     let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]);
                     if(heroScore > villainScore) wins++; else if(heroScore === villainScore) ties++;
                 }
-                
                 let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100;
-                document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%';
-                document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%';
-                document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%';
-                document.getElementById('eq-results').classList.remove('hidden'); 
-                btn.innerText = "Calcola % Vittoria";
+                document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%'; document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%'; document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%';
+                document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula % Vittoria";
             }, 50);
         }
 
         function switchTab(tabId) {
-            ['ranges', 'bankroll', 'calc'].forEach(t => {
-                document.getElementById('sec-' + t).classList.add('hidden');
-                document.getElementById('tab-' + t).classList.remove('nav-active');
-            });
-            document.getElementById('sec-' + tabId).classList.remove('hidden');
-            document.getElementById('tab-' + tabId).classList.add('nav-active');
+            ['ranges', 'bankroll', 'calc'].forEach(t => { document.getElementById('sec-' + t).classList.add('hidden'); document.getElementById('tab-' + t).classList.remove('nav-active'); });
+            document.getElementById('sec-' + tabId).classList.remove('hidden'); document.getElementById('tab-' + tabId).classList.add('nav-active');
         }
 
         window.onload = async () => {
-            // Se l'utente non è autenticato, ferma qui il caricamento visivo
-            if (!checkAuth()) {
-                // Inizializziamo comunque la griglia e scarichiamo in background così quando entra è già pronto
-                createMatrixDOM();
-                initCloud(); 
-                return;
-            }
-
-            createMatrixDOM();
-            await initCloud();
-            activeInput = document.getElementById('mc-hero');
+            if (!checkAuth()) { createMatrixDOM(); initCloud(); return; }
+            createMatrixDOM(); await initCloud(); activeInput = document.getElementById('mc-hero');
         };
     </script>
 </body>
