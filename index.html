@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v10 Anti-Crash</title>
+    <title>Poker Pro Hub - v12 Protected</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -19,7 +19,7 @@
         .cell:hover { filter: brightness(1.4); }
         .cell-colored { color: #fff; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); }
 
-        input[type="text"], input[type="number"], select { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
+        input[type="text"], input[type="number"], input[type="password"], select { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
         input:focus, select:focus { border-color: #3b82f6; }
         
         .nav-btn { padding: 10px 16px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
@@ -35,191 +35,238 @@
         .suit-s { color: #cbd5e1; } .suit-h { color: #ef4444; } .suit-d { color: #3b82f6; } .suit-c { color: #10b981; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-2 md:p-6 pb-24">
+<body class="bg-[#0f1115]">
 
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#333] pb-4">
-        <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
-            <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 Dynamic Ranges</button>
-            <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll & ABI</button>
-            <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Decision Maker (EV)</button>
-        </div>
-        <div class="flex items-center gap-2">
-            <div id="cloud-status" class="text-xs font-bold text-gray-400 bg-[#1a1d24] px-3 py-1.5 rounded border border-[#333]">☁️ Inizializzazione Sistema...</div>
+    <!-- SCHERMATA DI LOGIN (BLOCCO ACCESSO) -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub</h1>
+        <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-2">Inserisci Password</label>
+                <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
+            </div>
+            <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
+            <p id="login-error" class="text-red-500 text-xs text-center font-bold hidden">Password errata! Riprova.</p>
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto w-full">
-        
-        <!-- SEZIONE 1: DYNAMIC RANGES -->
-        <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
-            <aside class="w-full lg:w-80 flex flex-col gap-6">
-                
-                <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                    <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">1. Seleziona / Crea Spot</h3>
-                    <select id="spot-selector" onchange="loadSpot()" class="mb-3 text-sm font-bold"></select>
-                    
-                    <div class="flex gap-2 mt-2">
-                        <input id="new-spot-name" type="text" placeholder="Es. UTG vs BB 30x" class="text-xs py-2" onkeypress="if(event.key === 'Enter') createSpot()">
-                        <button onclick="createSpot()" class="bg-[#3b82f6] text-white px-3 py-2 rounded font-bold text-xs hover:bg-blue-600 transition">+</button>
-                    </div>
-                    <button onclick="deleteCurrentSpot()" class="w-full mt-3 text-xs text-red-400 border border-red-900/50 py-1.5 rounded hover:bg-red-900/20">Elimina Spot Corrente</button>
-                </div>
-
-                <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                    <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Pennelli Globali</h3>
-                    <p class="text-[9px] text-gray-500 mb-3 leading-tight">Questi colori sono permanenti e applicabili in qualsiasi Spot tu crei.</p>
-                    
-                    <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
-                        <input type="color" id="new-color-hex" value="#ef4444" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
-                        <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
-                        <button onclick="addPaletteColor()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
-                    </div>
-
-                    <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
-                    
-                    <div onclick="setBrush('erase')" id="brush-erase" class="brush-item brush-active mt-2">
-                        <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella Selezione</span></div>
-                    </div>
-                    
-                    <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Matrice</button>
-                </div>
-            </aside>
-
-            <div class="flex-1 flex justify-center">
-                <div class="w-full">
-                    <div class="flex justify-between items-center mb-2 px-1">
-                        <span id="matrix-title" class="font-black text-xl text-white">Seleziona uno spot...</span>
-                    </div>
-                    <div id="matrix" class="matrix-container shadow-2xl"></div>
+    <!-- CONTENUTO PRINCIPALE DELL'APP (NASCOSTO DI DEFAULT) -->
+    <div id="app-content" class="min-h-screen flex flex-col p-2 md:p-6 pb-24 hidden">
+        <!-- HEADER & CLOUD CONTROLS -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#333] pb-4">
+            <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
+                <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 Dynamic Ranges</button>
+                <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll & ABI</button>
+                <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Decision Maker (EV)</button>
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+                <div id="cloud-status" class="text-[10px] font-bold text-gray-400 bg-[#1a1d24] px-3 py-2 rounded border border-[#333]">☁️ Inizializzazione...</div>
+                <div class="flex gap-2">
+                    <button onclick="initCloud(true)" class="text-[10px] font-bold bg-[#333] hover:bg-[#444] text-white px-3 py-2 rounded transition" title="Scarica i dati dal Cloud">⬇️ Scarica</button>
+                    <button onclick="pushToCloud()" class="text-[10px] font-bold bg-[#3b82f6] hover:bg-blue-600 text-white px-4 py-2 rounded shadow-lg transition" title="Salva i dati online">☁️ SALVA IN CLOUD</button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- SEZIONE 2: BANKROLL & ABI -->
-        <section id="sec-bankroll" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#22c55e]">
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Net Profit</p>
-                        <p id="stat-profit" class="text-xl font-black text-white mt-1">€ 0.00</p>
-                    </div>
-                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#facc15]">
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I. (Avg Buy-in)</p>
-                        <p id="stat-abi" class="text-xl font-black text-white mt-1">€ 0.00</p>
-                    </div>
-                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#3b82f6]">
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">R.O.I.</p>
-                        <p id="stat-roi" class="text-xl font-black text-white mt-1">0.00%</p>
-                    </div>
-                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-purple-500">
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">MTT Giocati</p>
-                        <p id="stat-count" class="text-xl font-black text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-red-500">
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Spesa Totale</p>
-                        <p id="stat-spent" class="text-xl font-black text-white mt-1">€ 0.00</p>
-                    </div>
-                </div>
-
-                <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] self-start">
-                    <h3 class="font-bold mb-4 text-[#3b82f6] uppercase tracking-wide text-sm">Registra Torneo</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-[10px] text-gray-400 font-bold uppercase">Buy-in (€)</label>
-                            <input id="t-buyin" type="number" placeholder="Es. 10" class="mt-1 bg-[#1a1d24]">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-400 font-bold uppercase">Vincita (€) - 0 se perso</label>
-                            <input id="t-win" type="number" placeholder="Es. 50" class="mt-1 bg-[#1a1d24]">
-                        </div>
-                        <button onclick="addTournament()" class="w-full bg-[#3b82f6] text-white hover:bg-blue-600 py-3 rounded font-bold mt-2 transition">Salva a Database</button>
-                    </div>
-                </div>
-                
-                <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] flex items-center justify-center min-h-[300px]">
-                    <canvas id="brChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- SEZIONE 3: DECISION MAKER (EV & EQUITY) -->
-        <section id="sec-calc" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
-                    <h2 class="text-2xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
-                    <p class="text-xs text-gray-400 mb-6 border-b border-[#333] pb-4">Calcola se fare CALL in base alle probabilità e al piatto, scopri se la mossa ti farà guadagnare a lungo termine.</p>
+        <main class="max-w-7xl mx-auto w-full">
+            
+            <!-- SEZIONE 1: DYNAMIC RANGES -->
+            <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
+                <aside class="w-full lg:w-80 flex flex-col gap-6">
                     
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto Attuale</label>
-                                <input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-lg text-[#facc15]">
-                            </div>
-                            <div>
-                                <label class="text-xs text-[#ef4444] font-bold uppercase">2. Costo del Call</label>
-                                <input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-lg text-[#ef4444]">
-                            </div>
+                    <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
+                        <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">1. Seleziona / Crea Spot</h3>
+                        <select id="spot-selector" onchange="loadSpot()" class="mb-3 text-sm font-bold"></select>
+                        
+                        <div class="flex gap-2 mt-2">
+                            <input id="new-spot-name" type="text" placeholder="Es. UTG vs BB 30x" class="text-xs py-2" onkeypress="if(event.key === 'Enter') createSpot()">
+                            <button onclick="createSpot()" class="bg-[#3b82f6] text-white px-3 py-2 rounded font-bold text-xs hover:bg-blue-600 transition">+</button>
+                        </div>
+                        <button onclick="deleteCurrentSpot()" class="w-full mt-3 text-xs text-red-400 border border-red-900/50 py-1.5 rounded hover:bg-red-900/20">Elimina Spot Corrente</button>
+                    </div>
+
+                    <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
+                        <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Pennelli Globali</h3>
+                        <p class="text-[9px] text-gray-500 mb-3 leading-tight">Questi colori sono permanenti e applicabili in qualsiasi Spot.</p>
+                        
+                        <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
+                            <input type="color" id="new-color-hex" value="#ef4444" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
+                            <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
+                            <button onclick="addPaletteColor()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
+                        </div>
+
+                        <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
+                        
+                        <div onclick="setBrush('erase')" id="brush-erase" class="brush-item brush-active mt-2">
+                            <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella Selezione</span></div>
                         </div>
                         
-                        <div>
-                            <label class="text-xs text-[#3b82f6] font-bold uppercase flex justify-between">
-                                <span>3. Tua Equity stimata (%)</span>
-                                <button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white">⬅️ Copia da Simulatore</button>
-                            </label>
-                            <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-lg text-[#3b82f6]">
-                        </div>
-
-                        <button onclick="calculateCallEV()" class="w-full bg-white text-black py-4 rounded-lg font-black uppercase text-lg mt-4 hover:bg-gray-200 transition">Dammi il Verdetto</button>
+                        <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Matrice</button>
                     </div>
+                </aside>
 
-                    <div id="ev-result-box" class="hidden mt-6 p-6 rounded-lg border-2 text-center bg-[#1a1d24]">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Risultato Matematico</h3>
-                        <div id="ev-verdict-text" class="text-5xl font-black mb-2 uppercase tracking-tighter">CALL</div>
-                        <p class="text-sm text-gray-300">Valore Atteso (EV): <span id="ev-value" class="font-mono font-bold text-xl ml-2"></span></p>
-                        <p id="ev-explanation" class="text-xs mt-3 px-4 text-gray-400"></p>
+                <div class="flex-1 flex justify-center">
+                    <div class="w-full">
+                        <div class="flex justify-between items-center mb-2 px-1">
+                            <span id="matrix-title" class="font-black text-xl text-white">Seleziona uno spot...</span>
+                        </div>
+                        <div id="matrix" class="matrix-container shadow-2xl"></div>
                     </div>
                 </div>
+            </section>
 
-                <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333]">
-                    <h2 class="text-lg font-black text-white uppercase mb-1 flex justify-between items-center">
-                        Simulatore Equity
-                        <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span>
-                    </h2>
-                    <p class="text-xs text-gray-400 mb-6">Usa questo strumento per calcolare la tua Equity esatta (Punto 3).</p>
-                    
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
-                        <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
-                        <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+            <!-- SEZIONE 2: BANKROLL & ABI -->
+            <section id="sec-bankroll" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#22c55e]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Net Profit</p>
+                            <p id="stat-profit" class="text-xl font-black text-white mt-1">€ 0.00</p>
+                        </div>
+                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#facc15]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I. (Avg Buy-in)</p>
+                            <p id="stat-abi" class="text-xl font-black text-white mt-1">€ 0.00</p>
+                        </div>
+                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#3b82f6]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">R.O.I.</p>
+                            <p id="stat-roi" class="text-xl font-black text-white mt-1">0.00%</p>
+                        </div>
+                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-purple-500">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">MTT Giocati</p>
+                            <p id="stat-count" class="text-xl font-black text-white mt-1">0</p>
+                        </div>
+                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-red-500">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Spesa Totale</p>
+                            <p id="stat-spent" class="text-xl font-black text-white mt-1">€ 0.00</p>
+                        </div>
                     </div>
 
-                    <div class="bg-[#1a1d24] p-3 rounded-lg border border-[#333] mb-4">
-                        <div class="grid grid-cols-7 gap-1 mb-1">
-                            <button onclick="typeCard('A')" class="key-btn">A</button><button onclick="typeCard('K')" class="key-btn">K</button><button onclick="typeCard('Q')" class="key-btn">Q</button><button onclick="typeCard('J')" class="key-btn">J</button><button onclick="typeCard('T')" class="key-btn">T</button><button onclick="typeCard('9')" class="key-btn">9</button><button onclick="typeCard('8')" class="key-btn">8</button>
+                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] self-start">
+                        <h3 class="font-bold mb-4 text-[#3b82f6] uppercase tracking-wide text-sm">Registra Torneo</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase">Buy-in (€)</label>
+                                <input id="t-buyin" type="number" placeholder="Es. 10" class="mt-1 bg-[#1a1d24]">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase">Vincita (€) - 0 se perso</label>
+                                <input id="t-win" type="number" placeholder="Es. 50" class="mt-1 bg-[#1a1d24]">
+                            </div>
+                            <button onclick="addTournament()" class="w-full bg-[#3b82f6] text-white hover:bg-blue-600 py-3 rounded font-bold mt-2 transition">Aggiungi a Database</button>
                         </div>
-                        <div class="grid grid-cols-6 gap-1 mb-2">
-                            <button onclick="typeCard('7')" class="key-btn">7</button><button onclick="typeCard('6')" class="key-btn">6</button><button onclick="typeCard('5')" class="key-btn">5</button><button onclick="typeCard('4')" class="key-btn">4</button><button onclick="typeCard('3')" class="key-btn">3</button><button onclick="typeCard('2')" class="key-btn">2</button>
-                        </div>
-                        <div class="grid grid-cols-4 gap-1">
-                            <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (P)</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥ (C)</button><button onclick="typeCard('d ')" class="key-btn suit-d">♦ (Q)</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣ (F)</button>
-                        </div>
-                        <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-2 rounded text-white font-bold hover:bg-[#444]">Cancella Casella</button>
                     </div>
                     
-                    <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase transition hover:bg-blue-600 shadow-lg">Calcola % Vittoria</button>
-                    
-                    <div id="eq-results" class="hidden mt-4 grid grid-cols-3 gap-2 text-center">
-                        <div class="p-3 rounded border border-[#3b82f6] bg-[#1a1d24]"><p class="text-[10px] text-[#3b82f6] uppercase font-bold">Hero</p><p id="res-hero" class="text-xl font-black text-white mt-1">0%</p></div>
-                        <div class="p-3 rounded border border-[#555] bg-[#1a1d24]"><p class="text-[10px] text-gray-400 uppercase font-bold">Split</p><p id="res-tie" class="text-xl font-bold text-gray-300 mt-1">0%</p></div>
-                        <div class="p-3 rounded border border-[#ef4444] bg-[#1a1d24]"><p class="text-[10px] text-[#ef4444] uppercase font-bold">Villain</p><p id="res-villain" class="text-xl font-black text-white mt-1">0%</p></div>
+                    <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] flex items-center justify-center min-h-[300px]">
+                        <canvas id="brChart"></canvas>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-    </main>
+            <!-- SEZIONE 3: DECISION MAKER (EV & EQUITY) -->
+            <section id="sec-calc" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
+                        <h2 class="text-2xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
+                        <p class="text-xs text-gray-400 mb-6 border-b border-[#333] pb-4">Calcola se fare CALL in base alle probabilità e al piatto, scopri se la mossa ti farà guadagnare a lungo termine.</p>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto Attuale</label>
+                                    <input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-lg text-[#facc15]">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-[#ef4444] font-bold uppercase">2. Costo del Call</label>
+                                    <input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-lg text-[#ef4444]">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-xs text-[#3b82f6] font-bold uppercase flex justify-between">
+                                    <span>3. Tua Equity stimata (%)</span>
+                                    <button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white">⬅️ Copia da Simulatore</button>
+                                </label>
+                                <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-lg text-[#3b82f6]">
+                            </div>
+
+                            <button onclick="calculateCallEV()" class="w-full bg-white text-black py-4 rounded-lg font-black uppercase text-lg mt-4 hover:bg-gray-200 transition">Dammi il Verdetto</button>
+                        </div>
+
+                        <div id="ev-result-box" class="hidden mt-6 p-6 rounded-lg border-2 text-center bg-[#1a1d24]">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Risultato Matematico</h3>
+                            <div id="ev-verdict-text" class="text-5xl font-black mb-2 uppercase tracking-tighter">CALL</div>
+                            <p class="text-sm text-gray-300">Valore Atteso (EV): <span id="ev-value" class="font-mono font-bold text-xl ml-2"></span></p>
+                            <p id="ev-explanation" class="text-xs mt-3 px-4 text-gray-400"></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333]">
+                        <h2 class="text-lg font-black text-white uppercase mb-1 flex justify-between items-center">
+                            Simulatore Equity
+                            <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span>
+                        </h2>
+                        <p class="text-xs text-gray-400 mb-6">Usa questo strumento per calcolare la tua Equity esatta (Punto 3).</p>
+                        
+                        <div class="grid grid-cols-3 gap-2 mb-4">
+                            <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                            <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                            <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                        </div>
+
+                        <div class="bg-[#1a1d24] p-3 rounded-lg border border-[#333] mb-4">
+                            <div class="grid grid-cols-7 gap-1 mb-1">
+                                <button onclick="typeCard('A')" class="key-btn">A</button><button onclick="typeCard('K')" class="key-btn">K</button><button onclick="typeCard('Q')" class="key-btn">Q</button><button onclick="typeCard('J')" class="key-btn">J</button><button onclick="typeCard('T')" class="key-btn">T</button><button onclick="typeCard('9')" class="key-btn">9</button><button onclick="typeCard('8')" class="key-btn">8</button>
+                            </div>
+                            <div class="grid grid-cols-6 gap-1 mb-2">
+                                <button onclick="typeCard('7')" class="key-btn">7</button><button onclick="typeCard('6')" class="key-btn">6</button><button onclick="typeCard('5')" class="key-btn">5</button><button onclick="typeCard('4')" class="key-btn">4</button><button onclick="typeCard('3')" class="key-btn">3</button><button onclick="typeCard('2')" class="key-btn">2</button>
+                            </div>
+                            <div class="grid grid-cols-4 gap-1">
+                                <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (P)</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥ (C)</button><button onclick="typeCard('d ')" class="key-btn suit-d">♦ (Q)</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣ (F)</button>
+                            </div>
+                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-2 rounded text-white font-bold hover:bg-[#444]">Cancella Casella</button>
+                        </div>
+                        
+                        <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase transition hover:bg-blue-600 shadow-lg">Calcola % Vittoria</button>
+                        
+                        <div id="eq-results" class="hidden mt-4 grid grid-cols-3 gap-2 text-center">
+                            <div class="p-3 rounded border border-[#3b82f6] bg-[#1a1d24]"><p class="text-[10px] text-[#3b82f6] uppercase font-bold">Hero</p><p id="res-hero" class="text-xl font-black text-white mt-1">0%</p></div>
+                            <div class="p-3 rounded border border-[#555] bg-[#1a1d24]"><p class="text-[10px] text-gray-400 uppercase font-bold">Split</p><p id="res-tie" class="text-xl font-bold text-gray-300 mt-1">0%</p></div>
+                            <div class="p-3 rounded border border-[#ef4444] bg-[#1a1d24]"><p class="text-[10px] text-[#ef4444] uppercase font-bold">Villain</p><p id="res-villain" class="text-xl font-black text-white mt-1">0%</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
 
     <script>
+        // --- SISTEMA DI AUTENTICAZIONE PASSWORD ---
+        const SECRET_PASS = "angelo2026";
+
+        function checkAuth() {
+            if (localStorage.getItem('poker_auth') === 'granted') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                return true;
+            }
+            return false;
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('login-pwd').value;
+            if (input === SECRET_PASS) {
+                localStorage.setItem('poker_auth', 'granted');
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+                document.getElementById('login-pwd').value = '';
+            }
+        }
+
+
+        // --- SISTEMA CLOUD E LOGICA APP ---
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -233,7 +280,11 @@
         const genId = () => Math.random().toString(36).substr(2, 9);
         const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
-        function setCloudStatus(msg) { document.getElementById('cloud-status').innerText = msg; }
+        function setCloudStatus(msg, isError = false) { 
+            const el = document.getElementById('cloud-status');
+            el.innerText = msg; 
+            el.style.color = isError ? '#ef4444' : '#9ca3af';
+        }
 
         function validateData() {
             if (!appData.palette || !Array.isArray(appData.palette)) appData.palette = [];
@@ -241,72 +292,66 @@
             if (!appData.bankroll) appData.bankroll = [];
         }
 
-        function saveToLocal() {
-            // IL SALVATAGGIO LOCALE É LA PRIORITÀ. I dati rimangono anche se cade il Cloud.
-            localStorage.setItem('poker_v10_data', JSON.stringify(appData));
+        function triggerLocalSave() {
+            localStorage.setItem('poker_v11_data', JSON.stringify(appData));
         }
 
-        async function initCloud() {
-            setCloudStatus('☁️ Caricamento Dati Sicuro...');
-            
-            // 1. CARICAMENTO LOCALE OBBLIGATORIO (Blindato contro i crash)
-            try {
-                const local = localStorage.getItem('poker_v10_data') || localStorage.getItem('poker_v9_data');
-                if(local) {
-                    const parsed = JSON.parse(local);
-                    if(parsed.palette) appData = parsed;
-                }
-            } catch(e) {}
+        async function initCloud(forceDownload = false) {
+            setCloudStatus('☁️ Sincronizzazione in corso...');
 
-            // 2. SINCRONIZZAZIONE CLOUD
-            try {
-                const url = `${BIN_URL}/latest?nocache=${Date.now()}`;
-                const res = await fetch(url, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
-                
-                // Se JSONBin blocca la richiesta, lanciamo errore e usiamo i dati locali, senza sovrascriverli!
-                if(!res.ok) throw new Error("API Limit Reached - Status: " + res.status);
-                
-                const data = await res.json();
-                if(data.record && data.record.palette) {
-                    appData = data.record; // Aggiorna solo se i dati del Cloud sono validi
+            if (forceDownload) {
+                try {
+                    const url = `${BIN_URL}/latest?nocache=${Date.now()}`;
+                    const res = await fetch(url, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
+                    if(!res.ok) throw new Error("API Limit Reached");
+                    const data = await res.json();
+                    if(data.record && data.record.palette) {
+                        appData = data.record;
+                        triggerLocalSave(); 
+                        setCloudStatus('☁️ Dati Cloud scaricati!');
+                        setTimeout(() => setCloudStatus('☁️ App Pronta (Dati Locali)'), 3000);
+                    }
+                } catch (e) {
+                    alert("Impossibile scaricare dal Cloud. Riprova più tardi.");
+                    setCloudStatus('⚠️ Errore Rete (Uso Dati Locali)', true);
                 }
-                setCloudStatus('☁️ Sincronizzato con Cloud');
-            } catch (e) {
-                console.warn("Il server ha rifiutato la connessione, uso i dati del tuo dispositivo.");
-                setCloudStatus('⚠️ Limite Rete Raggiunto - Uso Dati Sicuri (PC/Mobile)');
+            } else {
+                try {
+                    const local = localStorage.getItem('poker_v11_data') || localStorage.getItem('poker_v10_data');
+                    if(local) {
+                        const parsed = JSON.parse(local);
+                        if(parsed.palette) appData = parsed;
+                    }
+                } catch(e) {}
+                setCloudStatus('☁️ App Pronta (Salvataggio automatico locale)');
             }
-            
+
             validateData();
             if(appData.spots.length > 0 && !activeSpotId) activeSpotId = appData.spots[0].id;
             
             updateSpotDropdown();
             loadSpot();
             updateBankrollUI();
-            
-            saveToLocal(); // Fissa in memoria la validazione per non perdere mai i dati
         }
 
         async function pushToCloud() {
-            setCloudStatus('☁️ Salvataggio sul Cloud...');
+            setCloudStatus('☁️ Invio dati al server in corso...');
+            document.body.style.cursor = 'wait';
             try {
                 const res = await fetch(BIN_URL, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                     body: JSON.stringify(appData)
                 });
-                if(!res.ok) throw new Error("JSONBin API Limit");
-                setCloudStatus('☁️ Cloud Aggiornato');
+                if(!res.ok) throw new Error("JSONBin API Error");
+                
+                setCloudStatus('☁️ SALVATO IN CLOUD CON SUCCESSO!');
+                setTimeout(() => setCloudStatus('☁️ App Pronta (Salvataggio automatico locale)'), 4000);
             } catch (e) {
-                setCloudStatus('⚠️ Dati Salvati (Solo su questo Dispositivo)');
+                alert("Errore durante il salvataggio in Cloud. Riprova più tardi.\n(I tuoi dati sono comunque salvi sul tuo PC/Telefono!)");
+                setCloudStatus('⚠️ Errore salvataggio Cloud', true);
             }
-        }
-
-        function triggerSave() {
-            saveToLocal(); // Si salva SEMPRE subito in locale, indipendentemente dal cloud.
-            clearTimeout(syncTimeout);
-            setCloudStatus('☁️ In attesa...');
-            // Aspetta 1.5s prima di inviare al cloud, evita blocchi server
-            syncTimeout = setTimeout(pushToCloud, 1500); 
+            document.body.style.cursor = 'default';
         }
 
         function getActiveSpot() { return appData.spots.find(s => s.id === activeSpotId); }
@@ -321,7 +366,7 @@
             activeSpotId = newSpot.id;
             
             document.getElementById('new-spot-name').value = '';
-            updateSpotDropdown(); loadSpot(); triggerSave();
+            updateSpotDropdown(); loadSpot(); triggerLocalSave();
         }
 
         function deleteCurrentSpot() {
@@ -329,7 +374,7 @@
             if(confirm("Eliminare questo Scenario?")) {
                 appData.spots = appData.spots.filter(s => s.id !== activeSpotId);
                 activeSpotId = appData.spots.length > 0 ? appData.spots[0].id : null;
-                updateSpotDropdown(); loadSpot(); triggerSave();
+                updateSpotDropdown(); loadSpot(); triggerLocalSave();
             }
         }
 
@@ -370,7 +415,7 @@
             appData.spots.forEach(s => { if(!s.matrix) s.matrix = {}; s.matrix[newId] = []; });
 
             document.getElementById('new-color-name').value = '';
-            setBrush(newId); loadSpot(); triggerSave();
+            setBrush(newId); loadSpot(); triggerLocalSave();
         }
 
         function deletePaletteColor(id) {
@@ -378,7 +423,7 @@
                 appData.palette = appData.palette.filter(p => p.id !== id);
                 appData.spots.forEach(s => { if(s.matrix && s.matrix[id]) delete s.matrix[id]; });
                 if(activeBrushId === id) setBrush('erase');
-                loadSpot(); triggerSave();
+                loadSpot(); triggerLocalSave();
             }
         }
 
@@ -462,7 +507,7 @@
                 spot.matrix[activeBrushId].push(combo);
             }
 
-            renderMatrixColors(); triggerSave();
+            renderMatrixColors(); triggerLocalSave();
         }
 
         function renderMatrixColors() {
@@ -497,7 +542,7 @@
             if(!spot) return;
             if(confirm("Svuotare l'intera matrice per questo spot?")) {
                 appData.palette.forEach(p => spot.matrix[p.id] = []);
-                renderMatrixColors(); triggerSave();
+                renderMatrixColors(); triggerLocalSave();
             }
         }
 
@@ -511,7 +556,7 @@
             appData.bankroll.push({ buyin: buyin, win: win, profit: win - buyin });
             document.getElementById('t-buyin').value = ''; document.getElementById('t-win').value = '';
             
-            updateBankrollUI(); triggerSave();
+            updateBankrollUI(); triggerLocalSave();
         }
 
         function updateBankrollUI() {
@@ -659,6 +704,14 @@
         }
 
         window.onload = async () => {
+            // Se l'utente non è autenticato, ferma qui il caricamento visivo
+            if (!checkAuth()) {
+                // Inizializziamo comunque la griglia e scarichiamo in background così quando entra è già pronto
+                createMatrixDOM();
+                initCloud(); 
+                return;
+            }
+
             createMatrixDOM();
             await initCloud();
             activeInput = document.getElementById('mc-hero');
