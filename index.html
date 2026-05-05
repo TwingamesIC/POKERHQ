@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - Custom Engine v9</title>
+    <title>Poker Pro Hub - v10 Anti-Crash</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { background-color: #0f1115; color: #e2e8f0; font-family: 'Inter', sans-serif; touch-action: manipulation; }
         
-        /* Griglia Matrix */
         .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; background: #1e222a; border-radius: 4px; border: 1px solid #333; touch-action: none; aspect-ratio: 1; width: 100%; max-width: 650px; margin: auto; }
         .cell { 
             display: flex; align-items: center; justify-content: center; 
@@ -20,20 +19,17 @@
         .cell:hover { filter: brightness(1.4); }
         .cell-colored { color: #fff; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); }
 
-        /* Inputs & Buttons */
         input[type="text"], input[type="number"], select { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
         input:focus, select:focus { border-color: #3b82f6; }
         
         .nav-btn { padding: 10px 16px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
         .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
         
-        /* Categorie Pennelli */
         .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #1a1d24; border: 1px solid #333; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: all 0.1s; }
         .brush-item:hover { background: #232730; }
         .brush-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.2); background: #232730; }
         .color-box { width: 20px; height: 20px; border-radius: 3px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.2); }
 
-        /* Card Keypad */
         .key-btn { background: #1a1d24; border: 1px solid #333; color: white; font-weight: bold; font-size: 1.1rem; padding: 8px 0; border-radius: 4px; }
         .key-btn:active { background: #333; }
         .suit-s { color: #cbd5e1; } .suit-h { color: #ef4444; } .suit-d { color: #3b82f6; } .suit-c { color: #10b981; }
@@ -41,7 +37,6 @@
 </head>
 <body class="min-h-screen flex flex-col p-2 md:p-6 pb-24">
 
-    <!-- HEADER & CLOUD STATUS -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#333] pb-4">
         <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
             <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 Dynamic Ranges</button>
@@ -49,17 +44,16 @@
             <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Decision Maker (EV)</button>
         </div>
         <div class="flex items-center gap-2">
-            <div id="cloud-status" class="text-xs font-bold text-gray-400 bg-[#1a1d24] px-3 py-1.5 rounded border border-[#333]">☁️ Inizializzazione...</div>
+            <div id="cloud-status" class="text-xs font-bold text-gray-400 bg-[#1a1d24] px-3 py-1.5 rounded border border-[#333]">☁️ Inizializzazione Sistema...</div>
         </div>
     </div>
 
     <main class="max-w-7xl mx-auto w-full">
         
-        <!-- ==================== SEZIONE 1: DYNAMIC RANGES ==================== -->
+        <!-- SEZIONE 1: DYNAMIC RANGES -->
         <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
             <aside class="w-full lg:w-80 flex flex-col gap-6">
                 
-                <!-- 1. GESTORE SCENARI (Spot) -->
                 <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
                     <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">1. Seleziona / Crea Spot</h3>
                     <select id="spot-selector" onchange="loadSpot()" class="mb-3 text-sm font-bold"></select>
@@ -71,22 +65,18 @@
                     <button onclick="deleteCurrentSpot()" class="w-full mt-3 text-xs text-red-400 border border-red-900/50 py-1.5 rounded hover:bg-red-900/20">Elimina Spot Corrente</button>
                 </div>
 
-                <!-- 2. GESTORE COLORI / AZIONI (GLOBALI) -->
                 <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
                     <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Pennelli Globali</h3>
                     <p class="text-[9px] text-gray-500 mb-3 leading-tight">Questi colori sono permanenti e applicabili in qualsiasi Spot tu crei.</p>
                     
-                    <!-- Form aggiunta colore -->
                     <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
                         <input type="color" id="new-color-hex" value="#ef4444" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
                         <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
                         <button onclick="addPaletteColor()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
                     </div>
 
-                    <!-- Lista Pennelli Globale Dinamica -->
                     <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
                     
-                    <!-- Tasto per Cancellare/Fold -->
                     <div onclick="setBrush('erase')" id="brush-erase" class="brush-item brush-active mt-2">
                         <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella Selezione</span></div>
                     </div>
@@ -95,7 +85,6 @@
                 </div>
             </aside>
 
-            <!-- MATRICE -->
             <div class="flex-1 flex justify-center">
                 <div class="w-full">
                     <div class="flex justify-between items-center mb-2 px-1">
@@ -106,11 +95,9 @@
             </div>
         </section>
 
-
-        <!-- ==================== SEZIONE 2: BANKROLL & ABI ==================== -->
+        <!-- SEZIONE 2: BANKROLL & ABI -->
         <section id="sec-bankroll" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Stats Board -->
                 <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#22c55e]">
                         <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Net Profit</p>
@@ -134,7 +121,6 @@
                     </div>
                 </div>
 
-                <!-- Input MTT -->
                 <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] self-start">
                     <h3 class="font-bold mb-4 text-[#3b82f6] uppercase tracking-wide text-sm">Registra Torneo</h3>
                     <div class="space-y-4">
@@ -150,19 +136,15 @@
                     </div>
                 </div>
                 
-                <!-- Grafico -->
                 <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] flex items-center justify-center min-h-[300px]">
                     <canvas id="brChart"></canvas>
                 </div>
             </div>
         </section>
 
-
-        <!-- ==================== SEZIONE 3: DECISION MAKER (EV & EQUITY) ==================== -->
+        <!-- SEZIONE 3: DECISION MAKER (EV & EQUITY) -->
         <section id="sec-calc" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- COLONNA 1: Verdetto Matematico EV -->
                 <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
                     <h2 class="text-2xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
                     <p class="text-xs text-gray-400 mb-6 border-b border-[#333] pb-4">Calcola se fare CALL in base alle probabilità e al piatto, scopri se la mossa ti farà guadagnare a lungo termine.</p>
@@ -172,12 +154,10 @@
                             <div>
                                 <label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto Attuale</label>
                                 <input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-lg text-[#facc15]">
-                                <p class="text-[9px] text-gray-500 mt-1">Soldi già nel mezzo</p>
                             </div>
                             <div>
                                 <label class="text-xs text-[#ef4444] font-bold uppercase">2. Costo del Call</label>
                                 <input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-lg text-[#ef4444]">
-                                <p class="text-[9px] text-gray-500 mt-1">Quanto devi mettere</p>
                             </div>
                         </div>
                         
@@ -187,13 +167,11 @@
                                 <button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white">⬅️ Copia da Simulatore</button>
                             </label>
                             <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-lg text-[#3b82f6]">
-                            <p class="text-[9px] text-gray-500 mt-1">Probabilità di vincere allo showdown</p>
                         </div>
 
-                        <button onclick="calculateCallEV()" class="w-full bg-white text-black py-4 rounded-lg font-black uppercase text-lg mt-4 hover:bg-gray-200 transition shadow-[0_0_15px_rgba(255,255,255,0.2)]">Dammi il Verdetto</button>
+                        <button onclick="calculateCallEV()" class="w-full bg-white text-black py-4 rounded-lg font-black uppercase text-lg mt-4 hover:bg-gray-200 transition">Dammi il Verdetto</button>
                     </div>
 
-                    <!-- BOX VERDETTO -->
                     <div id="ev-result-box" class="hidden mt-6 p-6 rounded-lg border-2 text-center bg-[#1a1d24]">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Risultato Matematico</h3>
                         <div id="ev-verdict-text" class="text-5xl font-black mb-2 uppercase tracking-tighter">CALL</div>
@@ -202,27 +180,17 @@
                     </div>
                 </div>
 
-                <!-- COLONNA 2: Simulatore Monte Carlo -->
                 <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333]">
                     <h2 class="text-lg font-black text-white uppercase mb-1 flex justify-between items-center">
                         Simulatore Equity
                         <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span>
                     </h2>
-                    <p class="text-xs text-gray-400 mb-6">Usa questo strumento per calcolare la tua Equity esatta (Punto 3) da inserire nel Decision Maker.</p>
+                    <p class="text-xs text-gray-400 mb-6">Usa questo strumento per calcolare la tua Equity esatta (Punto 3).</p>
                     
                     <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label>
-                            <input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="text-center font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label>
-                            <input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label>
-                            <input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono">
-                        </div>
+                        <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                        <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                        <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono"></div>
                     </div>
 
                     <div class="bg-[#1a1d24] p-3 rounded-lg border border-[#333] mb-4">
@@ -252,105 +220,95 @@
     </main>
 
     <script>
-        // --- 1. CREDENZIALI JSONBIN ---
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        // --- 2. STATO E DATI (NUOVA STRUTTURA DINAMICA v9 CON PALETTE GLOBALE) ---
-        let appData = {
-            palette: [],    // Array { id, name, color } - LA TAVOLOZZA GLOBALE
-            spots: [],      // Array { id, name, matrix: { "id_colore": ["AKs", "AA"] } }
-            bankroll: []    // Array { buyin, win, profit }
-        };
-        
+        let appData = { palette: [], spots: [], bankroll: [] };
         let activeSpotId = null;
-        let activeBrushId = "erase"; // id colore o "erase"
+        let activeBrushId = "erase";
         let isDrawing = false;
         let syncTimeout;
 
         const genId = () => Math.random().toString(36).substr(2, 9);
         const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
-        // --- 3. CLOUD SYNC & VALIDAZIONE DATI ---
         function setCloudStatus(msg) { document.getElementById('cloud-status').innerText = msg; }
 
         function validateData() {
-            // Se la palette globale non esiste, creiamola di default
-            if (!appData.palette || !Array.isArray(appData.palette)) {
-                appData.palette = [
-                    { id: "p-raise", name: "Raise / 3-Bet", color: "#22c55e" },
-                    { id: "p-call", name: "Call / Limp", color: "#facc15" }
-                ];
-            }
+            if (!appData.palette || !Array.isArray(appData.palette)) appData.palette = [];
             if (!appData.spots) appData.spots = [];
             if (!appData.bankroll) appData.bankroll = [];
-            
-            // Migrazione automatica se l'utente ha salvataggi vecchi della v8
-            appData.spots.forEach(spot => {
-                if (!spot.matrix) spot.matrix = {};
-                if (spot.categories) { // Formato vecchio
-                    spot.categories.forEach(cat => {
-                        let existingPal = appData.palette.find(p => p.name === cat.name);
-                        if (!existingPal) {
-                            existingPal = { id: genId(), name: cat.name, color: cat.color };
-                            appData.palette.push(existingPal);
-                        }
-                        if (cat.combos) spot.matrix[existingPal.id] = cat.combos;
-                    });
-                    delete spot.categories; // Elimina la vecchia struttura obsoleta
-                }
-            });
+        }
+
+        function saveToLocal() {
+            // IL SALVATAGGIO LOCALE É LA PRIORITÀ. I dati rimangono anche se cade il Cloud.
+            localStorage.setItem('poker_v10_data', JSON.stringify(appData));
         }
 
         async function initCloud() {
-            setCloudStatus('☁️ Connessione al Cloud...');
+            setCloudStatus('☁️ Caricamento Dati Sicuro...');
+            
+            // 1. CARICAMENTO LOCALE OBBLIGATORIO (Blindato contro i crash)
+            try {
+                const local = localStorage.getItem('poker_v10_data') || localStorage.getItem('poker_v9_data');
+                if(local) {
+                    const parsed = JSON.parse(local);
+                    if(parsed.palette) appData = parsed;
+                }
+            } catch(e) {}
+
+            // 2. SINCRONIZZAZIONE CLOUD
             try {
                 const url = `${BIN_URL}/latest?nocache=${Date.now()}`;
                 const res = await fetch(url, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
-                if(res.ok) {
-                    const data = await res.json();
-                    if(data.record) appData = data.record;
+                
+                // Se JSONBin blocca la richiesta, lanciamo errore e usiamo i dati locali, senza sovrascriverli!
+                if(!res.ok) throw new Error("API Limit Reached - Status: " + res.status);
+                
+                const data = await res.json();
+                if(data.record && data.record.palette) {
+                    appData = data.record; // Aggiorna solo se i dati del Cloud sono validi
                 }
-                setCloudStatus('☁️ Sincronizzato (v9)');
+                setCloudStatus('☁️ Sincronizzato con Cloud');
             } catch (e) {
-                setCloudStatus('⚠️ Modalità Offline (Uso locale)');
-                let local = localStorage.getItem('poker_v9_data');
-                if(local) appData = JSON.parse(local);
+                console.warn("Il server ha rifiutato la connessione, uso i dati del tuo dispositivo.");
+                setCloudStatus('⚠️ Limite Rete Raggiunto - Uso Dati Sicuri (PC/Mobile)');
             }
             
-            validateData(); // Controlla e corregge la struttura
-
-            if(appData.spots.length > 0) activeSpotId = appData.spots[0].id;
+            validateData();
+            if(appData.spots.length > 0 && !activeSpotId) activeSpotId = appData.spots[0].id;
+            
             updateSpotDropdown();
             loadSpot();
             updateBankrollUI();
             
-            localStorage.setItem('poker_v9_data', JSON.stringify(appData));
+            saveToLocal(); // Fissa in memoria la validazione per non perdere mai i dati
         }
 
         async function pushToCloud() {
-            setCloudStatus('☁️ Salvataggio in corso...');
+            setCloudStatus('☁️ Salvataggio sul Cloud...');
             try {
-                await fetch(BIN_URL, {
+                const res = await fetch(BIN_URL, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                     body: JSON.stringify(appData)
                 });
-                setCloudStatus('☁️ Salvato in Cloud');
+                if(!res.ok) throw new Error("JSONBin API Limit");
+                setCloudStatus('☁️ Cloud Aggiornato');
             } catch (e) {
-                setCloudStatus('⚠️ Salvato solo sul PC/Telefono');
+                setCloudStatus('⚠️ Dati Salvati (Solo su questo Dispositivo)');
             }
         }
 
         function triggerSave() {
-            localStorage.setItem('poker_v9_data', JSON.stringify(appData));
+            saveToLocal(); // Si salva SEMPRE subito in locale, indipendentemente dal cloud.
             clearTimeout(syncTimeout);
-            setCloudStatus('☁️ In attesa di inviare...');
-            syncTimeout = setTimeout(pushToCloud, 1500);
+            setCloudStatus('☁️ In attesa...');
+            // Aspetta 1.5s prima di inviare al cloud, evita blocchi server
+            syncTimeout = setTimeout(pushToCloud, 1500); 
         }
 
-        // --- 4. GESTIONE SCENARI E PALETTE GLOBALE ---
         function getActiveSpot() { return appData.spots.find(s => s.id === activeSpotId); }
 
         function createSpot() {
@@ -363,19 +321,15 @@
             activeSpotId = newSpot.id;
             
             document.getElementById('new-spot-name').value = '';
-            updateSpotDropdown();
-            loadSpot();
-            triggerSave();
+            updateSpotDropdown(); loadSpot(); triggerSave();
         }
 
         function deleteCurrentSpot() {
             if(!activeSpotId) return;
-            if(confirm("Eliminare questo Scenario definitivamente?")) {
+            if(confirm("Eliminare questo Scenario?")) {
                 appData.spots = appData.spots.filter(s => s.id !== activeSpotId);
                 activeSpotId = appData.spots.length > 0 ? appData.spots[0].id : null;
-                updateSpotDropdown();
-                loadSpot();
-                triggerSave();
+                updateSpotDropdown(); loadSpot(); triggerSave();
             }
         }
 
@@ -383,15 +337,11 @@
             const sel = document.getElementById('spot-selector');
             sel.innerHTML = '';
             if(appData.spots.length === 0) {
-                sel.innerHTML = '<option value="">Nessuno spot creato...</option>';
-                return;
+                sel.innerHTML = '<option value="">Nessuno spot creato...</option>'; return;
             }
             appData.spots.forEach(s => {
-                let opt = document.createElement('option');
-                opt.value = s.id;
-                opt.innerText = s.name;
-                if(s.id === activeSpotId) opt.selected = true;
-                sel.appendChild(opt);
+                let opt = document.createElement('option'); opt.value = s.id; opt.innerText = s.name;
+                if(s.id === activeSpotId) opt.selected = true; sel.appendChild(opt);
             });
         }
 
@@ -404,17 +354,12 @@
             
             if(!spot) {
                 title.innerText = "Crea uno spot per iniziare!";
-                renderMatrixEmpty();
-                renderBrushList(); // Mostra comunque i pennelli
-                return;
+                renderMatrixEmpty(); renderBrushList(); return;
             }
-
             title.innerText = spot.name;
-            renderBrushList();
-            renderMatrixColors();
+            renderBrushList(); renderMatrixColors();
         }
 
-        // --- AGGIUNTA COLORI ALLA PALETTE GLOBALE ---
         function addPaletteColor() {
             const name = document.getElementById('new-color-name').value.trim();
             const color = document.getElementById('new-color-hex').value;
@@ -422,28 +367,18 @@
 
             const newId = genId();
             appData.palette.push({ id: newId, name: name, color: color });
-            
-            // Inizializza l'array vuoto per questo nuovo colore in tutti gli spot
-            appData.spots.forEach(s => {
-                if(!s.matrix) s.matrix = {};
-                s.matrix[newId] = [];
-            });
+            appData.spots.forEach(s => { if(!s.matrix) s.matrix = {}; s.matrix[newId] = []; });
 
             document.getElementById('new-color-name').value = '';
-            setBrush(newId); // Seleziona in automatico il pennello appena creato
-            loadSpot();
-            triggerSave();
+            setBrush(newId); loadSpot(); triggerSave();
         }
 
         function deletePaletteColor(id) {
-            if(confirm("Eliminare questo colore da TUTTI gli spot? Le celle colorate con questo colore torneranno vuote ovunque.")) {
+            if(confirm("Eliminare questo colore da TUTTI gli spot?")) {
                 appData.palette = appData.palette.filter(p => p.id !== id);
-                appData.spots.forEach(s => {
-                    if(s.matrix && s.matrix[id]) delete s.matrix[id];
-                });
+                appData.spots.forEach(s => { if(s.matrix && s.matrix[id]) delete s.matrix[id]; });
                 if(activeBrushId === id) setBrush('erase');
-                loadSpot();
-                triggerSave();
+                loadSpot(); triggerSave();
             }
         }
 
@@ -453,6 +388,8 @@
             let activeEl = document.getElementById(`brush-${id}`);
             if(activeEl) activeEl.classList.add('brush-active');
         }
+
+        function getComboWeight(c) { return c.length === 2 ? 6 : (c.endsWith('s') ? 4 : 12); }
 
         function renderBrushList() {
             const list = document.getElementById('brush-list');
@@ -485,10 +422,6 @@
             });
         }
 
-
-        // --- 5. GESTIONE MATRICE E PITTURA ---
-        function getComboWeight(c) { return c.length === 2 ? 6 : (c.endsWith('s') ? 4 : 12); }
-
         function createMatrixDOM() {
             const container = document.getElementById('matrix');
             container.innerHTML = '';
@@ -520,21 +453,16 @@
             const spot = getActiveSpot();
             if(!spot) { alert("Crea prima uno spot in cui disegnare!"); return; }
 
-            // Rimuovi la combo da TUTTI i colori in questo spot (così un colore sovrascrive l'altro)
             appData.palette.forEach(p => {
-                if(spot.matrix[p.id]) {
-                    spot.matrix[p.id] = spot.matrix[p.id].filter(c => c !== combo);
-                }
+                if(spot.matrix[p.id]) spot.matrix[p.id] = spot.matrix[p.id].filter(c => c !== combo);
             });
 
-            // Se il pennello NON è "Cancella", aggiungi la combo al colore selezionato
             if(activeBrushId !== "erase") {
                 if(!spot.matrix[activeBrushId]) spot.matrix[activeBrushId] = [];
                 spot.matrix[activeBrushId].push(combo);
             }
 
-            renderMatrixColors();
-            triggerSave();
+            renderMatrixColors(); triggerSave();
         }
 
         function renderMatrixColors() {
@@ -543,9 +471,7 @@
 
             let colorMap = {};
             appData.palette.forEach(p => {
-                if(spot.matrix[p.id]) {
-                    spot.matrix[p.id].forEach(c => colorMap[c] = p.color);
-                }
+                if(spot.matrix[p.id]) spot.matrix[p.id].forEach(c => colorMap[c] = p.color);
             });
 
             ranks.forEach((r1, i) => {
@@ -553,15 +479,13 @@
                     const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
                     let cell = document.getElementById(`cell-${combo}`);
                     if(colorMap[combo]) {
-                        cell.style.backgroundColor = colorMap[combo];
-                        cell.classList.add('cell-colored');
+                        cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored');
                     } else {
-                        cell.style.backgroundColor = '#1a1d24';
-                        cell.classList.remove('cell-colored');
+                        cell.style.backgroundColor = '#1a1d24'; cell.classList.remove('cell-colored');
                     }
                 });
             });
-            renderBrushList(); // Aggiorna le percentuali a fianco dei pennelli
+            renderBrushList();
         }
 
         function renderMatrixEmpty() {
@@ -573,13 +497,10 @@
             if(!spot) return;
             if(confirm("Svuotare l'intera matrice per questo spot?")) {
                 appData.palette.forEach(p => spot.matrix[p.id] = []);
-                renderMatrixColors();
-                triggerSave();
+                renderMatrixColors(); triggerSave();
             }
         }
 
-
-        // --- 6. GESTIONE BANKROLL CON ABI E ROI ---
         let brChartInstance;
 
         function addTournament() {
@@ -627,8 +548,6 @@
             });
         }
 
-
-        // --- 7. EV DECISION MAKER PROFESSIONALE ---
         function calculateCallEV() {
             const pot = parseFloat(document.getElementById('ev-pot').value);
             const callAmt = parseFloat(document.getElementById('ev-call').value);
@@ -652,30 +571,21 @@
 
             if (ev > 0) {
                 box.style.borderColor = "#22c55e";
-                verdictNode.innerText = "CALL (+EV)";
-                verdictNode.style.color = "#22c55e";
-                valNode.style.color = "#22c55e";
+                verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e";
                 expNode.innerText = `Matematicamente profittevole. In media guadagni ${ev.toFixed(2)} chips/euro per ogni volta che fai questo call.`;
             } else {
                 box.style.borderColor = "#ef4444";
-                verdictNode.innerText = "FOLD (-EV)";
-                verdictNode.style.color = "#ef4444";
-                valNode.style.color = "#ef4444";
+                verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444";
                 expNode.innerText = `Non hai abbastanza odds. Perdi in media ${Math.abs(ev).toFixed(2)} chips/euro se chiami.`;
             }
         }
 
         function copyEquityFromMC() {
             let heroEq = document.getElementById('res-hero').innerText.replace('%', '');
-            if(heroEq !== "0.0") {
-                document.getElementById('ev-eq').value = heroEq;
-            } else {
-                alert("Esegui prima una simulazione Monte Carlo qui sotto!");
-            }
+            if(heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq;
+            else alert("Esegui prima una simulazione Monte Carlo qui sotto!");
         }
 
-
-        // --- 8. MONTE CARLO SIMULATOR ---
         let activeInput = null;
         function setActiveInput(el) { activeInput = el; }
         function typeCard(val) { if(!activeInput){ activeInput = document.getElementById('mc-hero'); activeInput.focus(); } activeInput.value += val; activeInput.focus(); }
@@ -739,7 +649,6 @@
             }, 50);
         }
 
-        // --- AVVIO E NAVIGAZIONE ---
         function switchTab(tabId) {
             ['ranges', 'bankroll', 'calc'].forEach(t => {
                 document.getElementById('sec-' + t).classList.add('hidden');
