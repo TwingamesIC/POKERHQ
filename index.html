@@ -3,240 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - xShove Edition</title>
+    <title>Poker Pro Hub - Custom Engine v8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: manipulation; }
+        body { background-color: #0f1115; color: #e2e8f0; font-family: 'Inter', sans-serif; touch-action: manipulation; }
         
-        /* xShove Style Matrix */
-        .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; background: #222; border: 1px solid #444; touch-action: none; width: 100%; aspect-ratio: 1; }
+        /* Griglia Matrix */
+        .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; background: #1e222a; border-radius: 4px; border: 1px solid #333; touch-action: none; aspect-ratio: 1; width: 100%; max-width: 650px; margin: auto; }
         .cell { 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 0.65rem; font-weight: bold; font-family: Arial, sans-serif; cursor: pointer;
+            font-size: 0.65rem; font-weight: 800; cursor: pointer;
             transition: filter 0.1s; user-select: none;
-            color: #fff; text-shadow: 0px 1px 1px rgba(0,0,0,0.8);
+            background-color: #1a1d24; color: #475569;
         }
-        .cell:hover { filter: brightness(1.3); }
+        .cell:hover { filter: brightness(1.4); }
+        .cell-colored { color: #fff; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); }
+
+        /* Inputs & Buttons */
+        input[type="text"], input[type="number"], select { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
+        input:focus, select:focus { border-color: #3b82f6; }
         
-        /* Solver Standard Colors */
-        .act-green  { background-color: #2ECC71; } /* Raise / 4B */
-        .act-yellow { background-color: #F1C40F; color: #000; text-shadow: none; } /* Call / Limp */
-        .act-blue   { background-color: #3498DB; } /* Fold to 3B */
-        .act-fold   { background-color: #1A1A1A; color: #555; text-shadow: none; }
+        .nav-btn { padding: 10px 16px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+        .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
         
-        .btn-filter { background: #1e1e1e; border: 1px solid #333; color: #aaa; transition: all 0.2s; border-radius: 2px; }
-        .btn-active { background: #2980B9 !important; border-color: #3498DB !important; color: white !important; }
-        .brush-active { outline: 2px solid white; outline-offset: -2px; }
-        .nav-active { border-bottom: 2px solid #2ECC71; color: #2ECC71; }
-        
-        input { text-transform: uppercase; background: #1e1e1e; border: 1px solid #333; color: white; padding: 8px; border-radius: 3px; width: 100%; outline: none; }
-        input:focus { border-color: #2ECC71; }
-        input::placeholder { text-transform: none; color: #555; }
-        
-        .solver-btn { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1e1e1e; border: 1px solid #333; font-family: monospace; font-size: 0.85rem; color: #ccc; cursor: pointer; border-radius: 2px; }
-        .solver-btn:hover { background: #2a2a2a; }
-        .s-box { width: 18px; height: 18px; border: 1px solid #000; margin-right: 10px; display: inline-block; }
-        
-        /* Keypad */
-        .key-btn { background: #222; border: 1px solid #444; color: white; font-weight: bold; font-size: 1.1rem; padding: 8px 0; border-radius: 3px; }
-        .key-btn:active { background: #555; }
-        .suit-s { color: #aaa; } .suit-h { color: #E74C3C; } .suit-d { color: #3498DB; } .suit-c { color: #2ECC71; }
+        /* Categorie Pennelli */
+        .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #1a1d24; border: 1px solid #333; border-radius: 4px; margin-bottom: 4px; cursor: pointer; }
+        .brush-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.2); }
+        .color-box { width: 20px; height: 20px; border-radius: 3px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* Card Keypad */
+        .key-btn { background: #1a1d24; border: 1px solid #333; color: white; font-weight: bold; font-size: 1.1rem; padding: 8px 0; border-radius: 4px; }
+        .key-btn:active { background: #333; }
+        .suit-s { color: #cbd5e1; } .suit-h { color: #ef4444; } .suit-d { color: #3b82f6; } .suit-c { color: #10b981; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; color: #3b82f6; } 100% { opacity: 1; } }
+        .syncing { animation: pulse 1s infinite; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-2 md:p-6 pb-24">
 
-    <!-- HEADER & SYNC -->
-    <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
-        <div class="flex gap-6 overflow-x-auto w-full md:w-auto text-sm">
-            <button onclick="switchTab('ranges')" id="tab-ranges" class="py-2 font-bold uppercase nav-active whitespace-nowrap">RangeViewer</button>
-            <button onclick="switchTab('bankroll')" id="tab-bankroll" class="py-2 font-bold uppercase text-gray-500 whitespace-nowrap">Bankroll & ABI</button>
-            <button onclick="switchTab('calc')" id="tab-calc" class="py-2 font-bold uppercase text-gray-500 whitespace-nowrap">EV & Fold Equity</button>
+    <!-- HEADER & CLOUD STATUS -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#333] pb-4">
+        <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
+            <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 Dynamic Ranges</button>
+            <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll & ABI</button>
+            <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Decision Maker (EV)</button>
         </div>
         <div class="flex items-center gap-2">
-            <div id="cloud-status" class="text-[10px] font-bold text-gray-400 bg-[#111] px-3 py-1 border border-[#333] whitespace-nowrap">☁️ Avvio...</div>
-            <button onclick="loadFromCloud(true)" class="text-[10px] font-bold bg-[#222] border border-[#444] text-white px-3 py-1 hover:bg-[#333]">⬇️ Forza Sync</button>
+            <div id="cloud-status" class="text-xs font-bold text-gray-400 bg-[#1a1d24] px-3 py-1.5 rounded border border-[#333]">☁️ Inizializzazione...</div>
         </div>
     </div>
 
-    <main class="max-w-6xl mx-auto w-full">
+    <main class="max-w-7xl mx-auto w-full">
         
-        <!-- ==================== SEZIONE RANGES ==================== -->
-        <section id="sec-ranges" class="flex flex-col lg:flex-row gap-8">
-            <aside class="w-full lg:w-80 flex flex-col gap-5">
+        <!-- ==================== SEZIONE 1: DYNAMIC RANGES ==================== -->
+        <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
+            <aside class="w-full lg:w-80 flex flex-col gap-6">
                 
-                <!-- Controlli Bui e Posizione compattati stile HUD -->
-                <div class="bg-[#111] p-4 border border-[#333]">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Effective Stack</span>
-                        <span id="disp-bb" class="text-xs font-bold text-[#2ECC71]">100 BB</span>
+                <!-- 1. GESTORE SCENARI (Spot) -->
+                <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
+                    <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">1. Seleziona / Crea Spot</h3>
+                    <select id="spot-selector" onchange="loadSpot()" class="mb-3 text-sm font-bold"></select>
+                    
+                    <div class="flex gap-2 mt-2">
+                        <input id="new-spot-name" type="text" placeholder="Es. UTG vs BB 30x" class="text-xs py-2">
+                        <button onclick="createSpot()" class="bg-[#3b82f6] text-white px-3 py-2 rounded font-bold text-xs hover:bg-blue-600 transition">+</button>
                     </div>
-                    <div class="grid grid-cols-6 gap-1 mb-4">
-                        <button onclick="setBB(10)" class="btn-filter py-1 text-[10px] bb-btn" data-val="10">10</button>
-                        <button onclick="setBB(20)" class="btn-filter py-1 text-[10px] bb-btn" data-val="20">20</button>
-                        <button onclick="setBB(40)" class="btn-filter py-1 text-[10px] bb-btn" data-val="40">40</button>
-                        <button onclick="setBB(60)" class="btn-filter py-1 text-[10px] bb-btn" data-val="60">60</button>
-                        <button onclick="setBB(80)" class="btn-filter py-1 text-[10px] bb-btn" data-val="80">80</button>
-                        <button onclick="setBB(100)" class="btn-filter py-1 text-[10px] bb-btn btn-active" data-val="100">100</button>
-                    </div>
-
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Position</span>
-                        <span id="disp-pos" class="text-xs font-bold text-[#2ECC71]">UTG</span>
-                    </div>
-                    <div class="grid grid-cols-6 gap-1">
-                        <button onclick="setPos('UTG')" class="btn-filter py-1 text-[10px] pos-btn btn-active" data-val="UTG">UTG</button>
-                        <button onclick="setPos('MP')" class="btn-filter py-1 text-[10px] pos-btn" data-val="MP">MP</button>
-                        <button onclick="setPos('CO')" class="btn-filter py-1 text-[10px] pos-btn" data-val="CO">CO</button>
-                        <button onclick="setPos('BTN')" class="btn-filter py-1 text-[10px] pos-btn" data-val="BTN">BTN</button>
-                        <button onclick="setPos('SB')" class="btn-filter py-1 text-[10px] pos-btn" data-val="SB">SB</button>
-                        <button onclick="setPos('BB')" class="btn-filter py-1 text-[10px] pos-btn" data-val="BB">BB</button>
-                    </div>
+                    <button onclick="deleteCurrentSpot()" class="w-full mt-3 text-xs text-red-400 border border-red-900/50 py-1.5 rounded hover:bg-red-900/20">Elimina Spot Corrente</button>
                 </div>
 
-                <!-- Tavolozza Colori xShove -->
-                <div class="bg-[#111] p-4 border border-[#333]">
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Action Colors</h3>
+                <!-- 2. GESTORE COLORI / AZIONI -->
+                <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
+                    <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">2. Colori & Azioni</h3>
                     
-                    <div class="space-y-1">
-                        <button onclick="setBrush('raise')" id="brush-raise" class="w-full solver-btn brush-active">
-                            <div class="flex items-center"><span class="s-box bg-[#2ECC71]"></span> Raise</div><span id="pct-raise">0.00%</span>
-                        </button>
-                        <button onclick="setBrush('limp')" id="brush-limp" class="w-full solver-btn">
-                            <div class="flex items-center"><span class="s-box bg-[#F1C40F]"></span> Limp / Call</div><span id="pct-limp">0.00%</span>
-                        </button>
-                        <button onclick="setBrush('open4b')" id="brush-open4b" class="w-full solver-btn mt-2">
-                            <div class="flex items-center"><span class="s-box bg-[#2ECC71]"></span> Open/4B vs 3B</div><span id="pct-open4b">0.00%</span>
-                        </button>
-                        <button onclick="setBrush('opencall')" id="brush-opencall" class="w-full solver-btn">
-                            <div class="flex items-center"><span class="s-box bg-[#F1C40F]"></span> Open/Call vs 3B</div><span id="pct-opencall">0.00%</span>
-                        </button>
-                        <button onclick="setBrush('openfold')" id="brush-openfold" class="w-full solver-btn">
-                            <div class="flex items-center"><span class="s-box bg-[#3498DB]"></span> Open/Fold vs 3B</div><span id="pct-openfold">0.00%</span>
-                        </button>
-                        <button onclick="setBrush('fold')" id="brush-fold" class="w-full solver-btn mt-2">
-                            <div class="flex items-center"><span class="s-box bg-[#1A1A1A]"></span> Fold (Clear)</div><span id="pct-fold">100.00%</span>
-                        </button>
+                    <!-- Form aggiunta colore -->
+                    <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
+                        <input type="color" id="new-color-hex" value="#22c55e" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
+                        <input type="text" id="new-color-name" placeholder="Es. Shove" class="text-xs py-1 px-2 flex-1">
+                        <button onclick="addCategory()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
+                    </div>
+
+                    <!-- Lista Pennelli Dinamica -->
+                    <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
+                    
+                    <!-- Tasto per Cancellare/Fold -->
+                    <div onclick="setBrush('erase')" id="brush-erase" class="brush-item">
+                        <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella (Fold)</span></div>
                     </div>
                     
-                    <button onclick="clearCurrentGrid()" class="w-full mt-4 bg-[#2c1111] text-[#E74C3C] py-2 text-xs border border-[#5a1a1a] hover:bg-[#3a1111]">Svuota Matrice</button>
+                    <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Griglia</button>
                 </div>
             </aside>
 
-            <!-- Matrice -->
-            <div class="flex-1 flex justify-center items-start">
-                <div id="matrix" class="matrix-container shadow-2xl max-w-[600px]"></div>
+            <!-- MATRICE -->
+            <div class="flex-1 flex justify-center">
+                <div class="w-full">
+                    <div class="flex justify-between items-center mb-2 px-1">
+                        <span id="matrix-title" class="font-black text-xl text-white">Seleziona uno spot...</span>
+                    </div>
+                    <div id="matrix" class="matrix-container shadow-2xl"></div>
+                </div>
             </div>
         </section>
 
 
-        <!-- ==================== SEZIONE BANKROLL ==================== -->
+        <!-- ==================== SEZIONE 2: BANKROLL & ABI ==================== -->
         <section id="sec-bankroll" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Statistiche Evidenziate -->
-                <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-[#111] p-5 border-l-4 border-[#2ECC71] border-y border-r border-[#333]">
+                <!-- Stats Board -->
+                <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#22c55e]">
                         <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Net Profit</p>
-                        <p id="stat-profit" class="text-2xl font-black text-white mt-1">€ 0.00</p>
+                        <p id="stat-profit" class="text-xl font-black text-white mt-1">€ 0.00</p>
                     </div>
-                    <div class="bg-[#111] p-5 border-l-4 border-[#F1C40F] border-y border-r border-[#333]">
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">A.B.I. (Avg Buy-in)</p>
-                        <p id="stat-abi" class="text-2xl font-black text-white mt-1">€ 0.00</p>
+                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#facc15]">
+                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I. (Avg Buy-in)</p>
+                        <p id="stat-abi" class="text-xl font-black text-white mt-1">€ 0.00</p>
                     </div>
-                    <div class="bg-[#111] p-5 border-l-4 border-[#3498DB] border-y border-r border-[#333]">
+                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#3b82f6]">
                         <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">R.O.I.</p>
-                        <p id="stat-roi" class="text-2xl font-black text-white mt-1">0.00%</p>
+                        <p id="stat-roi" class="text-xl font-black text-white mt-1">0.00%</p>
                     </div>
-                    <div class="bg-[#111] p-5 border-l-4 border-[#9B59B6] border-y border-r border-[#333]">
+                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-purple-500">
                         <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">MTT Giocati</p>
-                        <p id="stat-count" class="text-2xl font-black text-white mt-1">0</p>
+                        <p id="stat-count" class="text-xl font-black text-white mt-1">0</p>
+                    </div>
+                    <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-red-500">
+                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Spesa Totale</p>
+                        <p id="stat-spent" class="text-xl font-black text-white mt-1">€ 0.00</p>
                     </div>
                 </div>
 
-                <div class="bg-[#111] p-6 border border-[#333] self-start">
-                    <h3 class="font-bold mb-4 text-[#2ECC71] uppercase tracking-wide text-sm">Registra MTT</h3>
+                <!-- Input MTT -->
+                <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] self-start">
+                    <h3 class="font-bold mb-4 text-[#3b82f6] uppercase tracking-wide text-sm">Registra Torneo</h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[10px] text-gray-500 font-bold uppercase">Buy-in (€)</label>
-                            <input id="t-buyin" type="number" placeholder="Es. 10" class="mt-1">
+                            <label class="text-[10px] text-gray-400 font-bold uppercase">Buy-in (€)</label>
+                            <input id="t-buyin" type="number" placeholder="Es. 10" class="mt-1 bg-[#1a1d24]">
                         </div>
                         <div>
-                            <label class="text-[10px] text-gray-500 font-bold uppercase">Vincita (€) - Inserisci 0 se out</label>
-                            <input id="t-win" type="number" placeholder="Es. 50" class="mt-1">
+                            <label class="text-[10px] text-gray-400 font-bold uppercase">Vincita (€) - 0 se perso</label>
+                            <input id="t-win" type="number" placeholder="Es. 50" class="mt-1 bg-[#1a1d24]">
                         </div>
-                        <button onclick="addTournament()" class="w-full bg-[#2ECC71] text-black hover:bg-[#27ae60] py-3 font-bold mt-2">Salva a Database</button>
+                        <button onclick="addTournament()" class="w-full bg-[#3b82f6] text-white hover:bg-blue-600 py-3 rounded font-bold mt-2 transition">Salva a Database</button>
                     </div>
                 </div>
                 
-                <div class="lg:col-span-2 bg-[#111] p-4 border border-[#333] flex items-center justify-center min-h-[300px]">
+                <!-- Grafico -->
+                <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] flex items-center justify-center min-h-[300px]">
                     <canvas id="brChart"></canvas>
                 </div>
             </div>
         </section>
 
 
-        <!-- ==================== SEZIONE STRUMENTI & EV ==================== -->
+        <!-- ==================== SEZIONE 3: DECISION MAKER (EV & EQUITY) ==================== -->
         <section id="sec-calc" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                <!-- COLONNA 1: Motore EV e Fold Equity -->
-                <div class="space-y-6">
-                    <div class="bg-[#111] p-6 border border-[#333]">
-                        <h2 class="text-lg font-black text-[#E74C3C] uppercase mb-1">Expected Value (EV) & Fold Equity</h2>
-                        <p class="text-xs text-gray-500 mb-4">Calcola se la tua mossa (All-in/Bet) è profittevole nel lungo periodo (+EV).</p>
+                <!-- COLONNA 1: Verdetto Matematico EV -->
+                <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
+                    <h2 class="text-2xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
+                    <p class="text-xs text-gray-400 mb-6 border-b border-[#333] pb-4">Calcola se fare CALL in base alle probabilità e al piatto, scopri se la mossa ti farà guadagnare a lungo termine.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto Attuale</label>
+                                <input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-lg text-[#facc15]">
+                                <p class="text-[9px] text-gray-500 mt-1">Soldi già nel mezzo</p>
+                            </div>
+                            <div>
+                                <label class="text-xs text-[#ef4444] font-bold uppercase">2. Costo del Call</label>
+                                <input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-lg text-[#ef4444]">
+                                <p class="text-[9px] text-gray-500 mt-1">Quanto devi mettere</p>
+                            </div>
+                        </div>
                         
-                        <div class="space-y-3">
-                            <div class="grid grid-cols-2 gap-3">
-                                <div><label class="text-[10px] text-gray-500 font-bold uppercase">Piatto Iniziale</label><input id="ev-pot" type="number" placeholder="Es. 1000"></div>
-                                <div><label class="text-[10px] text-gray-500 font-bold uppercase">Tua Puntata/Shove</label><input id="ev-shove" type="number" placeholder="Es. 500"></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div><label class="text-[10px] text-gray-500 font-bold uppercase">Fold Equity Avversario (%)</label><input id="ev-fold" type="number" placeholder="Es. 30"></div>
-                                <div><label class="text-[10px] text-gray-500 font-bold uppercase">Tua Equity se chiamato (%)</label><input id="ev-eq" type="number" placeholder="Es. 45"></div>
-                            </div>
-                            <button onclick="calculateEV()" class="w-full bg-[#E74C3C] text-white hover:bg-[#c0392b] py-3 font-bold mt-2">Calcola EV Mossa</button>
+                        <div>
+                            <label class="text-xs text-[#3b82f6] font-bold uppercase flex justify-between">
+                                <span>3. Tua Equity stimata (%)</span>
+                                <button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white">⬅️ Copia da Simulatore</button>
+                            </label>
+                            <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-lg text-[#3b82f6]">
+                            <p class="text-[9px] text-gray-500 mt-1">Probabilità di vincere allo showdown</p>
                         </div>
 
-                        <div id="ev-result-box" class="hidden mt-4 p-4 border border-[#333] bg-[#0a0a0a] text-center">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Valore Atteso (EV)</p>
-                            <p id="ev-value" class="text-3xl font-black mt-1"></p>
-                            <p id="ev-verdict" class="text-xs font-bold mt-1"></p>
-                        </div>
+                        <button onclick="calculateCallEV()" class="w-full bg-white text-black py-4 rounded-lg font-black uppercase text-lg mt-4 hover:bg-gray-200 transition shadow-[0_0_15px_rgba(255,255,255,0.2)]">Dammi il Verdetto</button>
                     </div>
 
-                    <!-- Calcolatori Base compattati -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-[#111] p-4 border border-[#333]">
-                            <h3 class="font-bold text-[#F1C40F] text-sm mb-2 uppercase">Pot Odds</h3>
-                            <input id="pot-size" type="number" placeholder="Piatto" class="mb-2 text-xs py-1">
-                            <input id="call-size" type="number" placeholder="Call" class="mb-2 text-xs py-1">
-                            <button onclick="calcOdds()" class="w-full bg-[#333] text-[#F1C40F] py-1 text-xs font-bold">Calcola Req.</button>
-                            <div id="odds-result" class="hidden mt-2 text-xs text-center text-white"></div>
-                        </div>
-                        <div class="bg-[#111] p-4 border border-[#333]">
-                            <h3 class="font-bold text-[#3498DB] text-sm mb-2 uppercase">Outs (x2/x4)</h3>
-                            <input id="num-outs" type="number" placeholder="Outs" class="mb-2 text-xs py-1">
-                            <div class="flex gap-1 mb-2">
-                                <button onclick="calcEquityRule(4)" class="flex-1 bg-[#222] text-[#3498DB] py-1 text-xs font-bold">Flop x4</button>
-                                <button onclick="calcEquityRule(2)" class="flex-1 bg-[#222] text-[#3498DB] py-1 text-xs font-bold">Turn x2</button>
-                            </div>
-                            <div id="rule-result" class="text-center font-bold text-white text-sm"></div>
-                        </div>
+                    <!-- BOX VERDETTO -->
+                    <div id="ev-result-box" class="hidden mt-6 p-6 rounded-lg border-2 text-center bg-[#1a1d24]">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Risultato Matematico</h3>
+                        <div id="ev-verdict-text" class="text-5xl font-black mb-2 uppercase tracking-tighter">CALL</div>
+                        <p class="text-sm text-gray-300">Valore Atteso (EV): <span id="ev-value" class="font-mono font-bold text-xl ml-2"></span></p>
+                        <p id="ev-explanation" class="text-xs mt-3 px-4 text-gray-400"></p>
                     </div>
                 </div>
 
                 <!-- COLONNA 2: Simulatore Monte Carlo -->
-                <div class="bg-[#111] p-6 border border-[#333]">
-                    <h2 class="text-lg font-black text-[#2ECC71] uppercase mb-1">Motore Monte Carlo</h2>
-                    <p class="text-xs text-gray-500 mb-4">Trova la tua Equity esatta incrociando 2000 mani per ricavare la % del campo a sinistra.</p>
+                <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333]">
+                    <h2 class="text-lg font-black text-white uppercase mb-1 flex justify-between items-center">
+                        Simulatore Equity
+                        <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span>
+                    </h2>
+                    <p class="text-xs text-gray-400 mb-6">Usa questo strumento per calcolare la tua Equity esatta (Punto 3) da inserire nel Decision Maker.</p>
                     
                     <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div><label class="block text-[10px] font-bold text-gray-500 uppercase">Hero</label><input id="mc-hero" type="text" placeholder="As Kh" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
-                        <div><label class="block text-[10px] font-bold text-gray-500 uppercase">Board</label><input id="mc-board" type="text" placeholder="7d 8c 2s" onfocus="setActiveInput(this)" class="text-center font-mono"></div>
-                        <div><label class="block text-[10px] font-bold text-gray-500 uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono"></div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label>
+                            <input id="mc-hero" type="text" placeholder="Es. As Kh" onfocus="setActiveInput(this)" class="text-center font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label>
+                            <input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label>
+                            <input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono">
+                        </div>
                     </div>
 
-                    <div class="bg-[#0a0a0a] p-2 border border-[#222] mb-4">
+                    <div class="bg-[#1a1d24] p-3 rounded-lg border border-[#333] mb-4">
                         <div class="grid grid-cols-7 gap-1 mb-1">
                             <button onclick="typeCard('A')" class="key-btn">A</button><button onclick="typeCard('K')" class="key-btn">K</button><button onclick="typeCard('Q')" class="key-btn">Q</button><button onclick="typeCard('J')" class="key-btn">J</button><button onclick="typeCard('T')" class="key-btn">T</button><button onclick="typeCard('9')" class="key-btn">9</button><button onclick="typeCard('8')" class="key-btn">8</button>
                         </div>
@@ -244,17 +234,17 @@
                             <button onclick="typeCard('7')" class="key-btn">7</button><button onclick="typeCard('6')" class="key-btn">6</button><button onclick="typeCard('5')" class="key-btn">5</button><button onclick="typeCard('4')" class="key-btn">4</button><button onclick="typeCard('3')" class="key-btn">3</button><button onclick="typeCard('2')" class="key-btn">2</button>
                         </div>
                         <div class="grid grid-cols-4 gap-1">
-                            <button onclick="typeCard('s ')" class="key-btn suit-s">♠</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥</button><button onclick="typeCard('d ')" class="key-btn suit-d">♦</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣</button>
+                            <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (P)</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥ (C)</button><button onclick="typeCard('d ')" class="key-btn suit-d">♦ (Q)</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣ (F)</button>
                         </div>
-                        <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#222] text-xs py-1 text-gray-400">Canc</button>
+                        <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-2 rounded text-white font-bold hover:bg-[#444]">Cancella Casella</button>
                     </div>
                     
-                    <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#2ECC71] text-black py-3 font-bold uppercase">Simula Equity %</button>
+                    <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase transition hover:bg-blue-600 shadow-lg">Calcola % Vittoria</button>
                     
                     <div id="eq-results" class="hidden mt-4 grid grid-cols-3 gap-2 text-center">
-                        <div class="p-2 border border-[#2ECC71] bg-[#111]"><p class="text-[10px] text-[#2ECC71] uppercase font-bold">Hero</p><p id="res-hero" class="text-lg font-black text-white">0%</p></div>
-                        <div class="p-2 border border-[#555] bg-[#111]"><p class="text-[10px] text-gray-400 uppercase font-bold">Split</p><p id="res-tie" class="text-lg font-bold text-gray-300">0%</p></div>
-                        <div class="p-2 border border-[#E74C3C] bg-[#111]"><p class="text-[10px] text-[#E74C3C] uppercase font-bold">Villain</p><p id="res-villain" class="text-lg font-black text-white">0%</p></div>
+                        <div class="p-3 rounded border border-[#3b82f6] bg-[#1a1d24]"><p class="text-[10px] text-[#3b82f6] uppercase font-bold">Hero</p><p id="res-hero" class="text-xl font-black text-white mt-1">0%</p></div>
+                        <div class="p-3 rounded border border-[#555] bg-[#1a1d24]"><p class="text-[10px] text-gray-400 uppercase font-bold">Split</p><p id="res-tie" class="text-xl font-bold text-gray-300 mt-1">0%</p></div>
+                        <div class="p-3 rounded border border-[#ef4444] bg-[#1a1d24]"><p class="text-[10px] text-[#ef4444] uppercase font-bold">Villain</p><p id="res-villain" class="text-xl font-black text-white mt-1">0%</p></div>
                     </div>
                 </div>
             </div>
@@ -263,304 +253,405 @@
     </main>
 
     <script>
-        // --- CREDENZIALI CLOUD ---
+        // --- 1. CREDENZIALI JSONBIN ---
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        let customRanges = {};
-        let tournaments = [];
-        let syncTimeout;
-        let isCloudReady = false;
-
-        const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-        const bbs = ["10", "20", "40", "60", "80", "100"];
-        const poses = ["UTG", "MP", "CO", "BTN", "SB", "BB"];
-        let state = { bb: "100", pos: "UTG", brush: "raise" };
+        // --- 2. STATO E DATI (NUOVA STRUTTURA DINAMICA v8) ---
+        let appData = {
+            spots: [],      // Array di oggetti { id, name, categories, matrix }
+            bankroll: []    // Array di { buyin, win, profit }
+        };
+        
+        let activeSpotId = null;
+        let activeBrushId = "erase"; // id categoria o "erase"
         let isDrawing = false;
+        let syncTimeout;
 
-        // --- SISTEMA CLOUD & FIX STRUTTURA ---
-        function setCloudStatus(msg) {
-            document.getElementById('cloud-status').innerText = msg;
-        }
+        // Genera ID unici
+        const genId = () => Math.random().toString(36).substr(2, 9);
+        const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
-        function validateAndFixRanges() {
-            if (!customRanges || typeof customRanges !== 'object') customRanges = {};
-            bbs.forEach(b => {
-                if (!customRanges[b]) customRanges[b] = {};
-                poses.forEach(p => {
-                    if (!customRanges[b][p]) customRanges[b][p] = { raise: [], limp: [], open4b: [], opencall: [], openfold: [] };
-                    if (!customRanges[b][p].raise) customRanges[b][p].raise = [];
-                    if (!customRanges[b][p].limp) customRanges[b][p].limp = [];
-                    if (!customRanges[b][p].open4b) customRanges[b][p].open4b = [];
-                    if (!customRanges[b][p].opencall) customRanges[b][p].opencall = [];
-                    if (!customRanges[b][p].openfold) customRanges[b][p].openfold = [];
-                });
-            });
-        }
+        // --- 3. CLOUD SYNC ---
+        function setCloudStatus(msg) { document.getElementById('cloud-status').innerText = msg; }
 
-        async function loadFromCloud(forceDownload = false) {
-            setCloudStatus('☁️ Connessione...');
+        async function initCloud() {
+            setCloudStatus('☁️ Connessione al Cloud...');
             try {
-                const urlNoCache = `${BIN_URL}/latest?nocache=${new Date().getTime()}`;
-                const response = await fetch(urlNoCache, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
-                if(!response.ok) throw new Error("API Error");
-                const result = await response.json();
-                if (result.record) {
-                    if (result.record.ranges) customRanges = result.record.ranges;
-                    if (result.record.bankroll) tournaments = result.record.bankroll;
+                const url = `${BIN_URL}/latest?nocache=${Date.now()}`;
+                const res = await fetch(url, { headers: { 'X-Master-Key': MASTER_KEY }, cache: 'no-store' });
+                if(res.ok) {
+                    const data = await res.json();
+                    if(data.record && data.record.spots) {
+                        appData = data.record; // Carica dati dal cloud
+                    }
                 }
-                isCloudReady = true;
-                setCloudStatus('☁️ Sync OK');
-            } catch (error) {
-                if(forceDownload) alert("Impossibile connettersi al Cloud. Verifica la connessione.");
-                setCloudStatus('⚠️ Offline Mode');
-                customRanges = JSON.parse(localStorage.getItem('xshove_ranges')) || {};
-                tournaments = JSON.parse(localStorage.getItem('xshove_bankroll')) || [];
+                setCloudStatus('☁️ Sincronizzato (v8)');
+            } catch (e) {
+                setCloudStatus('⚠️ Modalità Offline (Uso locale)');
+                let local = localStorage.getItem('poker_v8_data');
+                if(local) appData = JSON.parse(local);
             }
-            validateAndFixRanges(); 
-            updateMatrixUI();
+            
+            // Inizializzazione UI post-caricamento
+            if(appData.spots.length > 0) activeSpotId = appData.spots[0].id;
+            updateSpotDropdown();
+            loadSpot();
             updateBankrollUI();
-            if(isCloudReady) {
-                localStorage.setItem('xshove_ranges', JSON.stringify(customRanges));
-                localStorage.setItem('xshove_bankroll', JSON.stringify(tournaments));
-            }
+            
+            // Salva backup locale sicuro
+            localStorage.setItem('poker_v8_data', JSON.stringify(appData));
         }
 
         async function pushToCloud() {
-            if(!isCloudReady) return;
-            setCloudStatus('☁️ Invio...');
+            setCloudStatus('☁️ Salvataggio in corso...');
             try {
-                const response = await fetch(BIN_URL, {
+                await fetch(BIN_URL, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                    body: JSON.stringify({ ranges: customRanges, bankroll: tournaments })
+                    body: JSON.stringify(appData)
                 });
-                if(!response.ok) throw new Error("Save Error");
-                setCloudStatus('☁️ Cloud Aggiornato');
-            } catch (error) {
-                setCloudStatus('⚠️ Errore Rete');
+                setCloudStatus('☁️ Salvato in Cloud');
+            } catch (e) {
+                setCloudStatus('⚠️ Salvato solo sul PC/Telefono');
             }
         }
 
-        function triggerCloudSave() {
-            localStorage.setItem('xshove_ranges', JSON.stringify(customRanges));
-            localStorage.setItem('xshove_bankroll', JSON.stringify(tournaments));
-            if(!isCloudReady) return;
+        function triggerSave() {
+            localStorage.setItem('poker_v8_data', JSON.stringify(appData));
             clearTimeout(syncTimeout);
-            setCloudStatus('☁️ Attesa...');
+            setCloudStatus('☁️ In attesa di inviare...');
             syncTimeout = setTimeout(pushToCloud, 2000);
         }
 
-        // --- MOTORE PERCENTUALI COMBO ---
-        function getComboWeight(combo) {
-            if (combo.length === 2) return 6;
-            if (combo.endsWith('s')) return 4;
-            if (combo.endsWith('o')) return 12;
-            return 0;
+
+        // --- 4. GESTIONE SCENARI E COLORI DINAMICI ---
+        function getActiveSpot() {
+            return appData.spots.find(s => s.id === activeSpotId);
         }
 
-        function updatePercentages() {
-            let data = customRanges[state.bb][state.pos];
-            if(!data) return;
-            let counts = { raise: 0, limp: 0, open4b: 0, opencall: 0, openfold: 0 };
-            let totalCombos = 1326;
-            ['raise', 'limp', 'open4b', 'opencall', 'openfold'].forEach(action => {
-                data[action].forEach(c => counts[action] += getComboWeight(c));
-                document.getElementById(`pct-${action}`).innerText = ((counts[action] / totalCombos) * 100).toFixed(2) + '%';
+        function createSpot() {
+            const name = document.getElementById('new-spot-name').value.trim();
+            if(!name) { alert("Inserisci un nome per lo spot (Es. UTG vs BB)"); return; }
+            
+            const newSpot = {
+                id: genId(),
+                name: name,
+                categories: [
+                    { id: genId(), name: "Raise", color: "#22c55e", combos: [] },
+                    { id: genId(), name: "Call", color: "#facc15", combos: [] }
+                ]
+            };
+            appData.spots.push(newSpot);
+            activeSpotId = newSpot.id;
+            document.getElementById('new-spot-name').value = '';
+            
+            updateSpotDropdown();
+            loadSpot();
+            triggerSave();
+        }
+
+        function deleteCurrentSpot() {
+            if(!activeSpotId) return;
+            if(confirm("Eliminare questo Scenario definitivamente?")) {
+                appData.spots = appData.spots.filter(s => s.id !== activeSpotId);
+                activeSpotId = appData.spots.length > 0 ? appData.spots[0].id : null;
+                updateSpotDropdown();
+                loadSpot();
+                triggerSave();
+            }
+        }
+
+        function updateSpotDropdown() {
+            const sel = document.getElementById('spot-selector');
+            sel.innerHTML = '';
+            if(appData.spots.length === 0) {
+                sel.innerHTML = '<option value="">Nessuno spot creato...</option>';
+                return;
+            }
+            appData.spots.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.id;
+                opt.innerText = s.name;
+                if(s.id === activeSpotId) opt.selected = true;
+                sel.appendChild(opt);
             });
-            let totalUsed = counts.raise + counts.limp + counts.open4b + counts.opencall + counts.openfold;
-            document.getElementById('pct-fold').innerText = (((totalCombos - totalUsed) / totalCombos) * 100).toFixed(2) + '%';
         }
 
-        // --- GESTIONE MATRIX xSHOVE ---
-        function generateMatrix() {
+        function loadSpot() {
+            const sel = document.getElementById('spot-selector');
+            if(sel.value) activeSpotId = sel.value;
+            
+            const spot = getActiveSpot();
+            const title = document.getElementById('matrix-title');
+            const list = document.getElementById('brush-list');
+            list.innerHTML = '';
+            
+            if(!spot) {
+                title.innerText = "Crea uno spot per iniziare!";
+                renderMatrixEmpty();
+                return;
+            }
+
+            title.innerText = spot.name;
+            activeBrushId = "erase"; // Reset pennello
+            setBrush('erase');
+
+            // Renderizza i pennelli (Categorie) di questo spot
+            spot.categories.forEach(cat => {
+                let div = document.createElement('div');
+                div.className = "brush-item";
+                div.id = `brush-${cat.id}`;
+                div.onclick = () => setBrush(cat.id);
+                
+                // Calcolo peso % in tempo reale
+                let weight = 0;
+                cat.combos.forEach(c => weight += getComboWeight(c));
+                let pct = ((weight / 1326) * 100).toFixed(1);
+
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="color-box" style="background-color: ${cat.color}"></div>
+                        <span class="text-sm font-bold text-white">${cat.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 font-mono">${pct}%</span>
+                        <button onclick="event.stopPropagation(); deleteCategory('${cat.id}')" class="text-red-500 hover:text-white px-1">✕</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            renderMatrixColors();
+        }
+
+        function addCategory() {
+            const spot = getActiveSpot();
+            if(!spot) { alert("Crea prima uno Spot!"); return; }
+            
+            const name = document.getElementById('new-color-name').value.trim();
+            const color = document.getElementById('new-color-hex').value;
+            if(!name) return;
+
+            spot.categories.push({ id: genId(), name: name, color: color, combos: [] });
+            document.getElementById('new-color-name').value = '';
+            
+            loadSpot(); // Ricarica UI pennelli
+            triggerSave();
+        }
+
+        function deleteCategory(catId) {
+            const spot = getActiveSpot();
+            if(!spot) return;
+            if(confirm("Eliminare questo colore e rimuoverlo dalla griglia?")) {
+                spot.categories = spot.categories.filter(c => c.id !== catId);
+                loadSpot();
+                triggerSave();
+            }
+        }
+
+        function setBrush(id) {
+            activeBrushId = id;
+            document.querySelectorAll('.brush-item').forEach(el => el.classList.remove('brush-active'));
+            let activeEl = document.getElementById(`brush-${id}`);
+            if(activeEl) activeEl.classList.add('brush-active');
+        }
+
+
+        // --- 5. GESTIONE MATRICE E PITTURA ---
+        function getComboWeight(c) { return c.length === 2 ? 6 : (c.endsWith('s') ? 4 : 12); }
+
+        function createMatrixDOM() {
             const container = document.getElementById('matrix');
             container.innerHTML = '';
             document.addEventListener('mouseup', () => isDrawing = false);
             document.addEventListener('touchend', () => isDrawing = false);
+
             ranks.forEach((r1, i) => {
                 ranks.forEach((r2, j) => {
                     const cell = document.createElement('div');
                     const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
                     cell.innerText = combo; cell.id = `cell-${combo}`; cell.dataset.combo = combo;
+                    cell.className = "cell";
                     
-                    cell.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; applyBrush(combo); });
-                    cell.addEventListener('mouseenter', () => { if(isDrawing) applyBrush(combo); });
-                    cell.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; applyBrush(combo); }, {passive: false});
+                    cell.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); });
+                    cell.addEventListener('mouseenter', () => { if(isDrawing) paintCell(combo); });
+                    cell.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); }, {passive: false});
                     cell.addEventListener('touchmove', (e) => {
                         e.preventDefault(); if(!isDrawing) return;
                         let target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-                        if(target && target.dataset.combo) applyBrush(target.dataset.combo);
+                        if(target && target.dataset.combo) paintCell(target.dataset.combo);
                     }, {passive: false});
+
                     container.appendChild(cell);
                 });
             });
         }
 
-        function applyBrush(combo) {
-            let data = customRanges[state.bb][state.pos];
-            if(!data) return;
-            data.raise = data.raise.filter(c => c !== combo); data.limp = data.limp.filter(c => c !== combo);
-            data.open4b = data.open4b.filter(c => c !== combo); data.opencall = data.opencall.filter(c => c !== combo);
-            data.openfold = data.openfold.filter(c => c !== combo);
-            if (state.brush !== 'fold') data[state.brush].push(combo);
-            
-            let cClass = 'cell act-fold';
-            if(state.brush === 'raise' || state.brush === 'open4b') cClass = 'cell act-green';
-            if(state.brush === 'limp' || state.brush === 'opencall') cClass = 'cell act-yellow';
-            if(state.brush === 'openfold') cClass = 'cell act-blue';
-            
-            document.getElementById(`cell-${combo}`).className = cClass;
-            updatePercentages(); triggerCloudSave();
+        function paintCell(combo) {
+            const spot = getActiveSpot();
+            if(!spot) return;
+
+            // Rimuovi la combo da TUTTE le categorie
+            spot.categories.forEach(cat => {
+                cat.combos = cat.combos.filter(c => c !== combo);
+            });
+
+            // Se il pennello NON è "erase", aggiungi la combo alla categoria selezionata
+            if(activeBrushId !== "erase") {
+                let targetCat = spot.categories.find(c => c.id === activeBrushId);
+                if(targetCat && !targetCat.combos.includes(combo)) {
+                    targetCat.combos.push(combo);
+                }
+            }
+
+            renderMatrixColors();
+            triggerSave();
         }
 
-        function updateMatrixUI() {
-            let data = customRanges[state.bb][state.pos];
-            document.getElementById('disp-bb').innerText = `${state.bb} BB`;
-            document.getElementById('disp-pos').innerText = state.pos;
+        function renderMatrixColors() {
+            const spot = getActiveSpot();
+            if(!spot) return;
+
+            // Mappa combo -> colore per rendering veloce
+            let colorMap = {};
+            spot.categories.forEach(cat => {
+                cat.combos.forEach(c => { colorMap[c] = cat.color; });
+            });
+
             ranks.forEach((r1, i) => {
                 ranks.forEach((r2, j) => {
                     const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
                     let cell = document.getElementById(`cell-${combo}`);
-                    if (data && data.raise.includes(combo)) cell.className = 'cell act-green';
-                    else if (data && data.open4b.includes(combo)) cell.className = 'cell act-green';
-                    else if (data && data.limp.includes(combo)) cell.className = 'cell act-yellow';
-                    else if (data && data.opencall.includes(combo)) cell.className = 'cell act-yellow';
-                    else if (data && data.openfold.includes(combo)) cell.className = 'cell act-blue';
-                    else cell.className = 'cell act-fold';
+                    
+                    if(colorMap[combo]) {
+                        cell.style.backgroundColor = colorMap[combo];
+                        cell.classList.add('cell-colored');
+                    } else {
+                        cell.style.backgroundColor = '#1a1d24'; // Colore vuoto (Fold)
+                        cell.classList.remove('cell-colored');
+                    }
                 });
             });
-            updatePercentages();
+            
+            // Aggiorna percentuali pennelli
+            loadSpot(); // Ricarica la lista per aggiornare i numeretti %
         }
 
-        function setBrush(type) {
-            state.brush = type;
-            ['raise', 'limp', 'open4b', 'opencall', 'openfold', 'fold'].forEach(t => document.getElementById(`brush-${t}`).classList.remove('brush-active'));
-            document.getElementById(`brush-${type}`).classList.add('brush-active');
+        function renderMatrixEmpty() {
+            document.querySelectorAll('.cell').forEach(c => { c.style.backgroundColor = '#1a1d24'; c.classList.remove('cell-colored'); });
         }
 
-        function setBB(bb) {
-            state.bb = bb.toString();
-            document.querySelectorAll('.bb-btn').forEach(b => { b.classList.remove('btn-active'); if(b.dataset.val === state.bb) b.classList.add('btn-active'); });
-            updateMatrixUI();
-        }
-
-        function setPos(pos) {
-            state.pos = pos;
-            document.querySelectorAll('.pos-btn').forEach(b => { b.classList.remove('btn-active'); if(b.dataset.val === state.pos) b.classList.add('btn-active'); });
-            updateMatrixUI();
-        }
-
-        function clearCurrentGrid() {
-            if(confirm("Svuotare l'intera matrice corrente?")) {
-                customRanges[state.bb][state.pos] = { raise: [], limp: [], open4b: [], opencall: [], openfold: [] };
-                updateMatrixUI(); triggerCloudSave();
+        function clearMatrix() {
+            const spot = getActiveSpot();
+            if(!spot) return;
+            if(confirm("Svuotare l'intera griglia?")) {
+                spot.categories.forEach(cat => cat.combos = []);
+                renderMatrixColors();
+                triggerSave();
             }
         }
 
-        // --- GESTIONE BANKROLL (CON ABI E STATS PRECISE) ---
+
+        // --- 6. GESTIONE BANKROLL CON ABI E ROI ---
         let brChartInstance;
 
         function addTournament() {
             const buyin = parseFloat(document.getElementById('t-buyin').value) || 0;
             const win = parseFloat(document.getElementById('t-win').value) || 0;
             if (buyin === 0 && win === 0) return;
-            tournaments.push({ buyin: buyin, win: win, profit: win - buyin });
+            
+            appData.bankroll.push({ buyin: buyin, win: win, profit: win - buyin });
             document.getElementById('t-buyin').value = ''; document.getElementById('t-win').value = '';
-            updateBankrollUI(); triggerCloudSave();
+            
+            updateBankrollUI(); triggerSave();
         }
 
         function updateBankrollUI() {
-            let totalProfit = 0, totalBuyin = 0;
-            tournaments.forEach(t => { totalProfit += t.profit; totalBuyin += t.buyin; });
-            let count = tournaments.length;
-            let abi = count > 0 ? (totalBuyin / count) : 0;
-            let roi = totalBuyin > 0 ? ((totalProfit / totalBuyin) * 100) : 0;
+            let tProfit = 0, tBuyin = 0;
+            appData.bankroll.forEach(t => { tProfit += t.profit; tBuyin += t.buyin; });
+            
+            let count = appData.bankroll.length;
+            let abi = count > 0 ? (tBuyin / count) : 0;
+            let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0;
 
-            let elProfit = document.getElementById('stat-profit');
-            elProfit.innerText = `€ ${totalProfit.toFixed(2)}`;
-            elProfit.style.color = totalProfit >= 0 ? '#2ECC71' : '#E74C3C';
+            let elP = document.getElementById('stat-profit');
+            elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444';
             document.getElementById('stat-abi').innerText = `€ ${abi.toFixed(2)}`;
-            let elRoi = document.getElementById('stat-roi');
-            elRoi.innerText = `${roi.toFixed(2)}%`;
-            elRoi.style.color = roi >= 0 ? '#2ECC71' : '#E74C3C';
+            let elR = document.getElementById('stat-roi');
+            elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444';
             document.getElementById('stat-count').innerText = count;
+            document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`;
             
             renderChart();
         }
 
         function renderChart() {
             const ctx = document.getElementById('brChart').getContext('2d');
-            let cumulative = 0; const dataPts = [0];
-            tournaments.forEach(t => { cumulative += t.profit; dataPts.push(cumulative); });
+            let cum = 0; const dataPts = [0];
+            appData.bankroll.forEach(t => { cum += t.profit; dataPts.push(cum); });
             const labels = dataPts.map((_, i) => i === 0 ? 'Start' : `Trn ${i}`);
 
             if (brChartInstance) brChartInstance.destroy();
-            Chart.defaults.color = '#555';
+            Chart.defaults.color = '#475569';
             brChartInstance = new Chart(ctx, {
                 type: 'line',
-                data: { labels: labels, datasets: [{ label: 'Net Profit (€)', data: dataPts, borderColor: '#2ECC71', backgroundColor: 'rgba(46, 204, 113, 0.1)', fill: true, tension: 0.1, pointRadius: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#222' } }, x: { grid: { display: false } } } }
+                data: { labels: labels, datasets: [{ label: 'Profit (€)', data: dataPts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } } }
             });
         }
 
-        // --- MOTORE EXPECTED VALUE (EV) & CALCOLATORI ---
-        function calculateEV() {
-            const pot = parseFloat(document.getElementById('ev-pot').value);
-            const shove = parseFloat(document.getElementById('ev-shove').value);
-            const foldEq = parseFloat(document.getElementById('ev-fold').value) / 100;
-            const heroEq = parseFloat(document.getElementById('ev-eq').value) / 100;
 
-            if (isNaN(pot) || isNaN(shove) || isNaN(foldEq) || isNaN(heroEq)) {
-                alert("Compila tutti i campi per calcolare l'EV."); return;
+        // --- 7. EV DECISION MAKER PROFESSIONALE ---
+        function calculateCallEV() {
+            const pot = parseFloat(document.getElementById('ev-pot').value);
+            const callAmt = parseFloat(document.getElementById('ev-call').value);
+            const eqStr = document.getElementById('ev-eq').value.replace('%','');
+            const equity = parseFloat(eqStr) / 100;
+
+            if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) {
+                alert("Compila Piatto, Costo Call ed Equity per procedere."); return;
             }
 
-            // Eq EV: (Fold% * Pot) + [(1 - Fold%) * ((Pot_Finale * Hero_Equity) - Costo)]
-            const winFromFold = foldEq * pot;
-            const finalPot = pot + shove + shove; // Il piatto + il tuo shove + il call avversario
-            const evWhenCalled = (1 - foldEq) * ((finalPot * heroEq) - shove);
-            
-            const totalEV = winFromFold + evWhenCalled;
+            // Formula EV base per un Call: (ProbVittoria * PiattoTotaleDopoCall) - CostoDelCall
+            const totalPotIfCall = pot + callAmt;
+            const ev = (equity * totalPotIfCall) - callAmt;
 
             const box = document.getElementById('ev-result-box');
-            const valLabel = document.getElementById('ev-value');
-            const verdictLabel = document.getElementById('ev-verdict');
+            const verdictNode = document.getElementById('ev-verdict-text');
+            const valNode = document.getElementById('ev-value');
+            const expNode = document.getElementById('ev-explanation');
             
             box.classList.remove('hidden');
-            valLabel.innerText = `${totalEV > 0 ? '+' : ''}${totalEV.toFixed(2)}`;
-            valLabel.style.color = totalEV >= 0 ? '#2ECC71' : '#E74C3C';
-            
-            if (totalEV > 0) {
-                verdictLabel.innerText = "La mossa è profittevole a lungo termine (EV+).";
-                verdictLabel.style.color = "#2ECC71";
+            valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`;
+
+            if (ev > 0) {
+                box.style.borderColor = "#22c55e";
+                verdictNode.innerText = "CALL (+EV)";
+                verdictNode.style.color = "#22c55e";
+                valNode.style.color = "#22c55e";
+                expNode.innerText = `Chiamare ti farà guadagnare in media ${ev.toFixed(2)} fiches/euro ogni volta che fai questa mossa nel lungo periodo.`;
             } else {
-                verdictLabel.innerText = "La mossa è perdente a lungo termine (EV-). Mettila sotto!";
-                verdictLabel.style.color = "#E74C3C";
+                box.style.borderColor = "#ef4444";
+                verdictNode.innerText = "FOLD (-EV)";
+                verdictNode.style.color = "#ef4444";
+                valNode.style.color = "#ef4444";
+                expNode.innerText = `Chiamare ti farà perdere in media ${Math.abs(ev).toFixed(2)} fiches/euro ogni volta. Le pot odds matematicamente non giustificano il call.`;
             }
         }
 
-        function calcOdds() {
-            const pot = parseFloat(document.getElementById('pot-size').value);
-            const call = parseFloat(document.getElementById('call-size').value);
-            if(!pot || !call) return;
-            const ratio = (pot / call).toFixed(1);
-            const req = (call / (pot + call)) * 100;
-            const res = document.getElementById('odds-result');
-            res.classList.remove('hidden');
-            res.innerHTML = `Odds <strong class="text-[#F1C40F]">1:${ratio}</strong> | Eq. Minima: <strong class="text-[#F1C40F]">${req.toFixed(1)}%</strong>`;
+        function copyEquityFromMC() {
+            let heroEq = document.getElementById('res-hero').innerText.replace('%', '');
+            if(heroEq !== "0.0") {
+                document.getElementById('ev-eq').value = heroEq;
+            } else {
+                alert("Esegui prima una simulazione Monte Carlo qui sotto!");
+            }
         }
 
-        function calcEquityRule(mult) {
-            const outs = parseFloat(document.getElementById('num-outs').value);
-            const res = document.getElementById('rule-result');
-            if(outs >= 0) {
-                let eq = outs * mult;
-                res.innerText = `~ ${eq > 100 ? 100 : eq}% Equity`;
-            } else res.innerText = '';
-        }
 
-        // --- MOTORE MONTE CARLO ---
+        // --- 8. MONTE CARLO SIMULATOR ---
         let activeInput = null;
         function setActiveInput(el) { activeInput = el; }
         function typeCard(val) { if(!activeInput){ activeInput = document.getElementById('mc-hero'); activeInput.focus(); } activeInput.value += val; activeInput.focus(); }
@@ -594,14 +685,17 @@
             let villainStr = document.getElementById('mc-villain').value.trim();
             let boardStr = document.getElementById('mc-board').value.trim();
             let hero = heroStr ? heroStr.split(/\s+/) : [];
-            if(hero.length !== 2) { alert("Inserisci due carte Hero."); return; }
-            let btn = document.getElementById('btn-sim'); btn.innerText = "Attendere...";
+            if(hero.length !== 2) { alert("Inserisci 2 carte Hero valide."); return; }
+            
+            let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando...";
+            
             setTimeout(() => {
                 let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA';
                 for(let r of rankStr) for(let s of suits) deck.push(r+s);
                 let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : [];
                 let known = [...hero, ...villain, ...board].map(c => c.toLowerCase());
                 deck = deck.filter(c => !known.includes(c.toLowerCase()));
+                
                 let wins = 0, ties = 0, runs = 2000;
                 for(let i=0; i<runs; i++){
                     let simDeck = [...deck];
@@ -611,32 +705,29 @@
                     let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]);
                     if(heroScore > villainScore) wins++; else if(heroScore === villainScore) ties++;
                 }
+                
                 let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100;
                 document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%';
                 document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%';
                 document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%';
-                document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula Equity %";
-                
-                // Compila in automatico il campo "Tua Equity" nel calcolatore EV
-                document.getElementById('ev-eq').value = winPct.toFixed(1);
+                document.getElementById('eq-results').classList.remove('hidden'); 
+                btn.innerText = "Calcola % Vittoria";
             }, 50);
         }
 
-        // --- AVVIO APP ---
+        // --- AVVIO E NAVIGAZIONE ---
         function switchTab(tabId) {
             ['ranges', 'bankroll', 'calc'].forEach(t => {
                 document.getElementById('sec-' + t).classList.add('hidden');
-                document.getElementById('tab-' + t).classList.remove('nav-active', 'text-white');
-                document.getElementById('tab-' + t).classList.add('text-gray-500');
+                document.getElementById('tab-' + t).classList.remove('nav-active');
             });
             document.getElementById('sec-' + tabId).classList.remove('hidden');
-            document.getElementById('tab-' + tabId).classList.add('nav-active', 'text-white');
-            document.getElementById('tab-' + tabId).classList.remove('text-gray-500');
+            document.getElementById('tab-' + tabId).classList.add('nav-active');
         }
 
         window.onload = async () => {
-            generateMatrix();
-            await loadFromCloud();
+            createMatrixDOM();
+            await initCloud(); // Carica la nuova architettura dinamica (v8) dal JSONBin
             activeInput = document.getElementById('mc-hero');
         };
     </script>
