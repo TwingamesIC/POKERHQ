@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v18 Dual Cloud</title>
+    <title>Poker Pro Hub - v18.5 NextGen AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -39,7 +39,7 @@
 <body class="bg-[#0f1115]">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v18</span></h1>
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v18.5</span></h1>
         <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
             <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
@@ -53,7 +53,7 @@
             <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
                 <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 GTO Ranges</button>
                 <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll</button>
-                <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Strumenti (ICM)</button>
+                <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Strumenti</button>
                 <button onclick="switchTab('coach')" id="tab-coach" class="nav-btn">🤖 AI Coach & DB</button>
             </div>
             <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
@@ -65,7 +65,7 @@
 
         <main class="max-w-7xl mx-auto w-full">
             
-            <!-- SEZIONE 1: GTO RANGES (Invariata visivamente) -->
+            <!-- SEZIONE 1: GTO RANGES -->
             <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
                 <aside class="w-full lg:w-80 flex flex-col gap-6">
                     <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
@@ -120,7 +120,7 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 2: BANKROLL (Invariata visivamente) -->
+            <!-- SEZIONE 2: BANKROLL -->
             <section id="sec-bankroll" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -142,7 +142,7 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 3: ICM E CALC (Invariata visivamente) -->
+            <!-- SEZIONE 3: CALC -->
             <section id="sec-calc" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
@@ -213,7 +213,7 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 4: AI COACH -->
+            <!-- SEZIONE 4: AI COACH CON SCANNER V2 -->
             <section id="sec-coach" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] shadow-xl flex flex-col h-[600px]">
@@ -222,7 +222,7 @@
                             <span id="ai-status" class="text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded">In attesa...</span>
                         </div>
                         <div id="chat-box" class="chat-container flex-1 mb-4">
-                            <div class="msg-coach text-sm text-gray-200">Database configurati con successo (JSONBin per GTO/Bankroll, Supabase per l'AI). Inserisci una Hand History e proverò a vettorializzarla.</div>
+                            <div class="msg-coach text-sm text-gray-200">Motore V18.5 caricato. Premi <strong>"🔍 Esegui Diagnosi API"</strong> per sintonizzarmi con i nuovi server di Google.</div>
                         </div>
                         <div class="flex gap-2">
                             <input type="text" id="chat-input" placeholder="Parla col tuo coach..." class="text-sm py-3" onkeypress="if(event.key === 'Enter') sendToCoach()">
@@ -231,22 +231,26 @@
                     </div>
 
                     <div class="flex flex-col gap-6">
+                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#3b82f6] shadow-xl relative">
+                            <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">Motore AI (Gemini)</h3>
+                            <input type="password" id="ai-key" value="" placeholder="Incolla NUOVA chiave AI Studio" class="text-xs mb-2 text-[#3b82f6]">
+                            <div class="flex gap-2">
+                                <button onclick="saveAiKey()" class="flex-1 bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6] py-2 rounded text-xs font-bold hover:bg-[#3b82f6] hover:text-white transition">Salva</button>
+                                <button onclick="diagnoseAI()" class="flex-1 bg-[#0ea5e9] text-white border border-[#0ea5e9] py-2 rounded text-xs font-bold hover:bg-sky-600 transition shadow-lg shadow-sky-500/20">🔍 Esegui Diagnosi API</button>
+                            </div>
+                            <p id="model-tag" class="text-[10px] mt-2 text-gray-500">Modello: Nessuno</p>
+                        </div>
+
                         <div class="bg-[#1e222a] p-4 rounded-lg border border-[#22c55e] shadow-xl">
-                            <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">1. Database Supabase (AI)</h3>
+                            <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">Database Supabase (AI)</h3>
                             <input type="text" id="sb-url" value="https://tphnvmmisznkyubhnpkk.supabase.co" class="text-xs mb-2 text-[#22c55e]">
                             <input type="password" id="sb-key" value="sb_publishable_qnCMSULUQdP6681VVjGGRQ_QJ0u01Q8" class="text-xs mb-2 text-gray-400" readonly>
                             <button onclick="initSupabase()" class="w-full bg-[#22c55e]/20 text-[#22c55e] border border-[#22c55e] py-2 rounded text-xs font-bold hover:bg-[#22c55e] hover:text-black transition">Connetti Supabase</button>
                         </div>
 
-                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#3b82f6] shadow-xl">
-                            <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">2. Motore AI (Gemini)</h3>
-                            <input type="password" id="ai-key" value="AIzaSyC8228_4ZP_0pYmvdAnQTPjaod0Ff8BBHw" class="text-xs mb-2 text-[#3b82f6]">
-                            <button onclick="saveAiKey()" class="w-full bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6] py-2 rounded text-xs font-bold hover:bg-[#3b82f6] hover:text-white transition">Salva Chiave AI</button>
-                        </div>
-
                         <div class="bg-[#1e222a] p-4 rounded-lg border border-[#facc15]">
                             <div class="flex justify-between items-center mb-3">
-                                <h3 class="text-xs font-bold text-[#facc15] uppercase tracking-widest">3. User_Corrections (AI DB)</h3>
+                                <h3 class="text-xs font-bold text-[#facc15] uppercase tracking-widest">User_Corrections</h3>
                                 <span id="corr-count" class="text-[10px] bg-[#facc15] text-black px-1.5 rounded font-bold">0</span>
                             </div>
                             <div id="corrections-list" class="space-y-1 max-h-32 overflow-y-auto text-xs text-gray-300 bg-[#1a1d24] p-2 rounded border border-[#333] font-mono"></div>
@@ -258,7 +262,7 @@
     </div>
 
     <script>
-        // --- CHIAVI JSONBIN (Ripristinate) ---
+        // --- CHIAVI JSONBIN ---
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -276,112 +280,50 @@
             document.getElementById('sec-' + tabId).classList.remove('hidden'); document.getElementById('tab-' + tabId).classList.add('nav-active');
         }
 
-        let appData = { palette: [], ranges: {}, bankroll: [] }; // -> Va su JSONBin
-        let appConfig = { supabaseUrl: "https://tphnvmmisznkyubhnpkk.supabase.co", aiKey: "AIzaSyC8228_4ZP_0pYmvdAnQTPjaod0Ff8BBHw", userCorrections: [] }; // -> Va su Supabase
+        let appData = { palette: [], ranges: {}, bankroll: [] }; 
+        let appConfig = { supabaseUrl: "https://tphnvmmisznkyubhnpkk.supabase.co", aiKey: "", aiModel: "", userCorrections: [] }; 
         let supabaseClient = null;
 
         function setCloudStatus(msg, isError = false) { 
-            const el = document.getElementById('cloud-status');
-            el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
+            const el = document.getElementById('cloud-status'); el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
         }
 
-        // --- SISTEMA DI SALVATAGGIO DOPPIO (JSONBin + Supabase) ---
         async function syncDualCloud() {
-            document.body.style.cursor = 'wait';
-            setCloudStatus('☁️ Sincronizzazione in corso...');
-            let successJson = false, successSupa = false;
-
-            // 1. Salva Bankroll e Range su JSONBin
-            try {
-                const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) });
-                if(res.ok) successJson = true;
-            } catch (e) { console.error("Errore JSONBin:", e); }
-
-            // 2. Salva Correzioni AI su Supabase
-            if (supabaseClient) {
-                try {
-                    const { error } = await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' });
-                    if (!error) successSupa = true;
-                } catch (e) { console.error("Errore Supabase:", e); }
-            } else {
-                console.log("Supabase non inizializzato. Salvo solo su JSONBin.");
-            }
-
-            if(successJson && (successSupa || !supabaseClient)) {
-                setCloudStatus('✅ Doppio Cloud Aggiornato');
-            } else {
-                setCloudStatus('⚠️ Errore Sincronizzazione', true);
-            }
-            setTimeout(() => setCloudStatus('☁️ App Pronta'), 4000);
-            document.body.style.cursor = 'default';
+            document.body.style.cursor = 'wait'; setCloudStatus('☁️ Sincronizzazione...');
+            let successJson = false;
+            try { const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); if(res.ok) successJson = true; } catch (e) {}
+            if (supabaseClient) { try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} }
+            setCloudStatus(successJson ? '✅ Cloud Aggiornato' : '⚠️ Errore Cloud', !successJson);
+            setTimeout(() => setCloudStatus('☁️ App Pronta'), 3000); document.body.style.cursor = 'default';
         }
 
         async function downloadDualCloud() {
-            document.body.style.cursor = 'wait';
-            setCloudStatus('☁️ Download dai server...');
-            
-            // 1. Scarica da JSONBin
-            try {
-                const res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } });
-                if(res.ok) {
-                    const data = await res.json();
-                    if(data.record) {
-                        appData.palette = data.record.palette || [];
-                        appData.bankroll = data.record.bankroll || [];
-                        appData.ranges = data.record.ranges || {};
-                        triggerLocalSave();
-                        updateBankrollUI(); updateSpotUI();
-                    }
-                }
-            } catch (e) { console.error(e); }
-
-            // 2. Scarica da Supabase
-            if(supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single();
-                    if(data && data.data) {
-                        appConfig.userCorrections = data.data.userCorrections || [];
-                        saveConfig();
-                    }
-                } catch(e) { console.error(e); }
-            }
-
-            setCloudStatus('✅ Dati Scaricati');
-            setTimeout(() => setCloudStatus('☁️ App Pronta'), 3000);
-            document.body.style.cursor = 'default';
+            document.body.style.cursor = 'wait'; setCloudStatus('☁️ Scaricamento...');
+            try { const res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); if(res.ok) { const data = await res.json(); if(data.record) { appData.palette = data.record.palette || []; appData.bankroll = data.record.bankroll || []; appData.ranges = data.record.ranges || {}; triggerLocalSave(); updateBankrollUI(); updateSpotUI(); } } } catch (e) {}
+            if(supabaseClient) { try { const { data } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); if(data && data.data) { appConfig.userCorrections = data.data.userCorrections || []; saveConfig(); } } catch(e) {} }
+            setCloudStatus('✅ Dati Scaricati'); setTimeout(() => setCloudStatus('☁️ App Pronta'), 2000); document.body.style.cursor = 'default';
         }
 
         function loadAllData() {
-            let conf = localStorage.getItem('poker_v18_config');
-            if(conf) appConfig = Object.assign(appConfig, JSON.parse(conf));
+            let conf = localStorage.getItem('poker_v18_config'); if(conf) appConfig = Object.assign(appConfig, JSON.parse(conf));
             document.getElementById('sb-url').value = appConfig.supabaseUrl; document.getElementById('ai-key').value = appConfig.aiKey;
+            document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
             if(appConfig.aiKey) updateAiStatus(true); renderCorrections();
-
             let data = localStorage.getItem('poker_v18_data') || localStorage.getItem('poker_v17_data');
-            if(data) {
-                let parsed = JSON.parse(data);
-                appData.palette = parsed.palette || [];
-                appData.ranges = parsed.ranges || {};
-                appData.bankroll = parsed.bankroll || [];
-            }
+            if(data) { let parsed = JSON.parse(data); appData.palette = parsed.palette || []; appData.ranges = parsed.ranges || {}; appData.bankroll = parsed.bankroll || []; }
             updateSpotUI(); updateBankrollUI();
         }
 
-        function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); renderCorrections(); }
+        function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); renderCorrections(); document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel}`; }
         function triggerLocalSave() { localStorage.setItem('poker_v18_data', JSON.stringify(appData)); }
 
-
-        // --- LOGICA AI E SUPABASE ---
         function saveAiKey() { appConfig.aiKey = document.getElementById('ai-key').value.trim(); saveConfig(); updateAiStatus(true); }
         function updateAiStatus(isActive) { const el = document.getElementById('ai-status'); el.innerText = isActive ? "✅ Gemini Connesso" : "In attesa di API Key"; el.className = isActive ? "text-[10px] bg-[#22c55e] text-black font-bold px-2 py-1 rounded" : "text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded"; }
 
         function initSupabase() {
             const url = document.getElementById('sb-url').value.trim(); const key = document.getElementById('sb-key').value.trim();
             if(!url) return; appConfig.supabaseUrl = url; saveConfig();
-            try {
-                supabaseClient = supabase.createClient(url, key);
-                document.getElementById('db-status').innerText = "💾 Supabase (AI) Connesso"; document.getElementById('db-status').className = "text-[10px] font-bold text-black bg-[#22c55e] px-3 py-2 rounded";
-            } catch(e) { document.getElementById('db-status').innerText = "⚠️ Errore Supabase"; document.getElementById('db-status').className = "text-[10px] font-bold text-white bg-red-500 px-3 py-2 rounded"; }
+            try { supabaseClient = supabase.createClient(url, key); document.getElementById('db-status').innerText = "💾 Supabase (AI) Connesso"; document.getElementById('db-status').className = "text-[10px] font-bold text-black bg-[#22c55e] px-3 py-2 rounded"; } catch(e) { }
         }
 
         function renderCorrections() {
@@ -393,24 +335,72 @@
 
         function parseMarkdown(text) { let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); return html.replace(/\n/g, '<br>'); }
 
+        // --- SISTEMA DI DIAGNOSI INTELLIGENTE (V18.5 FIX) ---
+        async function diagnoseAI() {
+            const key = document.getElementById('ai-key').value.trim();
+            if(!key) { appendMessage("Sistema", "❌ Errore: Incolla prima la chiave API nel campo a destra.", "coach"); return; }
+            
+            appendMessage("Sistema", "⏳ Ricerca dei modelli attivi sul tuo account Google...", "coach");
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                const data = await res.json();
+                
+                if(!res.ok) {
+                    appendMessage("Sistema", `❌ ERRORE RESTITUITO DA GOOGLE:\n"${data.error.message}"\n\nStato: ${data.error.status}`, "coach");
+                    return;
+                }
+
+                const allModels = data.models.map(m => m.name.replace('models/', '')).filter(n => n.includes('gemini'));
+                
+                // Cerca ESATTAMENTE nei modelli restituiti (niente più fallback forzati)
+                let chosenModel = allModels[0]; // Prende il primo della lista come ancora di salvezza assoluta
+                
+                if (allModels.includes("gemini-2.5-flash")) chosenModel = "gemini-2.5-flash";
+                else if (allModels.includes("gemini-flash-latest")) chosenModel = "gemini-flash-latest";
+                else if (allModels.includes("gemini-2.0-flash")) chosenModel = "gemini-2.0-flash";
+                else if (allModels.includes("gemini-pro-latest")) chosenModel = "gemini-pro-latest";
+
+                appConfig.aiKey = key;
+                appConfig.aiModel = chosenModel;
+                saveConfig();
+                updateAiStatus(true);
+
+                appendMessage("Sistema", `✅ Successo! Ti ho agganciato direttamente alla rete neurale aggiornata.\n\nModello assegnato: **${chosenModel}**.\n\nOra inviami il tuo primo messaggio!`, "coach");
+
+            } catch (e) {
+                appendMessage("Sistema", `❌ Errore di rete. Dettaglio: ${e.message}`, "coach");
+            }
+        }
+
+        // --- INVIO MESSAGGI AL COACH ---
         async function sendToCoach() {
             const inputEl = document.getElementById('chat-input'); const message = inputEl.value.trim(); if(!message) return;
-            const btnSend = document.getElementById('btn-send');
-            if(message.toLowerCase().includes("no, qui sbagli") || message.toLowerCase().includes("ricorda che")) { appConfig.userCorrections.push(message); saveConfig(); syncDualCloud(); }
-            appendMessage("Omiserez", message, "user"); inputEl.value = '';
-            if(!appConfig.aiKey) return; btnSend.innerText = "..."; btnSend.disabled = true;
+            const btnSend = document.getElementById('btn-send'); const key = appConfig.aiKey; 
+            
+            // Verifica che il modello sia stato estratto dalla Diagnosi
+            let model = appConfig.aiModel;
+            if (!model || model === "Nessuno") {
+                appendMessage("Coach", "⚠️ Errore: Devi premere il tasto azzurro '🔍 Esegui Diagnosi API' prima di scrivermi, altrimenti non so a quale server collegarmi!", "coach");
+                return;
+            }
 
-            const systemPrompt = `Tu sei il Personal Poker Coach di omiserez. L'utente è un uomo di 35 anni, pesa 92kg. Tieni conto dell'affaticamento fisico. Tono: diretto, analitico. DATABASE USER_CORRECTIONS: ${appConfig.userCorrections.length > 0 ? appConfig.userCorrections.map(c => "- " + c).join('\n') : "Nessuna regola."}`;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.aiKey}`;
-            const payload = { systemInstruction: { parts: [{ text: systemPrompt }] }, contents: [{ role: "user", parts: [{ text: message }] }], generationConfig: { temperature: 0.4 } };
+            if(message.toLowerCase().includes("no, qui sbagli") || message.toLowerCase().includes("ricorda che")) {
+                appConfig.userCorrections.push(message); saveConfig(); if(supabaseClient) syncDualCloud();
+            }
+
+            appendMessage("Omiserez", message, "user"); inputEl.value = '';
+            btnSend.innerText = "..."; btnSend.disabled = true;
+
+            const systemPrompt = `Sei il Personal Poker Coach di omiserez (35 anni, 173cm, 92kg). Tono: diretto, analitico. DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
             try {
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(!response.ok) throw new Error("Errore API");
-                const data = await response.json(); let aiText = "Errore.";
-                if(data.candidates && data.candidates[0].content && data.candidates[0].content.parts.length > 0) aiText = data.candidates[0].content.parts[0].text;
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\n" + message }] }] }) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error?.message || "Errore sconosciuto. Status: " + data.error?.status);
+                const aiText = data.candidates[0].content.parts[0].text;
                 appendMessage("Coach", parseMarkdown(aiText), "coach");
-            } catch (error) { appendMessage("Coach", `Errore: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
+            } catch (error) { appendMessage("Coach", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
         }
 
         function appendMessage(sender, text, type) {
@@ -420,115 +410,23 @@
             chatBox.appendChild(msgDiv); chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // --- GESTIONE LOGICA RANGES ---
-        let spotState = { stage: 'Early', bb: '100', pos: 'UTG' };
-        let activeBrushId = "erase"; let isDrawing = false; const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-
+        // --- GTO & BANKROLL ---
+        let spotState = { stage: 'Early', bb: '100', pos: 'UTG' }; let activeBrushId = "erase"; let isDrawing = false; const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
         function getSpotKey() { return `${spotState.stage}_${spotState.bb}_${spotState.pos}`; }
-
         function setSpot(type, val) { spotState[type] = val; document.querySelectorAll(`.btn-${type}`).forEach(b => { b.classList.remove(`btn-active-${type}`); if(b.dataset.val === val) b.classList.add(`btn-active-${type}`); }); updateSpotUI(); }
-
-        function updateSpotUI() {
-            let key = getSpotKey(); let sName = spotState.stage === 'FinalTable' ? 'Final Table' : spotState.stage;
-            document.getElementById('matrix-title').innerText = `${sName} / ${spotState.bb} BB / ${spotState.pos}`;
-            if(!appData.ranges[key]) { appData.ranges[key] = {}; appData.palette.forEach(p => appData.ranges[key][p.id] = []); }
-            renderBrushList(); renderMatrixColors();
-        }
-
-        const genIdP = () => Math.random().toString(36).substr(2, 9);
-        function getComboWeight(c) { return c.length === 2 ? 6 : (c.endsWith('s') ? 4 : 12); }
-
-        function addPaletteColor() {
-            const name = document.getElementById('new-color-name').value.trim(); const color = document.getElementById('new-color-hex').value;
-            if(!name) return; const newId = genIdP(); appData.palette.push({ id: newId, name: name, color: color });
-            Object.keys(appData.ranges).forEach(k => appData.ranges[k][newId] = []);
-            document.getElementById('new-color-name').value = ''; setBrush(newId); updateSpotUI(); triggerLocalSave();
-        }
-
-        function deletePaletteColor(id) {
-            if(confirm("Eliminare colore?")) { appData.palette = appData.palette.filter(p => p.id !== id); Object.keys(appData.ranges).forEach(k => { if(appData.ranges[k][id]) delete appData.ranges[k][id]; }); if(activeBrushId === id) setBrush('erase'); updateSpotUI(); triggerLocalSave(); }
-        }
-
+        function updateSpotUI() { let key = getSpotKey(); if(!appData.ranges[key]) { appData.ranges[key] = {}; appData.palette.forEach(p => appData.ranges[key][p.id] = []); } renderBrushList(); renderMatrixColors(); }
+        function addPaletteColor() { const name = document.getElementById('new-color-name').value.trim(); const color = document.getElementById('new-color-hex').value; if(!name) return; const newId = Math.random().toString(36).substr(2, 9); appData.palette.push({ id: newId, name: name, color: color }); Object.keys(appData.ranges).forEach(k => appData.ranges[k][newId] = []); updateSpotUI(); triggerLocalSave(); }
         function setBrush(id) { activeBrushId = id; document.querySelectorAll('.brush-item').forEach(el => el.classList.remove('brush-active')); let activeEl = document.getElementById(`brush-${id}`); if(activeEl) activeEl.classList.add('brush-active'); }
+        function renderBrushList() { const list = document.getElementById('brush-list'); list.innerHTML = ''; appData.palette.forEach(p => { let div = document.createElement('div'); div.className = "brush-item " + (activeBrushId === p.id ? "brush-active" : ""); div.onclick = () => setBrush(p.id); div.id = `brush-${p.id}`; div.innerHTML = `<div class="flex items-center"><div class="color-box" style="background-color: ${p.color}"></div><span class="text-sm font-bold text-white">${p.name}</span></div>`; list.appendChild(div); }); }
+        function createMatrixDOM() { const container = document.getElementById('matrix'); container.innerHTML = ''; ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); const cell = document.createElement('div'); cell.innerText = combo; cell.id = `cell-${combo}`; cell.className = "cell"; cell.onmousedown = () => paintCell(combo); container.appendChild(cell); }); }); }
+        function paintCell(combo) { let spot = appData.ranges[getSpotKey()]; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id] = spot[p.id].filter(c => c !== combo); }); if(activeBrushId !== "erase") { if(!spot[activeBrushId]) spot[activeBrushId] = []; spot[activeBrushId].push(combo); } renderMatrixColors(); triggerLocalSave(); }
+        function renderMatrixColors() { let spot = appData.ranges[getSpotKey()]; let colorMap = {}; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id].forEach(c => colorMap[c] = p.color); }); ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); let cell = document.getElementById(`cell-${combo}`); if(colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; } else { cell.style.backgroundColor = '#1a1d24'; } }); }); }
+        
+        let brChartInstance; function addTournament() { const buyin = parseFloat(document.getElementById('t-buyin').value) || 0; const win = parseFloat(document.getElementById('t-win').value) || 0; appData.bankroll.push({ buyin, win, profit: win-buyin }); updateBankrollUI(); triggerLocalSave(); }
+        function updateBankrollUI() { let tProfit = 0; appData.bankroll.forEach(t => tProfit += t.profit); document.getElementById('stat-profit').innerText = `€ ${tProfit.toFixed(2)}`; renderChart(); }
+        function renderChart() { const ctx = document.getElementById('brChart').getContext('2d'); let cum = 0; const dataPts = appData.bankroll.map(t => { cum += t.profit; return cum; }); if (brChartInstance) brChartInstance.destroy(); brChartInstance = new Chart(ctx, { type: 'line', data: { labels: dataPts.map((_,i)=>i), datasets: [{ data: dataPts, borderColor: '#3b82f6', fill: false }] }, options: { responsive: true, maintainAspectRatio: false } }); }
 
-        function renderBrushList() {
-            const list = document.getElementById('brush-list'); list.innerHTML = ''; const spotData = appData.ranges[getSpotKey()];
-            appData.palette.forEach(p => {
-                let div = document.createElement('div'); div.className = "brush-item " + (activeBrushId === p.id ? "brush-active" : ""); div.id = `brush-${p.id}`; div.onclick = () => setBrush(p.id);
-                let weight = 0; if(spotData && spotData[p.id]) spotData[p.id].forEach(c => weight += getComboWeight(c)); let pct = ((weight / 1326) * 100).toFixed(1);
-                div.innerHTML = `<div class="flex items-center"><div class="color-box" style="background-color: ${p.color}"></div><span class="text-sm font-bold text-white">${p.name}</span></div><div class="flex items-center gap-2"><span class="text-xs text-gray-400 font-mono">${pct}%</span><button onclick="event.stopPropagation(); deletePaletteColor('${p.id}')" class="text-red-500 hover:text-white px-2 py-1 font-bold rounded hover:bg-[#333]">✕</button></div>`; list.appendChild(div);
-            });
-        }
-
-        function createMatrixDOM() {
-            const container = document.getElementById('matrix'); container.innerHTML = '';
-            document.addEventListener('mouseup', () => isDrawing = false); document.addEventListener('touchend', () => isDrawing = false);
-            ranks.forEach((r1, i) => { ranks.forEach((r2, j) => {
-                const cell = document.createElement('div'); const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2);
-                cell.innerText = combo; cell.id = `cell-${combo}`; cell.dataset.combo = combo; cell.className = "cell";
-                cell.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); });
-                cell.addEventListener('mouseenter', () => { if(isDrawing) paintCell(combo); });
-                cell.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; paintCell(combo); }, {passive: false});
-                cell.addEventListener('touchmove', (e) => { e.preventDefault(); if(!isDrawing) return; let t = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY); if(t && t.dataset.combo) paintCell(t.dataset.combo); }, {passive: false});
-                container.appendChild(cell);
-            });});
-        }
-
-        function paintCell(combo) {
-            let spot = appData.ranges[getSpotKey()]; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id] = spot[p.id].filter(c => c !== combo); });
-            if(activeBrushId !== "erase") { if(!spot[activeBrushId]) spot[activeBrushId] = []; spot[activeBrushId].push(combo); }
-            renderMatrixColors(); triggerLocalSave();
-        }
-
-        function renderMatrixColors() {
-            let spot = appData.ranges[getSpotKey()]; let colorMap = {};
-            if(spot) { appData.palette.forEach(p => { if(spot[p.id]) spot[p.id].forEach(c => colorMap[c] = p.color); }); }
-            ranks.forEach((r1, i) => { ranks.forEach((r2, j) => {
-                const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); let cell = document.getElementById(`cell-${combo}`);
-                if(colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); } else { cell.style.backgroundColor = '#1a1d24'; cell.classList.remove('cell-colored'); }
-            });}); renderBrushList();
-        }
-        function clearMatrix() { if(confirm("Svuotare matrice corrente?")) { let spot = appData.ranges[getSpotKey()]; if(spot) appData.palette.forEach(p => spot[p.id] = []); renderMatrixColors(); triggerLocalSave(); } }
-
-        // --- GESTIONE LOGICA BANKROLL ---
-        let brChartInstance;
-        function addTournament() { const buyin = parseFloat(document.getElementById('t-buyin').value) || 0; const win = parseFloat(document.getElementById('t-win').value) || 0; if (buyin === 0 && win === 0) return; appData.bankroll.push({ buyin: buyin, win: win, profit: win - buyin }); document.getElementById('t-buyin').value = ''; document.getElementById('t-win').value = ''; updateBankrollUI(); triggerLocalSave(); }
-        function updateBankrollUI() {
-            let tProfit = 0, tBuyin = 0; appData.bankroll.forEach(t => { tProfit += t.profit; tBuyin += t.buyin; });
-            let count = appData.bankroll.length; let abi = count > 0 ? (tBuyin / count) : 0; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0;
-            let elP = document.getElementById('stat-profit'); elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444';
-            document.getElementById('stat-abi').innerText = `€ ${abi.toFixed(2)}`; let elR = document.getElementById('stat-roi'); elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444';
-            document.getElementById('stat-count').innerText = count; document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`; renderChart();
-        }
-        function renderChart() {
-            const ctx = document.getElementById('brChart').getContext('2d'); let cum = 0; const dataPts = [0]; appData.bankroll.forEach(t => { cum += t.profit; dataPts.push(cum); }); const labels = dataPts.map((_, i) => i === 0 ? 'Start' : `Trn ${i}`);
-            if (brChartInstance) brChartInstance.destroy(); Chart.defaults.color = '#475569';
-            brChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Profit (€)', data: dataPts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } } } });
-        }
-
-        // --- GESTIONE LOGICA STRUMENTI (ICM, EV, MC) ---
-        function initICMInputs() { const container = document.getElementById('icm-inputs'); let html = ''; for(let i=1; i<=6; i++) html += `<div class="grid grid-cols-12 gap-2 items-center"><div class="col-span-1 text-center text-xs font-bold text-gray-500">${i}</div><div class="col-span-6"><input id="icm-s${i}" type="number" placeholder="Chips P${i}" class="text-xs py-2 px-2 text-[#8b5cf6]"></div><div class="col-span-5"><input id="icm-p${i}" type="number" placeholder="€ Premio ${i}°" class="text-xs py-2 px-2 text-[#22c55e]"></div></div>`; container.innerHTML = html; }
-        function calculateICM() {
-            let stacksArr = []; let payoutsArr = [];
-            for(let i=1; i<=6; i++) { let s = parseFloat(document.getElementById('icm-s'+i).value); let p = parseFloat(document.getElementById('icm-p'+i).value); if(s > 0) stacksArr.push({id: i, chips: s}); if(p > 0) payoutsArr.push(p); }
-            payoutsArr.sort((a,b)=>b-a); if(stacksArr.length < 2 || payoutsArr.length === 0) { document.getElementById('icm-results').innerHTML = `<p class="text-red-500 text-xs text-center font-bold">Inserisci dati validi.</p>`; return; }
-            let chips = stacksArr.map(st => st.chips); let results = icmRecursion(chips, payoutsArr, 0, 1.0, null); let resHtml = ''; for(let i=0; i<stacksArr.length; i++) resHtml += `<div class="flex justify-between items-center p-2 bg-[#1a1d24] rounded border border-[#333]"><span class="text-gray-400 font-bold">P${stacksArr[i].id}: <span class="text-white">${stacksArr[i].chips}</span></span><span class="text-lg font-black text-[#22c55e]">€ ${results[i].toFixed(2)}</span></div>`; document.getElementById('icm-results').innerHTML = resHtml;
-        }
-        function icmRecursion(stacks, payouts, depth, currentProb, results) { if (results === null) results = new Array(stacks.length).fill(0); if (depth >= payouts.length || depth >= stacks.length) return results; let totalChips = stacks.reduce((a, b) => a + b, 0); if (totalChips === 0) return results; for (let i = 0; i < stacks.length; i++) { if (stacks[i] > 0) { let probFirst = stacks[i] / totalChips; results[i] += currentProb * probFirst * payouts[depth]; let savedStack = stacks[i]; stacks[i] = 0; icmRecursion(stacks, payouts, depth + 1, currentProb * probFirst, results); stacks[i] = savedStack; } } return results; }
-        function calculateCallEV() { const pot = parseFloat(document.getElementById('ev-pot').value); const callAmt = parseFloat(document.getElementById('ev-call').value); const eqStr = document.getElementById('ev-eq').value.replace('%',''); const equity = parseFloat(eqStr) / 100; if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) return; const ev = (equity * (pot + callAmt)) - callAmt; const box = document.getElementById('ev-result-box'); const verdictNode = document.getElementById('ev-verdict-text'); const valNode = document.getElementById('ev-value'); box.classList.remove('hidden'); valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`; if (ev > 0) { box.style.borderColor = "#22c55e"; verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e"; } else { box.style.borderColor = "#ef4444"; verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444"; } }
-        function copyEquityFromMC() { let heroEq = document.getElementById('res-hero').innerText.replace('%', ''); if(heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq; }
-        let activeInput = null; function setActiveInput(el) { activeInput = el; } function typeCard(val) { if(!activeInput){ activeInput = document.getElementById('mc-hero'); activeInput.focus(); } activeInput.value += val; activeInput.focus(); } function clearActiveInput() { if(activeInput){ activeInput.value = ''; activeInput.focus(); } }
-        function evaluateHand(cards) { let rankStr = '23456789TJQKA'; let ranks = cards.map(c => rankStr.indexOf(c[0].toUpperCase())); let suits = cards.map(c => c[1].toLowerCase()); let rc = new Array(13).fill(0); let sc = {s:0, h:0, d:0, c:0}; ranks.forEach(r => rc[r]++); suits.forEach(s => sc[s]++); let flushSuit = Object.keys(sc).find(k => sc[k] >= 5); let isFlush = !!flushSuit; let ur = [...new Set(ranks)].sort((a,b)=>a-b); if(ur.includes(12)) ur.unshift(-1); let isStraight = false, sHigh = -1, streak = 1; for(let i=1; i<ur.length; i++){ if(ur[i] === ur[i-1]+1) streak++; else streak=1; if(streak>=5){ isStraight = true; sHigh = ur[i]; } } let pairs = [], trips = [], quads = []; rc.forEach((count, rank) => { if(count===2) pairs.push(rank); if(count===3) trips.push(rank); if(count===4) quads.push(rank); }); let score = 0; ranks.sort((a,b)=>b-a); if(isStraight && isFlush) score = 8000000 + sHigh*10000; else if(quads.length) score = 7000000 + Math.max(...quads)*10000; else if(trips.length && pairs.length) score = 6000000 + Math.max(...trips)*10000; else if(trips.length > 1) score = 6000000 + Math.max(...trips)*10000; else if(isFlush) { let fRanks = cards.filter(c => c[1].toLowerCase()===flushSuit).map(c => rankStr.indexOf(c[0].toUpperCase())).sort((a,b)=>b-a); score = 5000000 + fRanks[0]*10000 + (fRanks[1]||0)*100; } else if(isStraight) score = 4000000 + sHigh*10000; else if(trips.length) score = 3000000 + Math.max(...trips)*10000; else if(pairs.length >= 2) score = 2000000 + Math.max(...pairs)*10000 + Math.min(...pairs)*100; else if(pairs.length === 1) score = 1000000 + pairs[0]*10000; return score + ranks[0]*100 + (ranks[1]||0)*1 + (ranks[2]||0)*0.01; }
-        function runEquitySimulation() { let heroStr = document.getElementById('mc-hero').value.trim(); let villainStr = document.getElementById('mc-villain').value.trim(); let boardStr = document.getElementById('mc-board').value.trim(); let hero = heroStr ? heroStr.split(/\s+/) : []; if(hero.length !== 2) { alert("Inserisci 2 carte."); return; } let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando..."; setTimeout(() => { let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA'; for(let r of rankStr) for(let s of suits) deck.push(r+s); let known = [...hero, ...(villainStr?villainStr.split(/\s+/):[]), ...(boardStr?boardStr.split(/\s+/):[])].map(c => c.toLowerCase()); deck = deck.filter(c => !known.includes(c.toLowerCase())); let wins = 0, ties = 0, runs = 2000; let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : []; for(let i=0; i<runs; i++){ let simDeck = [...deck]; for(let j=simDeck.length-1; j>0; j--){ let k = Math.floor(Math.random()*(j+1)); [simDeck[j], simDeck[k]] = [simDeck[k], simDeck[j]]; } let simBoard = [...board]; let deckIdx = 0; while(simBoard.length < 5) simBoard.push(simDeck[deckIdx++]); let simVillain = [...villain]; while(simVillain.length < 2) simVillain.push(simDeck[deckIdx++]); let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]); if(heroScore > villainScore) wins++; else if(heroScore === villainScore) ties++; } let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100; document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%'; document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%'; document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%'; document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula % Vittoria"; }, 50); }
-
-        window.onload = async () => {
-            if (!checkAuth()) { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-content').classList.add('hidden'); createMatrixDOM(); initICMInputs(); return; }
-            document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden');
-            createMatrixDOM(); initICMInputs(); loadAllData(); activeInput = document.getElementById('mc-hero');
-            
-            // Auto download on boot se siamo connessi
-            setTimeout(() => { if(appConfig.supabaseUrl) downloadDualCloud(); }, 1500);
-        };
+        window.onload = () => { if (!checkAuth()) return; document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); createMatrixDOM(); initICMInputs(); loadAllData(); setTimeout(downloadDualCloud, 1000); };
     </script>
 </body>
 </html>
