@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v21.1 Sync Fix</title>
+    <title>Poker Pro Hub - v21.2 Error Detector</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -29,21 +29,24 @@
         .key-btn { background: #1a1d24; border: 1px solid #333; color: white; font-weight: bold; font-size: 1.1rem; padding: 8px 0; border-radius: 4px; }
         .key-btn:active { background: #333; }
         .suit-s { color: #cbd5e1; } .suit-h { color: #ef4444; } .suit-d { color: #3b82f6; } .suit-c { color: #10b981; }
-        .chat-container { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px; scroll-behavior: smooth; }
-        .msg-coach { background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; border-top-left-radius: 0; max-width: 85%; align-self: flex-start; }
-        .msg-user { background: #3b82f6; color: white; padding: 12px; border-radius: 8px; border-top-right-radius: 0; max-width: 85%; align-self: flex-end; }
-        .msg-coach strong { color: #fff; font-weight: 900; }
-        .msg-coach em { color: #9ca3af; font-style: italic; }
         .dropzone-active { border-color: #3b82f6 !important; background-color: rgba(59, 130, 246, 0.1) !important; }
         .chat-list-item { transition: all 0.2s; }
         .chat-list-item:hover { background: #2a2e38; }
         .persona-active { background-color: #3b82f6 !important; color: white !important; border-color: #60a5fa !important; }
+        
+        /* Stile Chat Moderno */
+        .chat-container { height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 12px; scroll-behavior: smooth; }
+        .msg-coach { background: transparent; padding: 4px 12px; max-w-[90%]; align-self: flex-start; line-height: 1.6; border-left: 2px solid #3b82f6; }
+        .msg-user { background: #2a2e38; color: white; padding: 16px 20px; border-radius: 12px; max-width: 80%; align-self: flex-end; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .msg-coach strong { color: #fff; font-weight: 700; background: rgba(255,255,255,0.05); padding: 0 4px; border-radius: 4px;}
+        .msg-coach em { color: #9ca3af; font-style: italic; }
+        .msg-coach code { background: #1a1d24; padding: 2px 6px; border-radius: 4px; color: #8b5cf6; font-family: monospace; font-size: 0.85em; }
     </style>
 </head>
 <body class="bg-[#0f1115]">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v21.1</span></h1>
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v21.2</span></h1>
         <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
             <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
@@ -338,8 +341,9 @@
             saveConfig(); 
             if (supabaseClient) {
                 try {
-                    await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' });
-                } catch (e) { console.error("Auto-save fallito"); }
+                    const { error } = await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' });
+                    if(error) console.error("Auto-save fallito:", error.message);
+                } catch (e) { console.error("Auto-save fallito", e); }
             }
         }
 
@@ -351,22 +355,45 @@
             }
             document.body.style.cursor = 'wait'; setCloudStatus('☁️ Sincronizzazione...');
             let successJson = false;
-            try { const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); if(res.ok) successJson = true; } catch (e) {}
-            if (supabaseClient) { try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} }
+            
+            try { 
+                const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); 
+                if(res.ok) successJson = true; 
+            } catch (e) {}
+
+            if (supabaseClient) { 
+                try { 
+                    const { error } = await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); 
+                    if(error) alert("Errore Salvataggio Chat su Supabase: Controlla di aver disabilitato RLS! Dettaglio: " + error.message);
+                } catch (e) { alert("Eccezione Supabase: " + e.message); } 
+            }
+            
             setCloudStatus(successJson ? '✅ Tutto Salvato!' : '⚠️ Errore Cloud', !successJson);
             setTimeout(() => setCloudStatus('☁️ App Pronta'), 3000); document.body.style.cursor = 'default';
         }
 
         async function downloadDualCloud() {
-            // FIX: Assicura che Supabase sia connesso prima di provare a scaricare le chat
             if(!supabaseClient) initSupabase();
 
             document.body.style.cursor = 'wait'; setCloudStatus('☁️ Scaricamento...');
-            try { const res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); if(res.ok) { const data = await res.json(); if(data.record) { appData.palette = data.record.palette || []; appData.bankroll = data.record.bankroll || []; appData.ranges = data.record.ranges || {}; triggerLocalSave(); updateBankrollUI(); updateSpotUI(); } } } catch (e) {}
+            
+            try { 
+                const res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); 
+                if(res.ok) { 
+                    const data = await res.json(); 
+                    if(data.record) { 
+                        appData.palette = data.record.palette || []; appData.bankroll = data.record.bankroll || []; appData.ranges = data.record.ranges || {}; 
+                        triggerLocalSave(); updateBankrollUI(); updateSpotUI(); 
+                    } 
+                } 
+            } catch (e) {}
             
             if(supabaseClient) { 
                 try { 
-                    const { data } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); 
+                    const { data, error } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); 
+                    if(error && error.code !== 'PGRST116') {
+                        alert("Impossibile scaricare le Chat: " + error.message);
+                    }
                     if(data && data.data) { 
                         appConfig = Object.assign(appConfig, data.data);
                         document.getElementById('ai-key').value = appConfig.aiKey; 
@@ -396,7 +423,6 @@
             document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
             if(appConfig.aiKey) updateAiStatus(true); 
             
-            // FIX: Auto-Connessione Supabase al caricamento
             initSupabase();
 
             if(!appConfig.chats || appConfig.chats.length === 0) {
@@ -534,7 +560,62 @@
             reader.readAsText(file);
         }
 
-        // --- INVIO CON PERSONA E MEMORIA ---
+        // --- MOTORE AGENTIC AI (PARSER & ESECUTORE) ---
+        function processAgenticResponse(rawText) {
+            const actionRegex = /<action>([\s\S]*?)<\/action>/g;
+            let match;
+            let cleanText = rawText;
+
+            while ((match = actionRegex.exec(rawText)) !== null) {
+                try {
+                    let actionData = JSON.parse(match[1]);
+                    executeAIAction(actionData);
+                    cleanText = cleanText.replace(match[0], `<div class="bg-[#3b82f6]/20 border border-[#3b82f6] text-[#3b82f6] p-2 rounded text-xs my-2 font-bold flex items-center gap-2"><span>⚡</span> Azione automatica: ${actionData.description}</div>`);
+                } catch(e) {
+                    console.error("Errore parsing comando IA:", e);
+                }
+            }
+            return cleanText;
+        }
+
+        function executeAIAction(action) {
+            switch(action.type) {
+                case 'FILL_RANGE':
+                    if (!action.colorName || !action.colorHex || !action.combos) break;
+                    let existingColor = appData.palette.find(p => p.name === action.colorName);
+                    let colorId = existingColor ? existingColor.id : Math.random().toString(36).substr(2, 9);
+                    
+                    if (!existingColor) {
+                        appData.palette.push({ id: colorId, name: action.colorName, color: action.colorHex });
+                    }
+                    
+                    let spotKey = getSpotKey(); 
+                    if(!appData.ranges[spotKey]) appData.ranges[spotKey] = {};
+                    if(!appData.ranges[spotKey][colorId]) appData.ranges[spotKey][colorId] = [];
+                    
+                    action.combos.forEach(combo => {
+                        if (!appData.ranges[spotKey][colorId].includes(combo)) {
+                            appData.ranges[spotKey][colorId].push(combo);
+                        }
+                    });
+                    updateSpotUI(); triggerLocalSave(); switchTab('ranges'); 
+                    break;
+
+                case 'SAVE_NOTE':
+                    let notes = JSON.parse(localStorage.getItem('poker_ai_notes') || '[]');
+                    notes.push({ date: new Date().toLocaleDateString(), text: action.noteText });
+                    localStorage.setItem('poker_ai_notes', JSON.stringify(notes));
+                    break;
+                    
+                case 'SET_SPOT':
+                    if (action.stage) setSpot('stage', action.stage);
+                    if (action.bb) setSpot('bb', action.bb);
+                    if (action.pos) setSpot('pos', action.pos);
+                    break;
+            }
+        }
+
+        // --- INVIO CON PERSONA E MEMORIA (AGGIORNATO AGENTIC) ---
         async function sendToCoach() {
             const message = chatInput.value.trim(); if(!message) return;
             const btnSend = document.getElementById('btn-send'); const key = appConfig.aiKey; 
@@ -552,21 +633,47 @@
                 chat.messages.slice(-6).forEach(m => { if(m.text !== message) historyText += `${m.sender.toUpperCase()}: ${m.text}\n`; });
             }
 
+            let agenticInstructions = `\n\nSEI UN AGENTE ATTIVO. Oltre a parlare, puoi interagire con la WebApp. 
+Se l'utente ti chiede di compilare un range, creare una nota, o impostare uno spot, usa ESATTAMENTE questo formato tag alla fine della tua risposta testuale. Non usare markdown per i tag <action>.
+
+Per creare/compilare un range:
+<action>
+{
+  "type": "FILL_RANGE",
+  "description": "Ho compilato il range di Open",
+  "colorName": "Open Raise",
+  "colorHex": "#ef4444",
+  "combos": ["AA", "KK", "QQ", "AKs", "AKo"]
+}
+</action>
+
+Per salvare una nota:
+<action>{"type": "SAVE_NOTE", "description": "Nota salvata", "noteText": "Il tuo testo qui"}</action>
+
+Per navigare lo spot (Stage, BB, Pos):
+<action>{"type": "SET_SPOT", "description": "Spot modificato in Early, 40BB, UTG", "stage": "Early", "bb": "40", "pos": "UTG"}</action>
+`;
+
             let basePrompt = `Sei l'AI personale di omiserez (35 anni, 173cm, 92kg). DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}. Se applicabile, tieni conto della storia recente: ${historyText}\n\n`;
             let personaPrompt = "";
             if(currentPersona === 'analyst') personaPrompt = "RUOLO: Analista Tecnico GTO. Rispondi in modo analitico, matematico e focalizzato sui range e l'EV. Analizza la hand history in modo spietato.";
             else if(currentPersona === 'coach') personaPrompt = "RUOLO: Poker Coach Strategico. Discuti di strategia generale, exploit, adattamenti e dinamiche del torneo. Tono: diretto e costruttivo.";
-            else if(currentPersona === 'mental') personaPrompt = "RUOLO: Mental Coach. Concentrati su tilt, gestione della varianza, mindset, stanchezza fisica e routine (considera la sua corporatura e l'età). Tono: empatico, motivazionale e calmo.";
+            else if(currentPersona === 'mental') personaPrompt = "RUOLO: Mental Coach. Concentrati su tilt, gestione della varianza, mindset, stanchezza fisica e routine. Tono: empatico, motivazionale e calmo.";
 
-            const systemPrompt = basePrompt + personaPrompt;
+            const systemPrompt = basePrompt + personaPrompt + agenticInstructions;
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
             try {
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nOMISEREZ: " + message }] }] }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error?.message || "Errore di connessione.");
+                
                 let personaName = currentPersona === 'analyst' ? "Analista GTO" : (currentPersona === 'coach' ? "Coach" : "Mental Coach");
-                appendAndSaveMessage(personaName, data.candidates[0].content.parts[0].text, "coach");
+                
+                let rawAiResponse = data.candidates[0].content.parts[0].text;
+                let finalProcessedResponse = processAgenticResponse(rawAiResponse);
+                
+                appendAndSaveMessage(personaName, finalProcessedResponse, "coach");
             } catch (error) { appendAndSaveMessage("Sistema", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
         }
 
@@ -581,6 +688,7 @@
         function createMatrixDOM() { const container = document.getElementById('matrix'); container.innerHTML = ''; ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); const cell = document.createElement('div'); cell.innerText = combo; cell.id = `cell-${combo}`; cell.className = "cell"; cell.onmousedown = () => paintCell(combo); container.appendChild(cell); }); }); }
         function paintCell(combo) { let spot = appData.ranges[getSpotKey()]; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id] = spot[p.id].filter(c => c !== combo); }); if(activeBrushId !== "erase") { if(!spot[activeBrushId]) spot[activeBrushId] = []; spot[activeBrushId].push(combo); } renderMatrixColors(); triggerLocalSave(); }
         function renderMatrixColors() { let spot = appData.ranges[getSpotKey()]; let colorMap = {}; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id].forEach(c => colorMap[c] = p.color); }); ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); let cell = document.getElementById(`cell-${combo}`); if(colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; } else { cell.style.backgroundColor = '#1a1d24'; } }); }); }
+        function clearMatrix() { appData.ranges[getSpotKey()] = {}; renderMatrixColors(); triggerLocalSave(); }
         
         // --- BANKROLL ---
         let brChartInstance; 
