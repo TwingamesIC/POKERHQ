@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v18.8 Full Suite</title>
+    <title>Poker Pro Hub - v20.0 Pro Coaching Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -35,12 +35,14 @@
         .msg-coach strong { color: #fff; font-weight: 900; }
         .msg-coach em { color: #9ca3af; font-style: italic; }
         .dropzone-active { border-color: #3b82f6 !important; background-color: rgba(59, 130, 246, 0.1) !important; }
+        .chat-list-item { transition: all 0.2s; }
+        .chat-list-item:hover { background: #2a2e38; }
     </style>
 </head>
 <body class="bg-[#0f1115]">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v18.8</span></h1>
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v20.0</span></h1>
         <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
             <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
@@ -143,7 +145,7 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 3: STRUMENTI (ICM a 9 GIOCATORI + EV/MC RIPRISTINATI) -->
+            <!-- SEZIONE 3: STRUMENTI -->
             <section id="sec-calc" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
@@ -194,7 +196,7 @@
 
                     <div class="bg-[#1e222a] p-6 rounded-lg border border-[#8b5cf6] shadow-xl lg:col-span-2">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-black text-white uppercase">Calcolatore I.C.M. (Fino a 9 Giocatori)</h2>
+                            <h2 class="text-xl font-black text-white uppercase">Calcolatore I.C.M. (9 Giocatori)</h2>
                             <span class="text-[10px] bg-[#8b5cf6] text-white px-2 py-1 rounded">Malmuth-Harville</span>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -202,9 +204,7 @@
                                 <div class="grid grid-cols-12 gap-2 text-[10px] font-bold text-gray-500 uppercase mb-2">
                                     <div class="col-span-1 text-center">#</div><div class="col-span-6">Stack (Chips)</div><div class="col-span-5">Premio Payout (€)</div>
                                 </div>
-                                <div class="space-y-2" id="icm-inputs">
-                                    <!-- Generato via JS -->
-                                </div>
+                                <div class="space-y-2" id="icm-inputs"></div>
                                 <button onclick="calculateICM()" class="w-full bg-[#8b5cf6] text-white py-3 rounded font-black uppercase hover:bg-[#7c3aed] transition mt-4 shadow-lg">Calcola Valore Reale in €</button>
                             </div>
                             <div class="bg-[#1a1d24] p-4 rounded border border-[#333] flex flex-col justify-center">
@@ -216,36 +216,54 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 4: AI COACH -->
+            <!-- SEZIONE 4: AI COACH MULTI-CHAT -->
             <section id="sec-coach" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
                     <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] shadow-xl flex flex-col h-[600px]">
                         <div class="flex justify-between items-center border-b border-[#333] pb-3 mb-4">
                             <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">🤖 Personal Coach <span class="text-[#3b82f6]">Gemini</span></h2>
                             <span id="ai-status" class="text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded">In attesa...</span>
                         </div>
+                        
                         <div id="chat-box" class="chat-container flex-1 mb-4">
-                            <div class="msg-coach text-sm text-gray-200">Motore V18.8. Modulo matematico e ICM a 9 giocatori ripristinati. Sono pronto all'analisi.</div>
+                            <!-- Messaggi caricati dinamicamente qui -->
                         </div>
+                        
                         <div class="flex gap-2 relative items-end">
                             <input type="file" id="file-upload" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
-                            <button onclick="document.getElementById('file-upload').click()" class="bg-[#333] text-gray-300 px-4 py-3 rounded hover:bg-[#444] transition flex items-center justify-center font-bold text-lg" title="Carica Hand History (TXT)">📎</button>
-                            <textarea id="chat-input" placeholder="Parla col coach o trascina qui un file .txt..." class="text-sm py-3 px-3 h-14 resize-none overflow-y-auto flex-1 transition-colors" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToCoach(); }"></textarea>
+                            <button onclick="document.getElementById('file-upload').click()" class="bg-[#333] text-gray-300 px-4 py-3 rounded hover:bg-[#444] transition flex items-center justify-center font-bold text-lg" title="Carica HH">📎</button>
+                            <textarea id="chat-input" placeholder="Scrivi al coach o trascina qui un file .txt..." class="text-sm py-3 px-3 h-14 resize-none overflow-y-auto flex-1 transition-colors" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToCoach(); }"></textarea>
                             <button onclick="sendToCoach()" id="btn-send" class="bg-[#3b82f6] text-white px-6 py-3 font-bold uppercase rounded hover:bg-blue-600 transition">Invia</button>
                         </div>
                     </div>
 
+                    <!-- SIDEBAR DESTRA: CHAT E IMPOSTAZIONI -->
                     <div class="flex flex-col gap-6">
-                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#3b82f6] shadow-xl relative">
-                            <h3 class="text-xs font-bold text-[#3b82f6] uppercase tracking-widest mb-3">Motore AI (Gemini)</h3>
-                            <input type="password" id="ai-key" value="" placeholder="Incolla chiave AI Studio" class="text-xs mb-2 text-[#3b82f6]">
+                        
+                        <!-- GESTORE CHAT -->
+                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#3b82f6] shadow-xl">
+                            <div class="flex justify-between items-center mb-3 border-b border-[#333] pb-2">
+                                <h3 class="text-xs font-bold text-white uppercase tracking-widest">Le tue Sessioni</h3>
+                                <button onclick="createNewChat()" class="bg-[#3b82f6] text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-blue-600 transition">+ NUOVA</button>
+                            </div>
+                            <div id="chat-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                <!-- Lista chat generata qui -->
+                            </div>
+                        </div>
+
+                        <!-- MOTORE AI -->
+                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333] shadow-xl relative">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Motore AI (Gemini)</h3>
+                            <input type="password" id="ai-key" value="" placeholder="Incolla chiave AI" class="text-xs mb-2 text-[#3b82f6]">
                             <div class="flex gap-2">
-                                <button onclick="saveAiKey()" class="flex-1 bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6] py-2 rounded text-xs font-bold hover:bg-[#3b82f6] hover:text-white transition">Salva Locale</button>
-                                <button onclick="diagnoseAI()" class="flex-1 bg-[#0ea5e9] text-white border border-[#0ea5e9] py-2 rounded text-xs font-bold hover:bg-sky-600 transition shadow-lg shadow-sky-500/20">🔍 Diagnosi API</button>
+                                <button onclick="saveAiKey()" class="flex-1 bg-[#333] text-gray-300 border border-[#444] py-2 rounded text-xs font-bold hover:bg-[#444] hover:text-white transition">Salva Locale</button>
+                                <button onclick="diagnoseAI()" class="flex-1 bg-[#0ea5e9] text-white border border-[#0ea5e9] py-2 rounded text-xs font-bold hover:bg-sky-600 transition shadow-lg shadow-sky-500/20">🔍 Diagnosi</button>
                             </div>
                             <p id="model-tag" class="text-[10px] mt-2 text-gray-500">Modello: Nessuno</p>
                         </div>
 
+                        <!-- SUPABASE -->
                         <div class="bg-[#1e222a] p-4 rounded-lg border border-[#22c55e] shadow-xl">
                             <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">Database Supabase (AI)</h3>
                             <input type="text" id="sb-url" value="https://tphnvmmisznkyubhnpkk.supabase.co" class="text-xs mb-2 text-[#22c55e]">
@@ -253,13 +271,6 @@
                             <button onclick="initSupabase()" class="w-full bg-[#22c55e]/20 text-[#22c55e] border border-[#22c55e] py-2 rounded text-xs font-bold hover:bg-[#22c55e] hover:text-black transition">Connetti Supabase</button>
                         </div>
 
-                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#facc15]">
-                            <div class="flex justify-between items-center mb-3">
-                                <h3 class="text-xs font-bold text-[#facc15] uppercase tracking-widest">User_Corrections</h3>
-                                <span id="corr-count" class="text-[10px] bg-[#facc15] text-black px-1.5 rounded font-bold">0</span>
-                            </div>
-                            <div id="corrections-list" class="space-y-1 max-h-32 overflow-y-auto text-xs text-gray-300 bg-[#1a1d24] p-2 rounded border border-[#333] font-mono"></div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -267,7 +278,7 @@
     </div>
 
     <script>
-        // --- CHIAVI JSONBIN ---
+        // --- CHIAVI ---
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -285,20 +296,43 @@
             document.getElementById('sec-' + tabId).classList.remove('hidden'); document.getElementById('tab-' + tabId).classList.add('nav-active');
         }
 
+        // --- DATI E CONFIGURAZIONI ---
         let appData = { palette: [], ranges: {}, bankroll: [] }; 
-        let appConfig = { supabaseUrl: "https://tphnvmmisznkyubhnpkk.supabase.co", aiKey: "", aiModel: "", userCorrections: [] }; 
+        let appConfig = { 
+            supabaseUrl: "https://tphnvmmisznkyubhnpkk.supabase.co", 
+            aiKey: "", 
+            aiModel: "", 
+            userCorrections: [],
+            chats: [],         // Array delle conversazioni
+            activeChatId: null // ID della chat correntemente aperta
+        }; 
         let supabaseClient = null;
 
         function setCloudStatus(msg, isError = false) { 
             const el = document.getElementById('cloud-status'); el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
         }
 
+        // --- AUTO-SAVE INVISIBILE PER LA CHAT ---
+        async function silentAutoSave() {
+            saveConfig(); // Salva in locale
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' });
+                } catch (e) { console.error("Auto-save fallito"); }
+            }
+        }
+
+        // --- SALVATAGGIO MANUALE (TASTO BLU IN ALTO) ---
         async function syncDualCloud() {
+            if (appData.bankroll.length === 0 && Object.keys(appData.ranges).length === 0) {
+                alert("⚠️ L'app sembra vuota. Premi 'Scarica' per recuperare i dati prima di salvare.");
+                return;
+            }
             document.body.style.cursor = 'wait'; setCloudStatus('☁️ Sincronizzazione...');
             let successJson = false;
             try { const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); if(res.ok) successJson = true; } catch (e) {}
             if (supabaseClient) { try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} }
-            setCloudStatus(successJson ? '✅ Cloud Aggiornato' : '⚠️ Errore Cloud', !successJson);
+            setCloudStatus(successJson ? '✅ Tutto Salvato!' : '⚠️ Errore Cloud', !successJson);
             setTimeout(() => setCloudStatus('☁️ App Pronta'), 3000); document.body.style.cursor = 'default';
         }
 
@@ -310,14 +344,21 @@
                 try { 
                     const { data } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); 
                     if(data && data.data) { 
-                        appConfig.userCorrections = data.data.userCorrections || []; 
-                        if(data.data.aiKey) appConfig.aiKey = data.data.aiKey;
-                        if(data.data.aiModel) appConfig.aiModel = data.data.aiModel;
-                        
-                        document.getElementById('ai-key').value = appConfig.aiKey;
+                        appConfig = Object.assign(appConfig, data.data);
+                        document.getElementById('ai-key').value = appConfig.aiKey; 
                         document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
                         if(appConfig.aiKey) updateAiStatus(true);
                         
+                        // Ripristina le chat scaricate
+                        if(!appConfig.chats) appConfig.chats = [];
+                        if(appConfig.chats.length === 0) createNewChat(false);
+                        else {
+                            if(!appConfig.activeChatId || !appConfig.chats.find(c => c.id === appConfig.activeChatId)) {
+                                appConfig.activeChatId = appConfig.chats[0].id;
+                            }
+                            selectChat(appConfig.activeChatId);
+                        }
+                        renderChatList();
                         saveConfig(); 
                     } 
                 } catch(e) { } 
@@ -329,127 +370,196 @@
             let conf = localStorage.getItem('poker_v18_config'); if(conf) appConfig = Object.assign(appConfig, JSON.parse(conf));
             document.getElementById('sb-url').value = appConfig.supabaseUrl; document.getElementById('ai-key').value = appConfig.aiKey;
             document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
-            if(appConfig.aiKey) updateAiStatus(true); renderCorrections();
-            let data = localStorage.getItem('poker_v18_data') || localStorage.getItem('poker_v17_data');
+            if(appConfig.aiKey) updateAiStatus(true); 
+            
+            // Inizializza Sistema Chat
+            if(!appConfig.chats || appConfig.chats.length === 0) {
+                createNewChat(false);
+            } else {
+                if(!appConfig.activeChatId || !appConfig.chats.find(c => c.id === appConfig.activeChatId)) {
+                    appConfig.activeChatId = appConfig.chats[0].id;
+                }
+                selectChat(appConfig.activeChatId);
+                renderChatList();
+            }
+
+            let data = localStorage.getItem('poker_v18_data');
             if(data) { let parsed = JSON.parse(data); appData.palette = parsed.palette || []; appData.ranges = parsed.ranges || {}; appData.bankroll = parsed.bankroll || []; }
             updateSpotUI(); updateBankrollUI();
         }
 
-        function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); renderCorrections(); document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel}`; }
+        function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel}`; }
         function triggerLocalSave() { localStorage.setItem('poker_v18_data', JSON.stringify(appData)); }
 
+        // --- LOGICA MULTI-CHAT ---
+        function createNewChat(doSave = true) {
+            const newId = 'chat_' + Date.now();
+            const newChat = {
+                id: newId,
+                title: "Nuova Analisi",
+                messages: [
+                    { sender: "Coach", text: "Motore V20.0 pronto. Incolla una HH o fammi una domanda.", type: "coach" }
+                ]
+            };
+            appConfig.chats.unshift(newChat); // Aggiunge in cima
+            appConfig.activeChatId = newId;
+            selectChat(newId);
+            if(doSave) silentAutoSave();
+        }
+
+        function selectChat(id) {
+            appConfig.activeChatId = id;
+            renderChatList();
+            
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            
+            const chat = appConfig.chats.find(c => c.id === id);
+            if(chat) {
+                chat.messages.forEach(m => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = m.type === 'user' ? 'msg-user' : 'msg-coach';
+                    msgDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 block mb-1 uppercase">${m.sender}</span><p class="text-sm leading-relaxed">${parseMarkdown(m.text)}</p>`;
+                    chatBox.appendChild(msgDiv);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+            saveConfig();
+        }
+
+        function deleteChat(id) {
+            if(confirm("Eliminare definitivamente questa sessione?")) {
+                appConfig.chats = appConfig.chats.filter(c => c.id !== id);
+                if(appConfig.chats.length === 0) {
+                    createNewChat(false);
+                } else if (appConfig.activeChatId === id) {
+                    appConfig.activeChatId = appConfig.chats[0].id;
+                }
+                selectChat(appConfig.activeChatId);
+                silentAutoSave();
+            }
+        }
+
+        function renderChatList() {
+            const list = document.getElementById('chat-list');
+            list.innerHTML = '';
+            appConfig.chats.forEach(c => {
+                let isActive = c.id === appConfig.activeChatId;
+                list.innerHTML += `
+                    <div onclick="selectChat('${c.id}')" class="chat-list-item flex justify-between items-center p-2 rounded cursor-pointer border ${isActive ? 'border-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#333] bg-[#1a1d24] hover:border-[#555]'}">
+                        <span class="text-xs text-white truncate flex-1 font-bold ${isActive ? 'text-[#3b82f6]' : ''}">${c.title}</span>
+                        <button onclick="event.stopPropagation(); deleteChat('${c.id}')" class="text-red-500 hover:text-white px-2 rounded text-xs ml-2">✕</button>
+                    </div>
+                `;
+            });
+        }
+
+        function appendAndSaveMessage(sender, text, type) {
+            // Aggiorna DOM
+            const chatBox = document.getElementById('chat-box'); 
+            const msgDiv = document.createElement('div');
+            msgDiv.className = type === 'user' ? 'msg-user' : 'msg-coach';
+            msgDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 block mb-1 uppercase">${sender}</span><p class="text-sm leading-relaxed">${parseMarkdown(text)}</p>`;
+            chatBox.appendChild(msgDiv); 
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Salva nel database della chat attiva
+            const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId);
+            if(chat) {
+                chat.messages.push({ sender, text, type });
+                
+                // Auto-Naming della chat se è il primo messaggio utente
+                if(type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Analisi") {
+                    let newTitle = text.substring(0, 22).replace(/\n/g, " ");
+                    if(text.length > 22) newTitle += "...";
+                    chat.title = newTitle;
+                    renderChatList();
+                }
+                
+                silentAutoSave(); // Salva tutto su Supabase invisibilmente
+            }
+        }
+
+        // --- MOTORE AI ---
         function saveAiKey() { appConfig.aiKey = document.getElementById('ai-key').value.trim(); saveConfig(); updateAiStatus(true); }
-        function updateAiStatus(isActive) { const el = document.getElementById('ai-status'); el.innerText = isActive ? "✅ Gemini Connesso" : "In attesa di API Key"; el.className = isActive ? "text-[10px] bg-[#22c55e] text-black font-bold px-2 py-1 rounded" : "text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded"; }
+        function updateAiStatus(isActive) { const el = document.getElementById('ai-status'); el.innerText = isActive ? "✅ Gemini Connesso" : "In attesa API Key"; el.className = isActive ? "text-[10px] bg-[#22c55e] text-black font-bold px-2 py-1 rounded" : "text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded"; }
 
         function initSupabase() {
             const url = document.getElementById('sb-url').value.trim(); const key = document.getElementById('sb-key').value.trim();
             if(!url) return; appConfig.supabaseUrl = url; saveConfig();
-            try { supabaseClient = supabase.createClient(url, key); document.getElementById('db-status').innerText = "💾 Supabase (AI) Connesso"; document.getElementById('db-status').className = "text-[10px] font-bold text-black bg-[#22c55e] px-3 py-2 rounded"; } catch(e) { }
-        }
-
-        function renderCorrections() {
-            document.getElementById('corr-count').innerText = appConfig.userCorrections.length;
-            let list = document.getElementById('corrections-list'); list.innerHTML = '';
-            if(appConfig.userCorrections.length === 0) list.innerHTML = "<em>Nessuna correzione.</em>";
-            appConfig.userCorrections.forEach((c) => { list.innerHTML += `<div class="border-b border-[#333] pb-1 mb-1">➔ ${c}</div>`; });
+            try { supabaseClient = supabase.createClient(url, key); document.getElementById('db-status').innerText = "💾 Supabase Connesso"; document.getElementById('db-status').className = "text-[10px] font-bold text-black bg-[#22c55e] px-3 py-2 rounded"; } catch(e) { }
         }
 
         function parseMarkdown(text) { let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); return html.replace(/\n/g, '<br>'); }
 
-        // --- SISTEMA DI DIAGNOSI INTELLIGENTE ---
         async function diagnoseAI() {
             const key = document.getElementById('ai-key').value.trim();
-            if(!key) { appendMessage("Sistema", "❌ Errore: Incolla prima la chiave API nel campo a destra.", "coach"); return; }
-            
-            appendMessage("Sistema", "⏳ Ricerca dei modelli attivi sul tuo account Google...", "coach");
+            if(!key) { appendAndSaveMessage("Sistema", "❌ Errore: Incolla prima la chiave API.", "coach"); return; }
+            appendAndSaveMessage("Sistema", "⏳ Ricerca dei modelli attivi...", "coach");
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
                 const data = await res.json();
-                
-                if(!res.ok) {
-                    appendMessage("Sistema", `❌ ERRORE RESTITUITO DA GOOGLE:\n"${data.error.message}"\n\nStato: ${data.error.status}`, "coach");
-                    return;
-                }
-
+                if(!res.ok) throw new Error(data.error.message);
                 const allModels = data.models.map(m => m.name.replace('models/', '')).filter(n => n.includes('gemini'));
                 let chosenModel = allModels[0]; 
-                
                 if (allModels.includes("gemini-2.5-flash")) chosenModel = "gemini-2.5-flash";
                 else if (allModels.includes("gemini-flash-latest")) chosenModel = "gemini-flash-latest";
-                else if (allModels.includes("gemini-2.0-flash")) chosenModel = "gemini-2.0-flash";
-                else if (allModels.includes("gemini-pro-latest")) chosenModel = "gemini-pro-latest";
-
-                appConfig.aiKey = key;
-                appConfig.aiModel = chosenModel;
-                saveConfig();
-                updateAiStatus(true);
-
-                appendMessage("Sistema", `✅ Successo! Modello assegnato: **${chosenModel}**.\n\nOra inviami il tuo primo messaggio!`, "coach");
-
-            } catch (e) {
-                appendMessage("Sistema", `❌ Errore di rete. Dettaglio: ${e.message}`, "coach");
-            }
+                appConfig.aiKey = key; appConfig.aiModel = chosenModel; saveConfig(); updateAiStatus(true);
+                appendAndSaveMessage("Sistema", `✅ Successo! Modello assegnato: **${chosenModel}**.`, "coach");
+            } catch (e) { appendAndSaveMessage("Sistema", `❌ Errore: ${e.message}`, "coach"); }
         }
 
-        // --- DRAG & DROP & FILE UPLOAD ---
+        // --- DRAG & DROP ---
         const chatInput = document.getElementById('chat-input');
         chatInput.addEventListener('dragover', (e) => { e.preventDefault(); chatInput.classList.add('dropzone-active'); });
         chatInput.addEventListener('dragleave', (e) => { e.preventDefault(); chatInput.classList.remove('dropzone-active'); });
         chatInput.addEventListener('drop', (e) => {
             e.preventDefault(); chatInput.classList.remove('dropzone-active');
-            if(e.dataTransfer.files && e.dataTransfer.files.length > 0) { processFile(e.dataTransfer.files[0]); }
+            if(e.dataTransfer.files && e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
         });
-        
-        function handleFileUpload(event) { if(event.target.files && event.target.files.length > 0) { processFile(event.target.files[0]); } }
-        
+        function handleFileUpload(event) { if(event.target.files[0]) processFile(event.target.files[0]); }
         function processFile(file) {
-            if(!file.name.endsWith('.txt')) { alert("Per favore, carica solo file di testo (.txt) esportati da Hold'em Manager."); return; }
+            if(!file.name.endsWith('.txt')) { alert("Solo file .txt supportati."); return; }
             const reader = new FileReader();
             reader.onload = (e) => {
-                const text = e.target.result;
-                const existingText = chatInput.value;
-                chatInput.value = existingText + (existingText ? "\n\n" : "") + `[HAND HISTORY DA FILE: ${file.name}]\n${text}\n`;
+                chatInput.value += `\n[FILE HH: ${file.name}]\n${e.target.result}\n`;
                 chatInput.scrollTop = chatInput.scrollHeight;
-                appendMessage("Sistema", `✅ File **${file.name}** caricato nel box. Scrivi un prompt (es. "Analizza questo file") e premi Invia.`, "coach");
             };
             reader.readAsText(file);
         }
 
-        // --- INVIO MESSAGGI AL COACH ---
+        // --- INVIO CON MEMORIA STORICA ---
         async function sendToCoach() {
             const message = chatInput.value.trim(); if(!message) return;
             const btnSend = document.getElementById('btn-send'); const key = appConfig.aiKey; 
-            
             let model = appConfig.aiModel;
-            if (!model || model === "Nessuno") {
-                appendMessage("Coach", "⚠️ Errore: Devi premere il tasto azzurro '🔍 Esegui Diagnosi API' prima di scrivermi!", "coach");
-                return;
+            if (!model || model === "Nessuno") { appendAndSaveMessage("Coach", "⚠️ Esegui la '🔍 Diagnosi API' prima di scrivermi!", "coach"); return; }
+            if(message.toLowerCase().includes("no, qui sbagli")) { appConfig.userCorrections.push(message); }
+
+            appendAndSaveMessage("Omiserez", message, "user"); 
+            chatInput.value = ''; btnSend.innerText = "..."; btnSend.disabled = true;
+
+            // Costruisce il prompt includendo la storia della chat corrente
+            const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId);
+            let historyText = "";
+            if(chat && chat.messages.length > 2) {
+                historyText = "\n--- STORIA DELLA CHAT RECENTE ---\n";
+                // Prende gli ultimi 6 messaggi per dare contesto all'IA
+                chat.messages.slice(-6).forEach(m => {
+                    if(m.text !== message) historyText += `${m.sender.toUpperCase()}: ${m.text}\n`;
+                });
             }
 
-            if(message.toLowerCase().includes("no, qui sbagli") || message.toLowerCase().includes("ricorda che")) {
-                appConfig.userCorrections.push(message); saveConfig(); if(supabaseClient) syncDualCloud();
-            }
-
-            appendMessage("Omiserez", "📄 Testo/File inviato all'analisi...", "user"); chatInput.value = '';
-            btnSend.innerText = "..."; btnSend.disabled = true;
-
-            const systemPrompt = `Sei il Personal Poker Coach di omiserez (35 anni, 173cm, 92kg). Tono: diretto, analitico. DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}`;
+            const systemPrompt = `Sei il Poker Coach di omiserez (35 anni, 173cm, 92kg). Tono: diretto, analitico. DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}. Rispondi all'ultimo messaggio tenendo conto della storia della chat se presente. ${historyText}`;
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
             try {
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\n" + message }] }] }) });
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nOMISEREZ: " + message }] }] }) });
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error?.message || "Errore sconosciuto. Status: " + data.error?.status);
+                if (!response.ok) throw new Error(data.error?.message || "Errore di connessione.");
                 const aiText = data.candidates[0].content.parts[0].text;
-                appendMessage("Coach", parseMarkdown(aiText), "coach");
-            } catch (error) { appendMessage("Coach", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
-        }
-
-        function appendMessage(sender, text, type) {
-            const chatBox = document.getElementById('chat-box'); const msgDiv = document.createElement('div');
-            msgDiv.className = type === 'user' ? 'msg-user' : 'msg-coach';
-            msgDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 block mb-1 uppercase">${sender}</span><p class="text-sm leading-relaxed">${text}</p>`;
-            chatBox.appendChild(msgDiv); chatBox.scrollTop = chatBox.scrollHeight;
+                appendAndSaveMessage("Coach", aiText, "coach");
+            } catch (error) { appendAndSaveMessage("Coach", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
         }
 
         // --- GTO ---
@@ -470,60 +580,15 @@
         function updateBankrollUI() { let tProfit = 0, tBuyin = 0; appData.bankroll.forEach(t => { tProfit += t.profit; tBuyin += t.buyin; }); let count = appData.bankroll.length; let abi = count > 0 ? (tBuyin / count) : 0; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; let elP = document.getElementById('stat-profit'); elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444'; document.getElementById('stat-abi').innerText = `€ ${abi.toFixed(2)}`; let elR = document.getElementById('stat-roi'); elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444'; document.getElementById('stat-count').innerText = count; document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`; renderChart(); }
         function renderChart() { const ctx = document.getElementById('brChart').getContext('2d'); let cum = 0; const dataPts = appData.bankroll.map(t => { cum += t.profit; return cum; }); if (brChartInstance) brChartInstance.destroy(); brChartInstance = new Chart(ctx, { type: 'line', data: { labels: dataPts.map((_,i)=>i), datasets: [{ data: dataPts, borderColor: '#3b82f6', fill: false }] }, options: { responsive: true, maintainAspectRatio: false } }); }
 
-        // --- STRUMENTI ICM / EV / MC RIPARATI (9 GIOCATORI) ---
-        function initICMInputs() { 
-            const container = document.getElementById('icm-inputs'); let html = ''; 
-            for(let i=1; i<=9; i++) { // ALZATO A 9 GIOCATORI
-                html += `<div class="grid grid-cols-12 gap-2 items-center"><div class="col-span-1 text-center text-xs font-bold text-gray-500">${i}</div><div class="col-span-6"><input id="icm-s${i}" type="number" placeholder="Chips P${i}" class="text-xs py-2 px-2 text-[#8b5cf6]"></div><div class="col-span-5"><input id="icm-p${i}" type="number" placeholder="€ Premio ${i}°" class="text-xs py-2 px-2 text-[#22c55e]"></div></div>`; 
-            }
-            container.innerHTML = html; 
-        }
-        
-        function calculateICM() {
-            let stacksArr = []; let payoutsArr = [];
-            for(let i=1; i<=9; i++) { // ALZATO A 9 GIOCATORI
-                let s = parseFloat(document.getElementById('icm-s'+i).value); let p = parseFloat(document.getElementById('icm-p'+i).value); 
-                if(s > 0) stacksArr.push({id: i, chips: s}); if(p > 0) payoutsArr.push(p); 
-            }
-            payoutsArr.sort((a,b)=>b-a); 
-            if(stacksArr.length < 2 || payoutsArr.length === 0) { document.getElementById('icm-results').innerHTML = `<p class="text-red-500 text-xs text-center font-bold">Inserisci dati validi.</p>`; return; }
-            let chips = stacksArr.map(st => st.chips); let results = icmRecursion(chips, payoutsArr, 0, 1.0, null); let resHtml = ''; 
-            for(let i=0; i<stacksArr.length; i++) resHtml += `<div class="flex justify-between items-center p-2 bg-[#1a1d24] rounded border border-[#333]"><span class="text-gray-400 font-bold">P${stacksArr[i].id}: <span class="text-white">${stacksArr[i].chips}</span></span><span class="text-lg font-black text-[#22c55e]">€ ${results[i].toFixed(2)}</span></div>`; 
-            document.getElementById('icm-results').innerHTML = resHtml;
-        }
-        
-        function icmRecursion(stacks, payouts, depth, currentProb, results) { 
-            if (results === null) results = new Array(stacks.length).fill(0); 
-            if (depth >= payouts.length || depth >= stacks.length) return results; 
-            let totalChips = stacks.reduce((a, b) => a + b, 0); if (totalChips === 0) return results; 
-            for (let i = 0; i < stacks.length; i++) { 
-                if (stacks[i] > 0) { 
-                    let probFirst = stacks[i] / totalChips; results[i] += currentProb * probFirst * payouts[depth]; 
-                    let savedStack = stacks[i]; stacks[i] = 0; icmRecursion(stacks, payouts, depth + 1, currentProb * probFirst, results); stacks[i] = savedStack; 
-                } 
-            } 
-            return results; 
-        }
-        
-        function calculateCallEV() { 
-            const pot = parseFloat(document.getElementById('ev-pot').value); const callAmt = parseFloat(document.getElementById('ev-call').value); const eqStr = document.getElementById('ev-eq').value.replace('%',''); const equity = parseFloat(eqStr) / 100; 
-            if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) return; 
-            const ev = (equity * (pot + callAmt)) - callAmt; const box = document.getElementById('ev-result-box'); const verdictNode = document.getElementById('ev-verdict-text'); const valNode = document.getElementById('ev-value'); box.classList.remove('hidden'); valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`; 
-            if (ev > 0) { box.style.borderColor = "#22c55e"; verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e"; } else { box.style.borderColor = "#ef4444"; verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444"; } 
-        }
-        
+        // --- MATH (ICM 9 GIOCATORI + EV/MC) ---
+        function initICMInputs() { const container = document.getElementById('icm-inputs'); let html = ''; for(let i=1; i<=9; i++) { html += `<div class="grid grid-cols-12 gap-2 items-center"><div class="col-span-1 text-center text-xs font-bold text-gray-500">${i}</div><div class="col-span-6"><input id="icm-s${i}" type="number" placeholder="Chips P${i}" class="text-xs py-2 px-2 text-[#8b5cf6]"></div><div class="col-span-5"><input id="icm-p${i}" type="number" placeholder="€ Premio ${i}°" class="text-xs py-2 px-2 text-[#22c55e]"></div></div>`; } container.innerHTML = html; }
+        function calculateICM() { let stacksArr = []; let payoutsArr = []; for(let i=1; i<=9; i++) { let s = parseFloat(document.getElementById('icm-s'+i).value); let p = parseFloat(document.getElementById('icm-p'+i).value); if(s > 0) stacksArr.push({id: i, chips: s}); if(p > 0) payoutsArr.push(p); } payoutsArr.sort((a,b)=>b-a); if(stacksArr.length < 2 || payoutsArr.length === 0) { document.getElementById('icm-results').innerHTML = `<p class="text-red-500 text-xs text-center font-bold">Inserisci dati validi.</p>`; return; } let chips = stacksArr.map(st => st.chips); let results = icmRecursion(chips, payoutsArr, 0, 1.0, null); let resHtml = ''; for(let i=0; i<stacksArr.length; i++) resHtml += `<div class="flex justify-between items-center p-2 bg-[#1a1d24] rounded border border-[#333]"><span class="text-gray-400 font-bold">P${stacksArr[i].id}: <span class="text-white">${stacksArr[i].chips}</span></span><span class="text-lg font-black text-[#22c55e]">€ ${results[i].toFixed(2)}</span></div>`; document.getElementById('icm-results').innerHTML = resHtml; }
+        function icmRecursion(stacks, payouts, depth, currentProb, results) { if (results === null) results = new Array(stacks.length).fill(0); if (depth >= payouts.length || depth >= stacks.length) return results; let totalChips = stacks.reduce((a, b) => a + b, 0); if (totalChips === 0) return results; for (let i = 0; i < stacks.length; i++) { if (stacks[i] > 0) { let probFirst = stacks[i] / totalChips; results[i] += currentProb * probFirst * payouts[depth]; let savedStack = stacks[i]; stacks[i] = 0; icmRecursion(stacks, payouts, depth + 1, currentProb * probFirst, results); stacks[i] = savedStack; } } return results; }
+        function calculateCallEV() { const pot = parseFloat(document.getElementById('ev-pot').value); const callAmt = parseFloat(document.getElementById('ev-call').value); const eqStr = document.getElementById('ev-eq').value.replace('%',''); const equity = parseFloat(eqStr) / 100; if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) return; const ev = (equity * (pot + callAmt)) - callAmt; const box = document.getElementById('ev-result-box'); const verdictNode = document.getElementById('ev-verdict-text'); const valNode = document.getElementById('ev-value'); box.classList.remove('hidden'); valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`; if (ev > 0) { box.style.borderColor = "#22c55e"; verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e"; } else { box.style.borderColor = "#ef4444"; verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444"; } }
         function copyEquityFromMC() { let heroEq = document.getElementById('res-hero').innerText.replace('%', ''); if(heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq; }
-        
         let activeInput = null; function setActiveInput(el) { activeInput = el; } function typeCard(val) { if(!activeInput){ activeInput = document.getElementById('mc-hero'); activeInput.focus(); } activeInput.value += val; activeInput.focus(); } function clearActiveInput() { if(activeInput){ activeInput.value = ''; activeInput.focus(); } }
-        
-        function evaluateHand(cards) { 
-            let rankStr = '23456789TJQKA'; let ranks = cards.map(c => rankStr.indexOf(c[0].toUpperCase())); let suits = cards.map(c => c[1].toLowerCase()); let rc = new Array(13).fill(0); let sc = {s:0, h:0, d:0, c:0}; ranks.forEach(r => rc[r]++); suits.forEach(s => sc[s]++); let flushSuit = Object.keys(sc).find(k => sc[k] >= 5); let isFlush = !!flushSuit; let ur = [...new Set(ranks)].sort((a,b)=>a-b); if(ur.includes(12)) ur.unshift(-1); let isStraight = false, sHigh = -1, streak = 1; for(let i=1; i<ur.length; i++){ if(ur[i] === ur[i-1]+1) streak++; else streak=1; if(streak>=5){ isStraight = true; sHigh = ur[i]; } } let pairs = [], trips = [], quads = []; rc.forEach((count, rank) => { if(count===2) pairs.push(rank); if(count===3) trips.push(rank); if(count===4) quads.push(rank); }); let score = 0; ranks.sort((a,b)=>b-a); if(isStraight && isFlush) score = 8000000 + sHigh*10000; else if(quads.length) score = 7000000 + Math.max(...quads)*10000; else if(trips.length && pairs.length) score = 6000000 + Math.max(...trips)*10000; else if(trips.length > 1) score = 6000000 + Math.max(...trips)*10000; else if(isFlush) { let fRanks = cards.filter(c => c[1].toLowerCase()===flushSuit).map(c => rankStr.indexOf(c[0].toUpperCase())).sort((a,b)=>b-a); score = 5000000 + fRanks[0]*10000 + (fRanks[1]||0)*100; } else if(isStraight) score = 4000000 + sHigh*10000; else if(trips.length) score = 3000000 + Math.max(...trips)*10000; else if(pairs.length >= 2) score = 2000000 + Math.max(...pairs)*10000 + Math.min(...pairs)*100; else if(pairs.length === 1) score = 1000000 + pairs[0]*10000; return score + ranks[0]*100 + (ranks[1]||0)*1 + (ranks[2]||0)*0.01; 
-        }
-        
-        function runEquitySimulation() { 
-            let heroStr = document.getElementById('mc-hero').value.trim(); let villainStr = document.getElementById('mc-villain').value.trim(); let boardStr = document.getElementById('mc-board').value.trim(); let hero = heroStr ? heroStr.split(/\s+/) : []; if(hero.length !== 2) { alert("Inserisci 2 carte."); return; } let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando..."; 
-            setTimeout(() => { let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA'; for(let r of rankStr) for(let s of suits) deck.push(r+s); let known = [...hero, ...(villainStr?villainStr.split(/\s+/):[]), ...(boardStr?boardStr.split(/\s+/):[])].map(c => c.toLowerCase()); deck = deck.filter(c => !known.includes(c.toLowerCase())); let wins = 0, ties = 0, runs = 2000; let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : []; for(let i=0; i<runs; i++){ let simDeck = [...deck]; for(let j=simDeck.length-1; j>0; j--){ let k = Math.floor(Math.random()*(j+1)); [simDeck[j], simDeck[k]] = [simDeck[k], simDeck[j]]; } let simBoard = [...board]; let deckIdx = 0; while(simBoard.length < 5) simBoard.push(simDeck[deckIdx++]); let simVillain = [...villain]; while(simVillain.length < 2) simVillain.push(simDeck[deckIdx++]); let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]); if(heroScore > villainScore) wins++; else if(heroScore === villainScore) ties++; } let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100; document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%'; document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%'; document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%'; document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula % Vittoria"; }, 50); 
-        }
+        function evaluateHand(cards) { let rankStr = '23456789TJQKA'; let ranks = cards.map(c => rankStr.indexOf(c[0].toUpperCase())); let suits = cards.map(c => c[1].toLowerCase()); let rc = new Array(13).fill(0); let sc = {s:0, h:0, d:0, c:0}; ranks.forEach(r => rc[r]++); suits.forEach(s => sc[s]++); let flushSuit = Object.keys(sc).find(k => sc[k] >= 5); let isFlush = !!flushSuit; let ur = [...new Set(ranks)].sort((a,b)=>a-b); if(ur.includes(12)) ur.unshift(-1); let isStraight = false, sHigh = -1, streak = 1; for(let i=1; i<ur.length; i++){ if(ur[i] === ur[i-1]+1) streak++; else streak=1; if(streak>=5){ isStraight = true; sHigh = ur[i]; } } let pairs = [], trips = [], quads = []; rc.forEach((count, rank) => { if(count===2) pairs.push(rank); if(count===3) trips.push(rank); if(count===4) quads.push(rank); }); let score = 0; ranks.sort((a,b)=>b-a); if(isStraight && isFlush) score = 8000000 + sHigh*10000; else if(quads.length) score = 7000000 + Math.max(...quads)*10000; else if(trips.length && pairs.length) score = 6000000 + Math.max(...trips)*10000; else if(trips.length > 1) score = 6000000 + Math.max(...trips)*10000; else if(isFlush) { let fRanks = cards.filter(c => c[1].toLowerCase()===flushSuit).map(c => rankStr.indexOf(c[0].toUpperCase())).sort((a,b)=>b-a); score = 5000000 + fRanks[0]*10000 + (fRanks[1]||0)*100; } else if(isStraight) score = 4000000 + sHigh*10000; else if(trips.length) score = 3000000 + Math.max(...trips)*10000; else if(pairs.length >= 2) score = 2000000 + Math.max(...pairs)*10000 + Math.min(...pairs)*100; else if(pairs.length === 1) score = 1000000 + pairs[0]*10000; return score + ranks[0]*100 + (ranks[1]||0)*1 + (ranks[2]||0)*0.01; }
+        function runEquitySimulation() { let heroStr = document.getElementById('mc-hero').value.trim(); let villainStr = document.getElementById('mc-villain').value.trim(); let boardStr = document.getElementById('mc-board').value.trim(); let hero = heroStr ? heroStr.split(/\s+/) : []; if(hero.length !== 2) { alert("Inserisci 2 carte."); return; } let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando..."; setTimeout(() => { let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA'; for(let r of rankStr) for(let s of suits) deck.push(r+s); let known = [...hero, ...(villainStr?villainStr.split(/\s+/):[]), ...(boardStr?boardStr.split(/\s+/):[])].map(c => c.toLowerCase()); deck = deck.filter(c => !known.includes(c.toLowerCase())); let wins = 0, ties = 0, runs = 2000; let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : []; for(let i=0; i<runs; i++){ let simDeck = [...deck]; for(let j=simDeck.length-1; j>0; j--){ let k = Math.floor(Math.random()*(j+1)); [simDeck[j], simDeck[k]] = [simDeck[k], simDeck[j]]; } let simBoard = [...board]; let deckIdx = 0; while(simBoard.length < 5) simBoard.push(simDeck[deckIdx++]); let simVillain = [...villain]; while(simVillain.length < 2) simVillain.push(simDeck[deckIdx++]); let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]); if(heroScore > villainScore) wins++; else if(heroScore === villainScore) ties++; } let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100; document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%'; document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%'; document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%'; document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula % Vittoria"; }, 50); }
 
         window.onload = () => { if (!checkAuth()) return; document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); createMatrixDOM(); initICMInputs(); loadAllData(); setTimeout(downloadDualCloud, 1000); };
     </script>
