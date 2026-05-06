@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v21.0 Multi-Persona</title>
+    <title>Poker Pro Hub - v21.1 Sync Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -43,7 +43,7 @@
 <body class="bg-[#0f1115]">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v21.0</span></h1>
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v21.1</span></h1>
         <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
             <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
@@ -315,10 +315,22 @@
             activeChatId: null 
         }; 
         let supabaseClient = null;
-        let currentPersona = 'analyst'; // Persona attiva di default
+        let currentPersona = 'analyst';
 
         function setCloudStatus(msg, isError = false) { 
             const el = document.getElementById('cloud-status'); el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
+        }
+
+        // --- INIZIALIZZAZIONE DATABASE ---
+        function initSupabase() {
+            const url = document.getElementById('sb-url').value.trim(); 
+            const key = document.getElementById('sb-key').value.trim();
+            if(!url) return; 
+            appConfig.supabaseUrl = url; 
+            saveConfig();
+            try { 
+                supabaseClient = supabase.createClient(url, key); 
+            } catch(e) { console.error("Errore Supabase", e); }
         }
 
         // --- AUTO-SAVE INVISIBILE PER LA CHAT ---
@@ -346,6 +358,9 @@
         }
 
         async function downloadDualCloud() {
+            // FIX: Assicura che Supabase sia connesso prima di provare a scaricare le chat
+            if(!supabaseClient) initSupabase();
+
             document.body.style.cursor = 'wait'; setCloudStatus('☁️ Scaricamento...');
             try { const res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); if(res.ok) { const data = await res.json(); if(data.record) { appData.palette = data.record.palette || []; appData.bankroll = data.record.bankroll || []; appData.ranges = data.record.ranges || {}; triggerLocalSave(); updateBankrollUI(); updateSpotUI(); } } } catch (e) {}
             
@@ -376,10 +391,14 @@
 
         function loadAllData() {
             let conf = localStorage.getItem('poker_v18_config'); if(conf) appConfig = Object.assign(appConfig, JSON.parse(conf));
-            document.getElementById('sb-url').value = appConfig.supabaseUrl; document.getElementById('ai-key').value = appConfig.aiKey;
+            document.getElementById('sb-url').value = appConfig.supabaseUrl || "https://tphnvmmisznkyubhnpkk.supabase.co"; 
+            document.getElementById('ai-key').value = appConfig.aiKey || "";
             document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
             if(appConfig.aiKey) updateAiStatus(true); 
             
+            // FIX: Auto-Connessione Supabase al caricamento
+            initSupabase();
+
             if(!appConfig.chats || appConfig.chats.length === 0) {
                 createNewChat(false);
             } else {
@@ -482,12 +501,6 @@
         // --- MOTORE AI ---
         function saveAiKey() { appConfig.aiKey = document.getElementById('ai-key').value.trim(); saveConfig(); updateAiStatus(true); }
         function updateAiStatus(isActive) { const el = document.getElementById('ai-status'); el.innerText = isActive ? "✅ Gemini Connesso" : "In attesa API Key"; el.className = isActive ? "text-[10px] bg-[#22c55e] text-black font-bold px-2 py-1 rounded" : "text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded"; }
-
-        function initSupabase() {
-            const url = document.getElementById('sb-url').value.trim(); const key = document.getElementById('sb-key').value.trim();
-            if(!url) return; appConfig.supabaseUrl = url; saveConfig();
-            try { supabaseClient = supabase.createClient(url, key); document.getElementById('db-status').innerText = "💾 Supabase Connesso"; document.getElementById('db-status').className = "text-[10px] font-bold text-black bg-[#22c55e] px-3 py-2 rounded"; } catch(e) { }
-        }
 
         function parseMarkdown(text) { let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); return html.replace(/\n/g, '<br>'); }
 
