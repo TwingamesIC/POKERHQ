@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v20.0 Pro Coaching Suite</title>
+    <title>Poker Pro Hub - v21.0 Multi-Persona</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -37,12 +37,13 @@
         .dropzone-active { border-color: #3b82f6 !important; background-color: rgba(59, 130, 246, 0.1) !important; }
         .chat-list-item { transition: all 0.2s; }
         .chat-list-item:hover { background: #2a2e38; }
+        .persona-active { background-color: #3b82f6 !important; color: white !important; border-color: #60a5fa !important; }
     </style>
 </head>
 <body class="bg-[#0f1115]">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v20.0</span></h1>
+        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v21.0</span></h1>
         <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
             <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
@@ -216,13 +217,13 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 4: AI COACH MULTI-CHAT -->
+            <!-- SEZIONE 4: AI COACH MULTI-CHAT & MULTI-PERSONA -->
             <section id="sec-coach" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
                     <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] shadow-xl flex flex-col h-[600px]">
                         <div class="flex justify-between items-center border-b border-[#333] pb-3 mb-4">
-                            <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">🤖 Personal Coach <span class="text-[#3b82f6]">Gemini</span></h2>
+                            <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">🤖 Personal AI <span class="text-[#3b82f6]">Gemini</span></h2>
                             <span id="ai-status" class="text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded">In attesa...</span>
                         </div>
                         
@@ -230,10 +231,17 @@
                             <!-- Messaggi caricati dinamicamente qui -->
                         </div>
                         
+                        <!-- SELETTORE PERSONA (NOVITA V21) -->
+                        <div class="flex gap-2 mb-2 bg-[#1a1d24] p-1.5 rounded border border-[#333]">
+                            <button onclick="setPersona('analyst')" id="btn-analyst" class="flex-1 text-[11px] md:text-xs py-1.5 rounded border border-transparent text-gray-400 font-bold hover:bg-[#333] transition persona-active">📊 Analisi HH</button>
+                            <button onclick="setPersona('coach')" id="btn-coach" class="flex-1 text-[11px] md:text-xs py-1.5 rounded border border-transparent text-gray-400 font-bold hover:bg-[#333] transition">🎓 Strategia</button>
+                            <button onclick="setPersona('mental')" id="btn-mental" class="flex-1 text-[11px] md:text-xs py-1.5 rounded border border-transparent text-gray-400 font-bold hover:bg-[#333] transition">🧠 Mental Coach</button>
+                        </div>
+
                         <div class="flex gap-2 relative items-end">
                             <input type="file" id="file-upload" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
                             <button onclick="document.getElementById('file-upload').click()" class="bg-[#333] text-gray-300 px-4 py-3 rounded hover:bg-[#444] transition flex items-center justify-center font-bold text-lg" title="Carica HH">📎</button>
-                            <textarea id="chat-input" placeholder="Scrivi al coach o trascina qui un file .txt..." class="text-sm py-3 px-3 h-14 resize-none overflow-y-auto flex-1 transition-colors" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToCoach(); }"></textarea>
+                            <textarea id="chat-input" placeholder="Scrivi un messaggio o trascina qui un file .txt..." class="text-sm py-3 px-3 h-14 resize-none overflow-y-auto flex-1 transition-colors" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToCoach(); }"></textarea>
                             <button onclick="sendToCoach()" id="btn-send" class="bg-[#3b82f6] text-white px-6 py-3 font-bold uppercase rounded hover:bg-blue-600 transition">Invia</button>
                         </div>
                     </div>
@@ -303,10 +311,11 @@
             aiKey: "", 
             aiModel: "", 
             userCorrections: [],
-            chats: [],         // Array delle conversazioni
-            activeChatId: null // ID della chat correntemente aperta
+            chats: [],         
+            activeChatId: null 
         }; 
         let supabaseClient = null;
+        let currentPersona = 'analyst'; // Persona attiva di default
 
         function setCloudStatus(msg, isError = false) { 
             const el = document.getElementById('cloud-status'); el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
@@ -314,7 +323,7 @@
 
         // --- AUTO-SAVE INVISIBILE PER LA CHAT ---
         async function silentAutoSave() {
-            saveConfig(); // Salva in locale
+            saveConfig(); 
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' });
@@ -349,7 +358,6 @@
                         document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
                         if(appConfig.aiKey) updateAiStatus(true);
                         
-                        // Ripristina le chat scaricate
                         if(!appConfig.chats) appConfig.chats = [];
                         if(appConfig.chats.length === 0) createNewChat(false);
                         else {
@@ -372,7 +380,6 @@
             document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
             if(appConfig.aiKey) updateAiStatus(true); 
             
-            // Inizializza Sistema Chat
             if(!appConfig.chats || appConfig.chats.length === 0) {
                 createNewChat(false);
             } else {
@@ -391,17 +398,27 @@
         function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel}`; }
         function triggerLocalSave() { localStorage.setItem('poker_v18_data', JSON.stringify(appData)); }
 
+        // --- GESTIONE PERSONA ---
+        function setPersona(type) {
+            currentPersona = type;
+            ['analyst', 'coach', 'mental'].forEach(p => {
+                let el = document.getElementById('btn-' + p);
+                el.classList.remove('persona-active');
+            });
+            document.getElementById('btn-' + type).classList.add('persona-active');
+        }
+
         // --- LOGICA MULTI-CHAT ---
         function createNewChat(doSave = true) {
             const newId = 'chat_' + Date.now();
             const newChat = {
                 id: newId,
-                title: "Nuova Analisi",
+                title: "Nuova Sessione",
                 messages: [
-                    { sender: "Coach", text: "Motore V20.0 pronto. Incolla una HH o fammi una domanda.", type: "coach" }
+                    { sender: "Sistema", text: "Seleziona il ruolo dell'AI dal menu qui sopra (Analisi, Strategia, o Mental Coach) e fammi una domanda.", type: "coach" }
                 ]
             };
-            appConfig.chats.unshift(newChat); // Aggiunge in cima
+            appConfig.chats.unshift(newChat); 
             appConfig.activeChatId = newId;
             selectChat(newId);
             if(doSave) silentAutoSave();
@@ -410,10 +427,7 @@
         function selectChat(id) {
             appConfig.activeChatId = id;
             renderChatList();
-            
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = '';
-            
+            const chatBox = document.getElementById('chat-box'); chatBox.innerHTML = '';
             const chat = appConfig.chats.find(c => c.id === id);
             if(chat) {
                 chat.messages.forEach(m => {
@@ -423,60 +437,45 @@
                     chatBox.appendChild(msgDiv);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
-            }
-            saveConfig();
+            } saveConfig();
         }
 
         function deleteChat(id) {
             if(confirm("Eliminare definitivamente questa sessione?")) {
                 appConfig.chats = appConfig.chats.filter(c => c.id !== id);
-                if(appConfig.chats.length === 0) {
-                    createNewChat(false);
-                } else if (appConfig.activeChatId === id) {
-                    appConfig.activeChatId = appConfig.chats[0].id;
-                }
-                selectChat(appConfig.activeChatId);
-                silentAutoSave();
+                if(appConfig.chats.length === 0) createNewChat(false);
+                else if (appConfig.activeChatId === id) appConfig.activeChatId = appConfig.chats[0].id;
+                selectChat(appConfig.activeChatId); silentAutoSave();
             }
         }
 
         function renderChatList() {
-            const list = document.getElementById('chat-list');
-            list.innerHTML = '';
+            const list = document.getElementById('chat-list'); list.innerHTML = '';
             appConfig.chats.forEach(c => {
                 let isActive = c.id === appConfig.activeChatId;
                 list.innerHTML += `
                     <div onclick="selectChat('${c.id}')" class="chat-list-item flex justify-between items-center p-2 rounded cursor-pointer border ${isActive ? 'border-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#333] bg-[#1a1d24] hover:border-[#555]'}">
                         <span class="text-xs text-white truncate flex-1 font-bold ${isActive ? 'text-[#3b82f6]' : ''}">${c.title}</span>
                         <button onclick="event.stopPropagation(); deleteChat('${c.id}')" class="text-red-500 hover:text-white px-2 rounded text-xs ml-2">✕</button>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
         function appendAndSaveMessage(sender, text, type) {
-            // Aggiorna DOM
-            const chatBox = document.getElementById('chat-box'); 
-            const msgDiv = document.createElement('div');
+            const chatBox = document.getElementById('chat-box'); const msgDiv = document.createElement('div');
             msgDiv.className = type === 'user' ? 'msg-user' : 'msg-coach';
             msgDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 block mb-1 uppercase">${sender}</span><p class="text-sm leading-relaxed">${parseMarkdown(text)}</p>`;
-            chatBox.appendChild(msgDiv); 
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.appendChild(msgDiv); chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Salva nel database della chat attiva
             const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId);
             if(chat) {
                 chat.messages.push({ sender, text, type });
-                
-                // Auto-Naming della chat se è il primo messaggio utente
-                if(type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Analisi") {
+                if(type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Sessione") {
                     let newTitle = text.substring(0, 22).replace(/\n/g, " ");
                     if(text.length > 22) newTitle += "...";
-                    chat.title = newTitle;
-                    renderChatList();
+                    chat.title = newTitle; renderChatList();
                 }
-                
-                silentAutoSave(); // Salva tutto su Supabase invisibilmente
+                silentAutoSave(); 
             }
         }
 
@@ -513,53 +512,49 @@
         const chatInput = document.getElementById('chat-input');
         chatInput.addEventListener('dragover', (e) => { e.preventDefault(); chatInput.classList.add('dropzone-active'); });
         chatInput.addEventListener('dragleave', (e) => { e.preventDefault(); chatInput.classList.remove('dropzone-active'); });
-        chatInput.addEventListener('drop', (e) => {
-            e.preventDefault(); chatInput.classList.remove('dropzone-active');
-            if(e.dataTransfer.files && e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
-        });
+        chatInput.addEventListener('drop', (e) => { e.preventDefault(); chatInput.classList.remove('dropzone-active'); if(e.dataTransfer.files && e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]); });
         function handleFileUpload(event) { if(event.target.files[0]) processFile(event.target.files[0]); }
         function processFile(file) {
             if(!file.name.endsWith('.txt')) { alert("Solo file .txt supportati."); return; }
             const reader = new FileReader();
-            reader.onload = (e) => {
-                chatInput.value += `\n[FILE HH: ${file.name}]\n${e.target.result}\n`;
-                chatInput.scrollTop = chatInput.scrollHeight;
-            };
+            reader.onload = (e) => { chatInput.value += `\n[FILE HH: ${file.name}]\n${e.target.result}\n`; chatInput.scrollTop = chatInput.scrollHeight; };
             reader.readAsText(file);
         }
 
-        // --- INVIO CON MEMORIA STORICA ---
+        // --- INVIO CON PERSONA E MEMORIA ---
         async function sendToCoach() {
             const message = chatInput.value.trim(); if(!message) return;
             const btnSend = document.getElementById('btn-send'); const key = appConfig.aiKey; 
             let model = appConfig.aiModel;
-            if (!model || model === "Nessuno") { appendAndSaveMessage("Coach", "⚠️ Esegui la '🔍 Diagnosi API' prima di scrivermi!", "coach"); return; }
+            if (!model || model === "Nessuno") { appendAndSaveMessage("Sistema", "⚠️ Esegui la '🔍 Diagnosi API' prima di scrivermi!", "coach"); return; }
             if(message.toLowerCase().includes("no, qui sbagli")) { appConfig.userCorrections.push(message); }
 
             appendAndSaveMessage("Omiserez", message, "user"); 
             chatInput.value = ''; btnSend.innerText = "..."; btnSend.disabled = true;
 
-            // Costruisce il prompt includendo la storia della chat corrente
             const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId);
             let historyText = "";
             if(chat && chat.messages.length > 2) {
                 historyText = "\n--- STORIA DELLA CHAT RECENTE ---\n";
-                // Prende gli ultimi 6 messaggi per dare contesto all'IA
-                chat.messages.slice(-6).forEach(m => {
-                    if(m.text !== message) historyText += `${m.sender.toUpperCase()}: ${m.text}\n`;
-                });
+                chat.messages.slice(-6).forEach(m => { if(m.text !== message) historyText += `${m.sender.toUpperCase()}: ${m.text}\n`; });
             }
 
-            const systemPrompt = `Sei il Poker Coach di omiserez (35 anni, 173cm, 92kg). Tono: diretto, analitico. DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}. Rispondi all'ultimo messaggio tenendo conto della storia della chat se presente. ${historyText}`;
+            let basePrompt = `Sei l'AI personale di omiserez (35 anni, 173cm, 92kg). DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}. Se applicabile, tieni conto della storia recente: ${historyText}\n\n`;
+            let personaPrompt = "";
+            if(currentPersona === 'analyst') personaPrompt = "RUOLO: Analista Tecnico GTO. Rispondi in modo analitico, matematico e focalizzato sui range e l'EV. Analizza la hand history in modo spietato.";
+            else if(currentPersona === 'coach') personaPrompt = "RUOLO: Poker Coach Strategico. Discuti di strategia generale, exploit, adattamenti e dinamiche del torneo. Tono: diretto e costruttivo.";
+            else if(currentPersona === 'mental') personaPrompt = "RUOLO: Mental Coach. Concentrati su tilt, gestione della varianza, mindset, stanchezza fisica e routine (considera la sua corporatura e l'età). Tono: empatico, motivazionale e calmo.";
+
+            const systemPrompt = basePrompt + personaPrompt;
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
             try {
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nOMISEREZ: " + message }] }] }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error?.message || "Errore di connessione.");
-                const aiText = data.candidates[0].content.parts[0].text;
-                appendAndSaveMessage("Coach", aiText, "coach");
-            } catch (error) { appendAndSaveMessage("Coach", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
+                let personaName = currentPersona === 'analyst' ? "Analista GTO" : (currentPersona === 'coach' ? "Coach" : "Mental Coach");
+                appendAndSaveMessage(personaName, data.candidates[0].content.parts[0].text, "coach");
+            } catch (error) { appendAndSaveMessage("Sistema", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
         }
 
         // --- GTO ---
