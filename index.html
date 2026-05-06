@@ -3,20 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - v21.2 Error Detector</title>
+    <title>Poker Pro Hub - v23.1 Agentic Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0f1115; color: #e2e8f0; font-family: 'Inter', sans-serif; touch-action: manipulation; }
-        .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; background: #1e222a; border-radius: 4px; border: 1px solid #333; touch-action: none; aspect-ratio: 1; width: 100%; max-width: 650px; margin: auto; }
-        .cell { display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: filter 0.1s; user-select: none; background-color: #1a1d24; color: #475569; }
-        .cell:hover { filter: brightness(1.4); }
-        .cell-colored { color: #fff; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); }
-        input[type="text"], input[type="number"], input[type="password"], textarea { background: #1a1d24; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; width: 100%; outline: none; }
-        input:focus, textarea:focus { border-color: #3b82f6; }
-        .nav-btn { padding: 10px 16px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
-        .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+        body { background-color: #0b0d10; color: #e2e8f0; font-family: 'Inter', sans-serif; touch-action: manipulation; }
+        
+        /* Matrice e Celle */
+        .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; background: #1e222a; border-radius: 8px; border: 1px solid #333; touch-action: none; aspect-ratio: 1; width: 100%; max-width: 650px; margin: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .cell { display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: all 0.15s ease; user-select: none; background-color: #1a1d24; color: #475569; border-radius: 2px; }
+        .cell:hover { filter: brightness(1.5); transform: scale(1.05); z-index: 10; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .cell-colored { color: #fff; text-shadow: 0px 1px 3px rgba(0,0,0,0.9); }
+        
+        /* Input Base */
+        input[type="text"], input[type="number"], input[type="password"], textarea { background: #14171c; border: 1px solid #2d3748; color: white; padding: 12px; border-radius: 8px; width: 100%; outline: none; transition: all 0.2s; }
+        input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.3); }
+        
+        /* Navigazione */
+        .nav-btn { padding: 10px 16px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; letter-spacing: 1px; }
+        .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; text-shadow: 0 0 8px rgba(59,130,246,0.4); }
+        
+        /* Stili Filtri GTO */
         .btn-filter { background: #1a1d24; border: 1px solid #333; color: #64748b; padding: 6px 4px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; transition: all 0.1s; text-transform: uppercase; }
         .btn-filter:hover { border-color: #555; color: #e2e8f0; }
         .btn-active-stage { background: #8b5cf6 !important; border-color: #a78bfa !important; color: white !important; }
@@ -24,59 +33,77 @@
         .btn-active-pos { background: #3b82f6 !important; border-color: #93c5fd !important; color: white !important; }
         .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #1a1d24; border: 1px solid #333; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: all 0.1s; }
         .brush-item:hover { background: #232730; }
-        .brush-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.2); background: #232730; }
-        .color-box { width: 20px; height: 20px; border-radius: 3px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        .brush-active { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.2); background: #232730; }
         .key-btn { background: #1a1d24; border: 1px solid #333; color: white; font-weight: bold; font-size: 1.1rem; padding: 8px 0; border-radius: 4px; }
         .key-btn:active { background: #333; }
         .suit-s { color: #cbd5e1; } .suit-h { color: #ef4444; } .suit-d { color: #3b82f6; } .suit-c { color: #10b981; }
-        .dropzone-active { border-color: #3b82f6 !important; background-color: rgba(59, 130, 246, 0.1) !important; }
-        .chat-list-item { transition: all 0.2s; }
-        .chat-list-item:hover { background: #2a2e38; }
-        .persona-active { background-color: #3b82f6 !important; color: white !important; border-color: #60a5fa !important; }
-        
-        /* Stile Chat Moderno */
-        .chat-container { height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 12px; scroll-behavior: smooth; }
-        .msg-coach { background: transparent; padding: 4px 12px; max-w-[90%]; align-self: flex-start; line-height: 1.6; border-left: 2px solid #3b82f6; }
-        .msg-user { background: #2a2e38; color: white; padding: 16px 20px; border-radius: 12px; max-width: 80%; align-self: flex-end; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .msg-coach strong { color: #fff; font-weight: 700; background: rgba(255,255,255,0.05); padding: 0 4px; border-radius: 4px;}
+
+        /* Modern AI Chat Styles */
+        .chat-container { height: 550px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding-right: 12px; scroll-behavior: smooth; }
+        .msg-coach { background: #161a22; border: 1px solid #2d3748; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(59, 130, 246, 0.05); padding: 16px 20px; border-radius: 16px; border-bottom-left-radius: 4px; max-width: 90%; align-self: flex-start; line-height: 1.7; position: relative; margin-top: 10px; }
+        .msg-coach::before { content: "🤖 AI OPERATOR"; position: absolute; top: -12px; left: 16px; background: #0f1115; color: #60a5fa; font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; border: 1px solid #2d3748; letter-spacing: 1px; }
+        .msg-user { background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 16px 20px; border-radius: 16px; border-bottom-right-radius: 4px; max-width: 80%; align-self: flex-end; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); line-height: 1.6; }
+        .msg-coach strong { color: #93c5fd; font-weight: 800; }
         .msg-coach em { color: #9ca3af; font-style: italic; }
-        .msg-coach code { background: #1a1d24; padding: 2px 6px; border-radius: 4px; color: #8b5cf6; font-family: monospace; font-size: 0.85em; }
+        .msg-coach code { background: #0b0d10; padding: 4px 8px; border-radius: 6px; color: #a78bfa; font-family: monospace; font-size: 0.85em; border: 1px solid #333; }
+        
+        /* Badges e Pannelli */
+        .action-badge { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-top: 10px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.1); }
+        .dynamic-panel { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; background: #161a22; border: 1px solid #8b5cf6; border-left: 4px solid #8b5cf6; padding: 20px; border-radius: 12px; margin-top: 16px; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .quick-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; transition: all 0.2s; }
+        .quick-btn:hover { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #fff; }
+        
+        .report-card { background: #161a22; border: 1px solid #2d3748; border-left: 4px solid #8b5cf6; padding: 16px; border-radius: 8px; margin-bottom: 12px; transition: all 0.2s; }
+        .note-card { background: #161a22; border: 1px solid #2d3748; border-left: 4px solid #facc15; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        
+        /* Sidebar Chat Items */
+        .chat-list-item { transition: all 0.2s; }
+        .chat-list-item:hover { background: #1a1d24; }
+        .persona-active { background-color: #1a1d24 !important; border-color: #3b82f6 !important; color: #60a5fa !important; }
     </style>
 </head>
-<body class="bg-[#0f1115]">
+<body class="bg-[#0b0d10]">
 
-    <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f1115] px-4">
-        <h1 class="text-3xl font-black text-white mb-8 uppercase tracking-widest text-center">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v21.2</span></h1>
-        <div class="bg-[#1e222a] p-8 rounded-lg border border-[#333] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0d10] px-4">
+        <h1 class="text-4xl font-black text-white mb-8 uppercase tracking-widest text-center" style="text-shadow: 0 0 20px rgba(59,130,246,0.5);">Poker Pro Hub <span class="text-xs text-[#facc15] align-top">v23.1</span></h1>
+        <div class="bg-[#161a22] p-8 rounded-xl border border-[#2d3748] shadow-2xl flex flex-col gap-5 w-full max-w-[320px]">
             <input type="password" id="login-pwd" class="text-center text-xl tracking-widest" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
-            <button onclick="checkPassword()" class="w-full bg-[#3b82f6] text-white py-3 rounded font-bold uppercase hover:bg-blue-600 transition shadow-lg">Accedi</button>
-            <p id="login-error" class="text-red-500 text-xs text-center font-bold hidden">Password errata!</p>
+            <button onclick="checkPassword()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-black uppercase hover:from-blue-500 hover:to-blue-400 transition shadow-[0_0_15px_rgba(59,130,246,0.4)]">Accedi</button>
+            <p id="login-error" class="text-red-500 text-xs text-center font-bold hidden">Accesso Negato!</p>
         </div>
     </div>
 
     <div id="app-content" class="min-h-screen flex flex-col p-2 md:p-6 pb-24 hidden">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#333] pb-4">
+        <!-- NAVIGAZIONE PRINCIPALE -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#2d3748] pb-4">
             <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-sm">
                 <button onclick="switchTab('ranges')" id="tab-ranges" class="nav-btn nav-active">🎴 GTO Ranges</button>
                 <button onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-btn">💰 Bankroll</button>
                 <button onclick="switchTab('calc')" id="tab-calc" class="nav-btn">🧮 Strumenti</button>
-                <button onclick="switchTab('coach')" id="tab-coach" class="nav-btn">🤖 AI Coach & DB</button>
+                <button onclick="switchTab('notes')" id="tab-notes" class="nav-btn">📝 Referti & Note</button>
+                <button onclick="switchTab('coach')" id="tab-coach" class="nav-btn">🤖 AI Operator</button>
             </div>
             <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
-                <div id="cloud-status" class="text-[10px] font-bold text-gray-400 bg-[#1a1d24] px-3 py-2 rounded border border-[#333]">☁️ Offline</div>
-                <button onclick="downloadDualCloud()" class="text-[10px] font-bold bg-[#333] hover:bg-[#444] text-white px-3 py-2 rounded transition">⬇️ Scarica</button>
-                <button onclick="syncDualCloud()" class="text-[10px] font-bold bg-[#3b82f6] hover:bg-blue-600 text-white px-4 py-2 rounded shadow-lg transition">☁️ SALVA IN CLOUD</button>
+                <div id="cloud-status" class="text-[10px] font-bold text-gray-400 bg-[#161a22] px-3 py-2 rounded border border-[#2d3748]">☁️ Offline</div>
+                <button onclick="downloadDualCloud()" class="text-[10px] font-bold bg-[#1a1d24] hover:bg-[#2d3748] text-white px-3 py-2 rounded transition border border-[#333]">⬇️ Scarica DB</button>
+                <button onclick="syncDualCloud()" class="text-[10px] font-bold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow-lg transition">☁️ SYNC</button>
             </div>
         </div>
 
-        <main class="max-w-7xl mx-auto w-full">
+        <main class="max-w-7xl mx-auto w-full relative">
             
+            <!-- CONTENITORE PANNELLI DINAMICI (Iniettati dall'IA) -->
+            <div id="dynamic-injection-zone" class="w-full flex flex-col gap-4 mb-6"></div>
+
             <!-- SEZIONE 1: GTO RANGES -->
             <section id="sec-ranges" class="flex flex-col lg:flex-row gap-6">
                 <aside class="w-full lg:w-80 flex flex-col gap-6">
-                    <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 text-center border-b border-[#333] pb-2">Configurazione Spot</h3>
+                    <div class="bg-[#161a22] p-5 rounded-xl border border-[#2d3748]">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-[#333] pb-2">Configurazione Spot</h3>
+                        
                         <p class="text-[10px] font-bold text-[#8b5cf6] uppercase mb-1">1. Fase Torneo</p>
                         <div class="grid grid-cols-2 gap-1 mb-4">
                             <button onclick="setSpot('stage', 'Early')" class="btn-filter btn-stage btn-active-stage" data-val="Early">Early</button>
@@ -84,6 +111,7 @@
                             <button onclick="setSpot('stage', 'Bubble')" class="btn-filter btn-stage" data-val="Bubble">Bubble</button>
                             <button onclick="setSpot('stage', 'FinalTable')" class="btn-filter btn-stage" data-val="FinalTable">Final Table</button>
                         </div>
+                        
                         <p class="text-[10px] font-bold text-[#facc15] uppercase mb-1">2. Stack Effettivo (BB)</p>
                         <div class="grid grid-cols-3 gap-1 mb-4">
                             <button onclick="setSpot('bb', '10')" class="btn-filter btn-bb" data-val="10">10</button>
@@ -93,7 +121,8 @@
                             <button onclick="setSpot('bb', '80')" class="btn-filter btn-bb" data-val="80">80</button>
                             <button onclick="setSpot('bb', '100')" class="btn-filter btn-bb btn-active-bb" data-val="100">100</button>
                         </div>
-                        <p class="text-[10px] font-bold text-[#3b82f6] uppercase mb-1">3. Posizione</p>
+                        
+                        <p class="text-[10px] font-bold text-blue-400 uppercase mb-1">3. Posizione</p>
                         <div class="grid grid-cols-3 gap-1">
                             <button onclick="setSpot('pos', 'UTG')" class="btn-filter btn-pos btn-active-pos" data-val="UTG">UTG</button>
                             <button onclick="setSpot('pos', 'MP')" class="btn-filter btn-pos" data-val="MP">MP</button>
@@ -103,26 +132,31 @@
                             <button onclick="setSpot('pos', 'BB')" class="btn-filter btn-pos" data-val="BB">BB</button>
                         </div>
                     </div>
-                    <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333]">
-                        <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">Tavolozza Azioni</h3>
+
+                    <div class="bg-[#161a22] p-5 rounded-xl border border-[#2d3748]">
+                        <h3 class="text-xs font-black text-green-400 uppercase tracking-widest mb-4 border-b border-[#333] pb-2">Azioni (Colori)</h3>
                         <div class="flex gap-2 mb-4 bg-[#1a1d24] p-2 rounded border border-[#333]">
                             <input type="color" id="new-color-hex" value="#ef4444" class="w-10 h-8 rounded cursor-pointer bg-transparent border-0 p-0">
-                            <input type="text" id="new-color-name" placeholder="Nuova Azione" class="text-xs py-1 px-2 flex-1" onkeypress="if(event.key === 'Enter') addPaletteColor()">
+                            <input type="text" id="new-color-name" placeholder="Azione" class="text-xs py-1 px-2 flex-1 border-0" onkeypress="if(event.key === 'Enter') addPaletteColor()">
                             <button onclick="addPaletteColor()" class="bg-[#22c55e] text-black font-bold px-2 rounded text-xs">+</button>
                         </div>
-                        <div id="brush-list" class="space-y-1 mb-4 max-h-48 overflow-y-auto pr-1"></div>
+                        <div id="brush-list" class="space-y-2 mb-4"></div>
                         <div onclick="setBrush('erase')" id="brush-erase" class="brush-item brush-active mt-2">
-                            <div class="flex items-center"><div class="color-box bg-[#1a1d24] border-[#555]"></div><span class="text-xs font-bold text-gray-400">Cancella (Fold)</span></div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 rounded bg-[#0b0d10] border border-gray-600"></div>
+                                <span class="text-xs font-bold text-gray-400">Cancella (Fold)</span>
+                            </div>
                         </div>
-                        <button onclick="clearMatrix()" class="w-full mt-2 text-xs text-red-400 py-2 border border-[#333] rounded hover:bg-[#1a1d24]">Svuota Matrice Corrente</button>
+                        <button onclick="clearMatrix()" class="w-full mt-4 text-xs text-red-500 font-bold py-2 border border-red-500/30 rounded bg-red-500/10 hover:bg-red-500 hover:text-white transition">SVUOTA GRIGLIA</button>
                     </div>
                 </aside>
-                <div class="flex-1 flex justify-center">
+
+                <div class="flex-1 flex justify-center items-start pt-4">
                     <div class="w-full">
-                        <div class="flex justify-between items-center mb-2 px-1">
-                            <span id="matrix-title" class="font-black text-lg md:text-xl text-white uppercase tracking-wider">Early / 100 BB / UTG</span>
+                        <div class="flex justify-between items-center mb-4 px-2">
+                            <span id="matrix-title" class="font-black text-2xl text-white uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Early / 100 BB / UTG</span>
                         </div>
-                        <div id="matrix" class="matrix-container shadow-2xl"></div>
+                        <div id="matrix" class="matrix-container bg-[#161a22]"></div>
                     </div>
                 </div>
             </section>
@@ -131,54 +165,77 @@
             <section id="sec-bankroll" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#22c55e]"><p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Net Profit</p><p id="stat-profit" class="text-xl font-black mt-1">€ 0.00</p></div>
-                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#facc15]"><p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I.</p><p id="stat-abi" class="text-xl font-black text-white mt-1">€ 0.00</p></div>
-                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-[#3b82f6]"><p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">R.O.I.</p><p id="stat-roi" class="text-xl font-black mt-1">0.00%</p></div>
-                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-purple-500"><p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">MTT Giocati</p><p id="stat-count" class="text-xl font-black text-white mt-1">0</p></div>
-                        <div class="bg-[#1e222a] p-4 rounded-lg border-b-4 border-red-500"><p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Spesa Totale</p><p id="stat-spent" class="text-xl font-black text-white mt-1">€ 0.00</p></div>
-                    </div>
-                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] self-start">
-                        <h3 class="font-bold mb-4 text-[#3b82f6] uppercase tracking-wide text-sm">Registra Torneo</h3>
-                        <div class="space-y-4">
-                            <div><label class="text-[10px] text-gray-400 font-bold uppercase">Buy-in (€)</label><input id="t-buyin" type="number" placeholder="Es. 10" class="mt-1 bg-[#1a1d24]"></div>
-                            <div><label class="text-[10px] text-gray-400 font-bold uppercase">Vincita (€)</label><input id="t-win" type="number" placeholder="Es. 50" class="mt-1 bg-[#1a1d24]"></div>
-                            <button onclick="addTournament()" class="w-full bg-[#3b82f6] text-white hover:bg-blue-600 py-3 rounded font-bold mt-2 transition">Aggiungi a Database</button>
+                        <div class="bg-[#161a22] p-5 rounded-xl border-b-4 border-[#22c55e] border-t border-x border-[#2d3748]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Net Profit</p>
+                            <p id="stat-profit" class="text-2xl font-black mt-1">€ 0.00</p>
+                        </div>
+                        <div class="bg-[#161a22] p-5 rounded-xl border-b-4 border-[#facc15] border-t border-x border-[#2d3748]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest text-[#facc15]">A.B.I.</p>
+                            <p id="stat-abi" class="text-2xl font-black text-white mt-1">€ 0.00</p>
+                        </div>
+                        <div class="bg-[#161a22] p-5 rounded-xl border-b-4 border-[#3b82f6] border-t border-x border-[#2d3748]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">R.O.I.</p>
+                            <p id="stat-roi" class="text-2xl font-black mt-1">0.00%</p>
+                        </div>
+                        <div class="bg-[#161a22] p-5 rounded-xl border-b-4 border-purple-500 border-t border-x border-[#2d3748]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">MTT Giocati</p>
+                            <p id="stat-count" class="text-2xl font-black text-white mt-1">0</p>
+                        </div>
+                        <div class="bg-[#161a22] p-5 rounded-xl border-b-4 border-red-500 border-t border-x border-[#2d3748]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Spesa Totale</p>
+                            <p id="stat-spent" class="text-2xl font-black text-white mt-1">€ 0.00</p>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] flex items-center justify-center min-h-[300px]"><canvas id="brChart"></canvas></div>
+
+                    <div class="bg-[#161a22] p-6 rounded-xl border border-[#2d3748] self-start max-h-[400px] flex flex-col">
+                        <h3 class="font-bold mb-4 text-[#3b82f6] uppercase tracking-wide text-sm">Registra Torneo</h3>
+                        <div class="space-y-4 mb-4">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="text-[10px] text-gray-400 font-bold uppercase">Buy-in (€)</label><input id="t-buyin" type="number" placeholder="Es. 10" class="mt-1 bg-[#0b0d10]"></div>
+                                <div><label class="text-[10px] text-gray-400 font-bold uppercase">Vincita (€)</label><input id="t-win" type="number" placeholder="Es. 50" class="mt-1 bg-[#0b0d10]"></div>
+                            </div>
+                            <button onclick="addTournament()" class="w-full bg-[#3b82f6] text-white hover:bg-blue-600 py-3 rounded-lg font-bold transition">AGGIUNGI A DB</button>
+                        </div>
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase border-b border-[#333] pb-1 mb-2">Ultimi Tornei</h4>
+                        <div id="br-list" class="space-y-2 overflow-y-auto pr-2 flex-1"></div>
+                    </div>
+                    <div class="lg:col-span-2 bg-[#161a22] p-6 rounded-xl border border-[#2d3748] flex items-center justify-center min-h-[300px]"><canvas id="brChart"></canvas></div>
                 </div>
             </section>
 
-            <!-- SEZIONE 3: STRUMENTI -->
+            <!-- SEZIONE 3: STRUMENTI CALCOLATORI -->
             <section id="sec-calc" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333] shadow-xl">
+                    
+                    <!-- EV CALC -->
+                    <div class="bg-[#161a22] p-6 rounded-xl border border-[#2d3748] shadow-xl">
                         <h2 class="text-xl font-black text-white uppercase mb-1">EV Decision Maker</h2>
                         <div class="space-y-4 mt-4">
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto</label><input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-[#facc15]"></div>
-                                <div><label class="text-xs text-[#ef4444] font-bold uppercase">2. Da Chiamare</label><input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-[#ef4444]"></div>
+                                <div><label class="text-xs text-[#facc15] font-bold uppercase">1. Piatto</label><input id="ev-pot" type="number" placeholder="Es. 1000" class="mt-1 font-mono text-[#facc15] bg-[#0b0d10]"></div>
+                                <div><label class="text-xs text-[#ef4444] font-bold uppercase">2. Da Chiamare</label><input id="ev-call" type="number" placeholder="Es. 500" class="mt-1 font-mono text-[#ef4444] bg-[#0b0d10]"></div>
                             </div>
                             <div>
                                 <label class="text-xs text-[#3b82f6] font-bold uppercase flex justify-between"><span>3. Tua Equity (%)</span><button onclick="copyEquityFromMC()" class="text-[10px] bg-[#333] px-2 py-0.5 rounded text-white hover:bg-[#444]">⬅️ Copia Eq.</button></label>
-                                <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-[#3b82f6]">
+                                <input id="ev-eq" type="number" placeholder="Es. 45" class="mt-1 font-mono text-[#3b82f6] bg-[#0b0d10]">
                             </div>
-                            <button onclick="calculateCallEV()" class="w-full bg-white text-black py-3 rounded font-black uppercase hover:bg-gray-200 transition">Verdetto Call/Fold</button>
+                            <button onclick="calculateCallEV()" class="w-full bg-gray-200 text-black py-3 rounded-lg font-black uppercase hover:bg-white transition">Verdetto Call/Fold</button>
                         </div>
-                        <div id="ev-result-box" class="hidden mt-4 p-4 rounded border-2 text-center bg-[#1a1d24]">
+                        <div id="ev-result-box" class="hidden mt-4 p-4 rounded border-2 text-center bg-[#0b0d10]">
                             <div id="ev-verdict-text" class="text-3xl font-black mb-1 uppercase tracking-tighter">CALL</div>
                             <p class="text-xs text-gray-300">EV: <span id="ev-value" class="font-mono font-bold text-lg ml-1"></span></p>
                         </div>
                     </div>
 
-                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#333]">
+                    <!-- SIMULATORE MC -->
+                    <div class="bg-[#161a22] p-6 rounded-xl border border-[#2d3748]">
                         <h2 class="text-xl font-black text-white uppercase mb-4 flex justify-between">Simulatore Eq <span class="text-[10px] bg-[#22c55e] text-black px-2 py-1 rounded">2000 Mani</span></h2>
                         <div class="grid grid-cols-3 gap-2 mb-4">
-                            <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="As Kh" onfocus="setActiveInput(this)" class="text-center font-mono text-sm"></div>
-                            <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono text-sm"></div>
-                            <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono text-sm"></div>
+                            <div><label class="block text-[10px] font-bold text-[#3b82f6] uppercase">Hero</label><input id="mc-hero" type="text" placeholder="As Kh" onfocus="setActiveInput(this)" class="text-center font-mono text-sm bg-[#0b0d10]"></div>
+                            <div><label class="block text-[10px] font-bold text-[#facc15] uppercase">Board</label><input id="mc-board" type="text" placeholder="Flop/Turn" onfocus="setActiveInput(this)" class="text-center font-mono text-sm bg-[#0b0d10]"></div>
+                            <div><label class="block text-[10px] font-bold text-[#ef4444] uppercase">Villain</label><input id="mc-villain" type="text" placeholder="Opz." onfocus="setActiveInput(this)" class="text-center font-mono text-sm bg-[#0b0d10]"></div>
                         </div>
-                        <div class="bg-[#1a1d24] p-2 rounded border border-[#333] mb-4">
+                        <div class="bg-[#0b0d10] p-2 rounded-lg border border-[#333] mb-4">
                             <div class="grid grid-cols-7 gap-1 mb-1">
                                 <button onclick="typeCard('A')" class="key-btn">A</button><button onclick="typeCard('K')" class="key-btn">K</button><button onclick="typeCard('Q')" class="key-btn">Q</button><button onclick="typeCard('J')" class="key-btn">J</button><button onclick="typeCard('T')" class="key-btn">T</button><button onclick="typeCard('9')" class="key-btn">9</button><button onclick="typeCard('8')" class="key-btn">8</button>
                             </div>
@@ -188,17 +245,18 @@
                             <div class="grid grid-cols-4 gap-1">
                                 <button onclick="typeCard('s ')" class="key-btn suit-s">♠ (P)</button><button onclick="typeCard('h ')" class="key-btn suit-h">♥ (C)</button><button onclick="typeCard('d ')" class="key-btn suit-d">♦ (Q)</button><button onclick="typeCard('c ')" class="key-btn suit-c">♣ (F)</button>
                             </div>
-                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-1 rounded text-white">Cancella</button>
+                            <button onclick="clearActiveInput()" class="w-full mt-2 bg-[#333] text-xs py-1.5 rounded text-white font-bold">Cancella Selezionata</button>
                         </div>
-                        <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-2 rounded font-bold uppercase hover:bg-blue-600 shadow">Simula % Vittoria</button>
+                        <button onclick="runEquitySimulation()" id="btn-sim" class="w-full bg-[#3b82f6] text-white py-3 rounded-lg font-bold uppercase hover:bg-blue-600 shadow">Simula % Vittoria</button>
                         <div id="eq-results" class="hidden mt-3 grid grid-cols-3 gap-2 text-center">
-                            <div class="p-2 border border-[#3b82f6] bg-[#1a1d24]"><p class="text-[10px] text-[#3b82f6]">Hero</p><p id="res-hero" class="text-lg font-black text-white">0%</p></div>
-                            <div class="p-2 border border-[#555] bg-[#1a1d24]"><p class="text-[10px] text-gray-400">Split</p><p id="res-tie" class="text-lg font-bold text-gray-300">0%</p></div>
-                            <div class="p-2 border border-[#ef4444] bg-[#1a1d24]"><p class="text-[10px] text-[#ef4444]">Villain</p><p id="res-villain" class="text-lg font-black text-white">0%</p></div>
+                            <div class="p-2 border border-[#3b82f6] bg-[#0b0d10] rounded"><p class="text-[10px] text-[#3b82f6]">Hero</p><p id="res-hero" class="text-lg font-black text-white">0%</p></div>
+                            <div class="p-2 border border-[#555] bg-[#0b0d10] rounded"><p class="text-[10px] text-gray-400">Split</p><p id="res-tie" class="text-lg font-bold text-gray-300">0%</p></div>
+                            <div class="p-2 border border-[#ef4444] bg-[#0b0d10] rounded"><p class="text-[10px] text-[#ef4444]">Villain</p><p id="res-villain" class="text-lg font-black text-white">0%</p></div>
                         </div>
                     </div>
 
-                    <div class="bg-[#1e222a] p-6 rounded-lg border border-[#8b5cf6] shadow-xl lg:col-span-2">
+                    <!-- ICM CALC -->
+                    <div class="bg-[#161a22] p-6 rounded-xl border border-[#8b5cf6] shadow-xl lg:col-span-2">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-black text-white uppercase">Calcolatore I.C.M. (9 Giocatori)</h2>
                             <span class="text-[10px] bg-[#8b5cf6] text-white px-2 py-1 rounded">Malmuth-Harville</span>
@@ -209,9 +267,9 @@
                                     <div class="col-span-1 text-center">#</div><div class="col-span-6">Stack (Chips)</div><div class="col-span-5">Premio Payout (€)</div>
                                 </div>
                                 <div class="space-y-2" id="icm-inputs"></div>
-                                <button onclick="calculateICM()" class="w-full bg-[#8b5cf6] text-white py-3 rounded font-black uppercase hover:bg-[#7c3aed] transition mt-4 shadow-lg">Calcola Valore Reale in €</button>
+                                <button onclick="calculateICM()" class="w-full bg-[#8b5cf6] text-white py-3 rounded-lg font-black uppercase hover:bg-[#7c3aed] transition mt-4 shadow-lg">Calcola Valore Reale in €</button>
                             </div>
-                            <div class="bg-[#1a1d24] p-4 rounded border border-[#333] flex flex-col justify-center">
+                            <div class="bg-[#0b0d10] p-4 rounded-lg border border-[#333] flex flex-col justify-center">
                                 <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">Equity I.C.M.</h3>
                                 <div id="icm-results" class="space-y-2 text-sm"><p class="text-center text-gray-600 text-xs mt-4">Compila gli stack a sinistra per calcolare.</p></div>
                             </div>
@@ -220,493 +278,520 @@
                 </div>
             </section>
 
-            <!-- SEZIONE 4: AI COACH MULTI-CHAT & MULTI-PERSONA -->
-            <section id="sec-coach" class="hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- SEZIONE 4: REFERTI E NOTE -->
+            <section id="sec-notes" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-[#161a22] p-6 rounded-xl border border-[#2d3748]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">📂 Referti Ufficiali IA</h2>
+                            <span class="text-[10px] bg-[#8b5cf6] text-white px-2 py-1 rounded">Analisi & Coaching</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4 border-b border-[#333] pb-4">Qui l'intelligenza artificiale salverà i referti finali. Chiedile in chat di "generare e salvare un referto".</p>
+                        <div id="reports-container" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
+                    </div>
                     
-                    <div class="lg:col-span-2 bg-[#1e222a] p-4 rounded-lg border border-[#333] shadow-xl flex flex-col h-[600px]">
-                        <div class="flex justify-between items-center border-b border-[#333] pb-3 mb-4">
-                            <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">🤖 Personal AI <span class="text-[#3b82f6]">Gemini</span></h2>
-                            <span id="ai-status" class="text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded">In attesa...</span>
+                    <div class="bg-[#161a22] p-6 rounded-xl border border-[#2d3748]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">📌 Appunti Rapidi</h2>
+                            <span class="text-[10px] bg-[#facc15] text-black px-2 py-1 rounded font-bold">Post-it</span>
                         </div>
-                        
-                        <div id="chat-box" class="chat-container flex-1 mb-4">
-                            <!-- Messaggi caricati dinamicamente qui -->
-                        </div>
-                        
-                        <!-- SELETTORE PERSONA (NOVITA V21) -->
-                        <div class="flex gap-2 mb-2 bg-[#1a1d24] p-1.5 rounded border border-[#333]">
-                            <button onclick="setPersona('analyst')" id="btn-analyst" class="flex-1 text-[11px] md:text-xs py-1.5 rounded border border-transparent text-gray-400 font-bold hover:bg-[#333] transition persona-active">📊 Analisi HH</button>
-                            <button onclick="setPersona('coach')" id="btn-coach" class="flex-1 text-[11px] md:text-xs py-1.5 rounded border border-transparent text-gray-400 font-bold hover:bg-[#333] transition">🎓 Strategia</button>
-                            <button onclick="setPersona('mental')" id="btn-mental" class="flex-1 text-[11px] md:text-xs py-1.5 rounded border border-transparent text-gray-400 font-bold hover:bg-[#333] transition">🧠 Mental Coach</button>
+                        <p class="text-xs text-gray-400 mb-4 border-b border-[#333] pb-4">Idee rapide o exploit da ricordare. Chiedi all'IA: "Salva questo concetto nei miei appunti".</p>
+                        <div id="notes-container" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEZIONE 5: AI COACH / OPERATOR -->
+            <section id="sec-coach">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- AREA CHAT -->
+                    <div class="lg:col-span-2 bg-[#101318] p-1 rounded-2xl border border-[#2d3748] shadow-2xl flex flex-col h-[700px] relative overflow-hidden">
+                        <!-- Header Chat -->
+                        <div class="bg-[#161a22] p-4 border-b border-[#2d3748] rounded-t-xl flex justify-between items-center z-10">
+                            <h2 class="text-xl font-black text-white flex items-center gap-3 tracking-wide">
+                                <span class="bg-blue-500 w-3 h-3 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]"></span>
+                                CORE OPERATOR
+                            </h2>
+                            <span id="ai-status" class="text-[10px] bg-[#1a1d24] text-gray-400 px-3 py-1.5 rounded-full border border-[#333] font-bold">In attesa Key...</span>
                         </div>
 
-                        <div class="flex gap-2 relative items-end">
+                        <!-- Chat Messages -->
+                        <div id="chat-box" class="chat-container flex-1 p-4 bg-[#0b0d10]"></div>
+                        
+                        <!-- Pulsanti Azione Rapida -->
+                        <div class="px-4 py-2 bg-[#161a22] border-t border-[#2d3748] flex gap-2 overflow-x-auto">
+                            <span class="text-[10px] text-gray-500 font-bold self-center uppercase mr-2">Quick Actions:</span>
+                            <button onclick="sendQuickAction('Analizza il Range GTO attualmente a schermo e dimmi se ha senso.')" class="quick-btn text-xs px-3 py-1.5 rounded-full font-bold whitespace-nowrap">🔍 Analizza Range</button>
+                            <button onclick="sendQuickAction('Genera un referto ufficiale dell\'ultima sessione o mano analizzata.')" class="quick-btn text-xs px-3 py-1.5 rounded-full font-bold whitespace-nowrap">📋 Genera Referto</button>
+                            <button onclick="sendQuickAction('Sulla base dei miei ultimi errori, suggerisci degli adjustments concreti.')" class="quick-btn text-xs px-3 py-1.5 rounded-full font-bold whitespace-nowrap">⚙️ Suggerisci Adjustments</button>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="bg-[#161a22] p-4 rounded-b-xl flex gap-3 relative items-end z-10">
                             <input type="file" id="file-upload" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
-                            <button onclick="document.getElementById('file-upload').click()" class="bg-[#333] text-gray-300 px-4 py-3 rounded hover:bg-[#444] transition flex items-center justify-center font-bold text-lg" title="Carica HH">📎</button>
-                            <textarea id="chat-input" placeholder="Scrivi un messaggio o trascina qui un file .txt..." class="text-sm py-3 px-3 h-14 resize-none overflow-y-auto flex-1 transition-colors" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToCoach(); }"></textarea>
-                            <button onclick="sendToCoach()" id="btn-send" class="bg-[#3b82f6] text-white px-6 py-3 font-bold uppercase rounded hover:bg-blue-600 transition">Invia</button>
+                            <button onclick="document.getElementById('file-upload').click()" class="bg-[#1a1d24] border border-[#333] text-gray-400 p-3 rounded-xl hover:text-white hover:border-gray-500 transition flex items-center justify-center" title="Allega Hand History">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                            </button>
+                            <textarea id="chat-input" placeholder="Comanda l'IA (es. 'Colora il range di push da UTG 15bb')..." class="text-sm p-4 h-14 resize-none flex-1 bg-[#0b0d10] border-[#2d3748] rounded-xl focus:border-blue-500" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToCoach(); }"></textarea>
+                            <button onclick="sendToCoach()" id="btn-send" class="bg-blue-600 text-white p-3 rounded-xl font-bold hover:bg-blue-500 transition shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                                <svg class="w-6 h-6 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m-7 7l7-7 7 7"></path></svg>
+                            </button>
                         </div>
                     </div>
-
-                    <!-- SIDEBAR DESTRA: CHAT E IMPOSTAZIONI -->
+                    
+                    <!-- SIDEBAR IMPOSTAZIONI -->
                     <div class="flex flex-col gap-6">
+                        <div class="bg-[#161a22] p-5 rounded-2xl border border-[#2d3748] shadow-xl">
+                            <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4 flex justify-between items-center">Moduli Logici</h3>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="setPersona('analyst')" id="btn-analyst" class="persona-active w-full text-left text-sm py-2 px-3 rounded-lg border border-transparent text-gray-400 font-bold hover:bg-[#1a1d24] transition">🧮 Solver & GTO Math</button>
+                                <button onclick="setPersona('coach')" id="btn-coach" class="w-full text-left text-sm py-2 px-3 rounded-lg border border-transparent text-gray-400 font-bold hover:bg-[#1a1d24] transition">🎯 Adjustments & Exploit</button>
+                                <button onclick="setPersona('mental')" id="btn-mental" class="w-full text-left text-sm py-2 px-3 rounded-lg border border-transparent text-gray-400 font-bold hover:bg-[#1a1d24] transition">🧠 Mental & Focus</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#161a22] p-5 rounded-2xl border border-[#2d3748] shadow-xl">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest">Cronologia Chat</h3>
+                                <button onclick="createNewChat(true)" class="text-blue-500 hover:text-white transition" title="Nuova Sessione">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </button>
+                            </div>
+                            <div id="chat-list" class="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar"></div>
+                        </div>
                         
-                        <!-- GESTORE CHAT -->
-                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#3b82f6] shadow-xl">
-                            <div class="flex justify-between items-center mb-3 border-b border-[#333] pb-2">
-                                <h3 class="text-xs font-bold text-white uppercase tracking-widest">Le tue Sessioni</h3>
-                                <button onclick="createNewChat()" class="bg-[#3b82f6] text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-blue-600 transition">+ NUOVA</button>
-                            </div>
-                            <div id="chat-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                                <!-- Lista chat generata qui -->
-                            </div>
+                        <div class="bg-[#161a22] p-5 rounded-2xl border border-[#2d3748] shadow-xl relative">
+                            <h3 class="text-xs font-black text-blue-500 uppercase tracking-widest mb-4">Motore Intelligenza Artif.</h3>
+                            <input type="password" id="ai-key" placeholder="Gemini API Key" class="text-xs mb-3 bg-[#0b0d10] border-[#333]">
+                            <button onclick="diagnoseAI()" class="w-full bg-[#1a1d24] text-blue-500 border border-blue-500/30 py-2.5 rounded-lg text-xs font-bold hover:bg-blue-500 hover:text-white transition">Connetti Motore</button>
+                            <p id="model-tag" class="text-[10px] mt-3 text-center text-gray-500 font-mono">Status: Offline</p>
                         </div>
-
-                        <!-- MOTORE AI -->
-                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#333] shadow-xl relative">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Motore AI (Gemini)</h3>
-                            <input type="password" id="ai-key" value="" placeholder="Incolla chiave AI" class="text-xs mb-2 text-[#3b82f6]">
-                            <div class="flex gap-2">
-                                <button onclick="saveAiKey()" class="flex-1 bg-[#333] text-gray-300 border border-[#444] py-2 rounded text-xs font-bold hover:bg-[#444] hover:text-white transition">Salva Locale</button>
-                                <button onclick="diagnoseAI()" class="flex-1 bg-[#0ea5e9] text-white border border-[#0ea5e9] py-2 rounded text-xs font-bold hover:bg-sky-600 transition shadow-lg shadow-sky-500/20">🔍 Diagnosi</button>
-                            </div>
-                            <p id="model-tag" class="text-[10px] mt-2 text-gray-500">Modello: Nessuno</p>
+                        
+                        <!-- SUPABASE RIPRISTINATO -->
+                        <div class="bg-[#161a22] p-5 rounded-2xl border border-[#2d3748] shadow-xl">
+                            <h3 class="text-xs font-black text-green-500 uppercase tracking-widest mb-4">Database Supabase</h3>
+                            <input type="text" id="sb-url" placeholder="Supabase URL" value="https://tphnvmmisznkyubhnpkk.supabase.co" class="text-xs mb-2 bg-[#0b0d10] border-[#333] text-green-400">
+                            <input type="password" id="sb-key" placeholder="Supabase Anon/Public Key" value="sb_publishable_qnCMSULUQdP6681VVjGGRQ_QJ0u01Q8" class="text-xs mb-3 bg-[#0b0d10] border-[#333] text-gray-400">
+                            <button onclick="initSupabase()" class="w-full bg-[#1a1d24] text-green-500 border border-green-500/30 py-2.5 rounded-lg text-xs font-bold hover:bg-green-500 hover:text-white transition">Connetti Supabase</button>
                         </div>
-
-                        <!-- SUPABASE -->
-                        <div class="bg-[#1e222a] p-4 rounded-lg border border-[#22c55e] shadow-xl">
-                            <h3 class="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-3">Database Supabase (AI)</h3>
-                            <input type="text" id="sb-url" value="https://tphnvmmisznkyubhnpkk.supabase.co" class="text-xs mb-2 text-[#22c55e]">
-                            <input type="password" id="sb-key" value="sb_publishable_qnCMSULUQdP6681VVjGGRQ_QJ0u01Q8" class="text-xs mb-2 text-gray-400" readonly>
-                            <button onclick="initSupabase()" class="w-full bg-[#22c55e]/20 text-[#22c55e] border border-[#22c55e] py-2 rounded text-xs font-bold hover:bg-[#22c55e] hover:text-black transition">Connetti Supabase</button>
-                        </div>
-
                     </div>
                 </div>
             </section>
         </main>
     </div>
 
+    <!-- SCRIPT CORE -->
     <script>
-        // --- CHIAVI ---
+        // INIT & AUTH
         const BIN_ID = '69ee094336566621a8f2a9fe';
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        function checkAuth() { return localStorage.getItem('poker_auth') === 'granted'; }
+        let appData = { palette: [], ranges: {}, bankroll: [], notes: [], reports: [] }; 
+        let appConfig = { supabaseUrl: "", supabaseKey: "", aiKey: "", aiModel: "", chats: [], activeChatId: null, userCorrections: [] }; 
+        
+        let supabaseClient = null;
+        let currentPersona = 'analyst';
+        let brChartInstance;
+        let spotState = { stage: 'Early', bb: '100', pos: 'UTG' }; 
+        let activeBrushId = "erase"; 
+        let activeInput = null;
+        const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+
         function checkPassword() {
             if (document.getElementById('login-pwd').value === "angelo2026") {
-                localStorage.setItem('poker_auth', 'granted');
-                document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden');
-            } else { document.getElementById('login-error').classList.remove('hidden'); document.getElementById('login-pwd').value = ''; }
+                document.getElementById('login-screen').classList.add('hidden'); 
+                document.getElementById('app-content').classList.remove('hidden');
+                initApp();
+            } else { 
+                document.getElementById('login-error').classList.remove('hidden'); 
+            }
         }
 
         function switchTab(tabId) {
-            ['ranges', 'bankroll', 'calc', 'coach'].forEach(t => { document.getElementById('sec-' + t).classList.add('hidden'); document.getElementById('tab-' + t).classList.remove('nav-active'); });
-            document.getElementById('sec-' + tabId).classList.remove('hidden'); document.getElementById('tab-' + tabId).classList.add('nav-active');
+            ['ranges', 'bankroll', 'calc', 'notes', 'coach'].forEach(t => { 
+                document.getElementById('sec-' + t).classList.add('hidden'); 
+                document.getElementById('tab-' + t).classList.remove('nav-active'); 
+            });
+            document.getElementById('sec-' + tabId).classList.remove('hidden'); 
+            document.getElementById('tab-' + tabId).classList.add('nav-active');
+            if (tabId === 'notes') updateNotesUI();
         }
 
-        // --- DATI E CONFIGURAZIONI ---
-        let appData = { palette: [], ranges: {}, bankroll: [] }; 
-        let appConfig = { 
-            supabaseUrl: "https://tphnvmmisznkyubhnpkk.supabase.co", 
-            aiKey: "", 
-            aiModel: "", 
-            userCorrections: [],
-            chats: [],         
-            activeChatId: null 
-        }; 
-        let supabaseClient = null;
-        let currentPersona = 'analyst';
+        function initApp() {
+            createMatrixDOM();
+            initICMInputs();
+            if(appData.palette.length === 0) {
+                appData.palette.push({ id: 'red_raise', name: 'Raise (Rosso)', color: '#ef4444' });
+                appData.palette.push({ id: 'green_call', name: 'Call (Verde)', color: '#22c55e' });
+                appData.palette.push({ id: 'blue_fold', name: 'Fold/Mix (Blu)', color: '#3b82f6' });
+            }
+            updateSpotUI();
+            loadAllData();
+            setTimeout(downloadDualCloud, 1000);
+        }
 
+        // --- CLOUD SYNC & SUPABASE ---
         function setCloudStatus(msg, isError = false) { 
-            const el = document.getElementById('cloud-status'); el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af';
+            const el = document.getElementById('cloud-status'); 
+            el.innerText = msg; el.style.color = isError ? '#ef4444' : '#9ca3af'; 
         }
 
-        // --- INIZIALIZZAZIONE DATABASE ---
-        function initSupabase() {
+        function initSupabase() { 
             const url = document.getElementById('sb-url').value.trim(); 
-            const key = document.getElementById('sb-key').value.trim();
-            if(!url) return; 
+            const key = document.getElementById('sb-key').value.trim(); 
+            if (!url || !key) return; 
             appConfig.supabaseUrl = url; 
-            saveConfig();
+            appConfig.supabaseKey = key;
+            saveConfig(); 
             try { 
                 supabaseClient = supabase.createClient(url, key); 
-            } catch(e) { console.error("Errore Supabase", e); }
+                console.log("Supabase Inizializzato");
+            } catch(e) { console.error("Errore Supabase", e); } 
         }
 
-        // --- AUTO-SAVE INVISIBILE PER LA CHAT ---
-        async function silentAutoSave() {
+        async function silentAutoSave() { 
             saveConfig(); 
-            if (supabaseClient) {
-                try {
-                    const { error } = await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' });
-                    if(error) console.error("Auto-save fallito:", error.message);
-                } catch (e) { console.error("Auto-save fallito", e); }
-            }
+            if (supabaseClient) { 
+                try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} 
+            } 
         }
 
-        // --- SALVATAGGIO MANUALE (TASTO BLU IN ALTO) ---
         async function syncDualCloud() {
-            if (appData.bankroll.length === 0 && Object.keys(appData.ranges).length === 0) {
-                alert("⚠️ L'app sembra vuota. Premi 'Scarica' per recuperare i dati prima di salvare.");
-                return;
-            }
-            document.body.style.cursor = 'wait'; setCloudStatus('☁️ Sincronizzazione...');
-            let successJson = false;
-            
+            document.body.style.cursor = 'wait'; setCloudStatus('☁️ Sincronizzazione...'); let successJson = false;
             try { 
                 const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); 
-                if(res.ok) successJson = true; 
-            } catch (e) {}
-
+                if (res.ok) successJson = true; 
+            } catch (e) { console.error(e); }
             if (supabaseClient) { 
-                try { 
-                    const { error } = await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); 
-                    if(error) alert("Errore Salvataggio Chat su Supabase: Controlla di aver disabilitato RLS! Dettaglio: " + error.message);
-                } catch (e) { alert("Eccezione Supabase: " + e.message); } 
+                try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} 
             }
-            
-            setCloudStatus(successJson ? '✅ Tutto Salvato!' : '⚠️ Errore Cloud', !successJson);
+            setCloudStatus(successJson ? '✅ Tutto Salvato!' : '⚠️ Errore Cloud', !successJson); 
             setTimeout(() => setCloudStatus('☁️ App Pronta'), 3000); document.body.style.cursor = 'default';
         }
 
         async function downloadDualCloud() {
-            if(!supabaseClient) initSupabase();
-
+            if (!supabaseClient) initSupabase(); 
             document.body.style.cursor = 'wait'; setCloudStatus('☁️ Scaricamento...');
             
             try { 
                 const res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); 
-                if(res.ok) { 
+                if (res.ok) { 
                     const data = await res.json(); 
-                    if(data.record) { 
-                        appData.palette = data.record.palette || []; appData.bankroll = data.record.bankroll || []; appData.ranges = data.record.ranges || {}; 
-                        triggerLocalSave(); updateBankrollUI(); updateSpotUI(); 
+                    if (data.record) { 
+                        appData.palette = data.record.palette || []; appData.bankroll = data.record.bankroll || []; 
+                        appData.ranges = data.record.ranges || {}; appData.notes = data.record.notes || []; appData.reports = data.record.reports || []; 
+                        triggerLocalSave(); updateBankrollUI(); updateSpotUI(); updateNotesUI(); 
                     } 
                 } 
             } catch (e) {}
             
-            if(supabaseClient) { 
+            if (supabaseClient) { 
                 try { 
                     const { data, error } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); 
-                    if(error && error.code !== 'PGRST116') {
-                        alert("Impossibile scaricare le Chat: " + error.message);
-                    }
-                    if(data && data.data) { 
-                        appConfig = Object.assign(appConfig, data.data);
-                        document.getElementById('ai-key').value = appConfig.aiKey; 
-                        document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
-                        if(appConfig.aiKey) updateAiStatus(true);
+                    if (data && data.data) { 
+                        appConfig = Object.assign(appConfig, data.data); 
+                        document.getElementById('ai-key').value = appConfig.aiKey || ""; 
+                        if(appConfig.supabaseUrl) document.getElementById('sb-url').value = appConfig.supabaseUrl;
+                        if(appConfig.supabaseKey) document.getElementById('sb-key').value = appConfig.supabaseKey;
+                        document.getElementById('model-tag').innerText = `Status: ${appConfig.aiModel || 'Nessuno'}`; 
+                        if (appConfig.aiKey) updateAiStatus(true); 
                         
-                        if(!appConfig.chats) appConfig.chats = [];
-                        if(appConfig.chats.length === 0) createNewChat(false);
-                        else {
-                            if(!appConfig.activeChatId || !appConfig.chats.find(c => c.id === appConfig.activeChatId)) {
-                                appConfig.activeChatId = appConfig.chats[0].id;
-                            }
-                            selectChat(appConfig.activeChatId);
-                        }
-                        renderChatList();
-                        saveConfig(); 
+                        if (!appConfig.chats || appConfig.chats.length === 0) createNewChat(false); 
+                        else { 
+                            if (!appConfig.activeChatId || !appConfig.chats.find(c => c.id === appConfig.activeChatId)) appConfig.activeChatId = appConfig.chats[0].id; 
+                            selectChat(appConfig.activeChatId); 
+                        } 
                     } 
-                } catch(e) { } 
+                } catch(e) {} 
             }
             setCloudStatus('✅ Dati Scaricati'); setTimeout(() => setCloudStatus('☁️ App Pronta'), 2000); document.body.style.cursor = 'default';
         }
 
         function loadAllData() {
-            let conf = localStorage.getItem('poker_v18_config'); if(conf) appConfig = Object.assign(appConfig, JSON.parse(conf));
+            let conf = localStorage.getItem('poker_v18_config'); 
+            if (conf) appConfig = Object.assign(appConfig, JSON.parse(conf));
+            
             document.getElementById('sb-url').value = appConfig.supabaseUrl || "https://tphnvmmisznkyubhnpkk.supabase.co"; 
-            document.getElementById('ai-key').value = appConfig.aiKey || "";
-            document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel || 'Nessuno'}`;
-            if(appConfig.aiKey) updateAiStatus(true); 
+            document.getElementById('sb-key').value = appConfig.supabaseKey || "sb_publishable_qnCMSULUQdP6681VVjGGRQ_QJ0u01Q8"; 
+            document.getElementById('ai-key').value = appConfig.aiKey || ""; 
+            if (appConfig.aiKey) updateAiStatus(true); 
             
             initSupabase();
-
-            if(!appConfig.chats || appConfig.chats.length === 0) {
-                createNewChat(false);
-            } else {
-                if(!appConfig.activeChatId || !appConfig.chats.find(c => c.id === appConfig.activeChatId)) {
-                    appConfig.activeChatId = appConfig.chats[0].id;
-                }
-                selectChat(appConfig.activeChatId);
-                renderChatList();
+            
+            if (!appConfig.chats || appConfig.chats.length === 0) { createNewChat(false); } 
+            else { 
+                if (!appConfig.activeChatId || !appConfig.chats.find(c => c.id === appConfig.activeChatId)) appConfig.activeChatId = appConfig.chats[0].id; 
+                selectChat(appConfig.activeChatId); 
             }
-
-            let data = localStorage.getItem('poker_v18_data');
-            if(data) { let parsed = JSON.parse(data); appData.palette = parsed.palette || []; appData.ranges = parsed.ranges || {}; appData.bankroll = parsed.bankroll || []; }
-            updateSpotUI(); updateBankrollUI();
+            
+            let data = localStorage.getItem('poker_v18_data'); 
+            if (data) { 
+                let parsed = JSON.parse(data); 
+                appData.palette = parsed.palette || []; appData.ranges = parsed.ranges || {}; appData.bankroll = parsed.bankroll || []; 
+                appData.notes = parsed.notes || []; appData.reports = parsed.reports || []; 
+            }
+            updateSpotUI(); updateBankrollUI(); updateNotesUI();
         }
 
-        function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); document.getElementById('model-tag').innerText = `Modello: ${appConfig.aiModel}`; }
+        function saveConfig() { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); }
         function triggerLocalSave() { localStorage.setItem('poker_v18_data', JSON.stringify(appData)); }
 
-        // --- GESTIONE PERSONA ---
-        function setPersona(type) {
-            currentPersona = type;
-            ['analyst', 'coach', 'mental'].forEach(p => {
-                let el = document.getElementById('btn-' + p);
-                el.classList.remove('persona-active');
-            });
-            document.getElementById('btn-' + type).classList.add('persona-active');
+        // --- GESTIONE CHAT CORE ---
+        function setPersona(type) { 
+            currentPersona = type; 
+            ['analyst', 'coach', 'mental'].forEach(p => document.getElementById('btn-' + p).classList.remove('persona-active', 'bg-[#1a1d24]')); 
+            document.getElementById('btn-' + type).classList.add('persona-active', 'bg-[#1a1d24]'); 
         }
 
-        // --- LOGICA MULTI-CHAT ---
-        function createNewChat(doSave = true) {
-            const newId = 'chat_' + Date.now();
-            const newChat = {
-                id: newId,
-                title: "Nuova Sessione",
-                messages: [
-                    { sender: "Sistema", text: "Seleziona il ruolo dell'AI dal menu qui sopra (Analisi, Strategia, o Mental Coach) e fammi una domanda.", type: "coach" }
-                ]
-            };
-            appConfig.chats.unshift(newChat); 
+        function createNewChat(doSave = true) { 
+            const newId = 'chat_' + Date.now(); 
+            appConfig.chats.unshift({ id: newId, title: "Nuova Sessione", messages: [] }); 
             appConfig.activeChatId = newId;
-            selectChat(newId);
-            if(doSave) silentAutoSave();
+            selectChat(newId); 
+            appendAndSaveMessage("SYSTEM", "Core inizializzato. Pronto a compilare range GTO, generare referti e analizzare lo spot.", "coach");
+            if (doSave) silentAutoSave();
         }
 
-        function selectChat(id) {
-            appConfig.activeChatId = id;
+        function selectChat(id) { 
+            appConfig.activeChatId = id; 
             renderChatList();
-            const chatBox = document.getElementById('chat-box'); chatBox.innerHTML = '';
-            const chat = appConfig.chats.find(c => c.id === id);
-            if(chat) {
+            const chatBox = document.getElementById('chat-box'); 
+            chatBox.innerHTML = ''; 
+            
+            const chat = appConfig.chats.find(c => c.id === id); 
+            if(chat && chat.messages) {
                 chat.messages.forEach(m => {
                     const msgDiv = document.createElement('div');
                     msgDiv.className = m.type === 'user' ? 'msg-user' : 'msg-coach';
-                    msgDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 block mb-1 uppercase">${m.sender}</span><p class="text-sm leading-relaxed">${parseMarkdown(m.text)}</p>`;
+                    msgDiv.innerHTML = m.type === 'user' ? `<p>${parseMarkdown(m.text)}</p>` : `<p>${parseMarkdown(m.text)}</p>`;
                     chatBox.appendChild(msgDiv);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
-            } saveConfig();
+            }
+            saveConfig();
         }
 
         function deleteChat(id) {
-            if(confirm("Eliminare definitivamente questa sessione?")) {
+            if (confirm("Eliminare definitivamente questa sessione?")) {
                 appConfig.chats = appConfig.chats.filter(c => c.id !== id);
-                if(appConfig.chats.length === 0) createNewChat(false);
+                if (appConfig.chats.length === 0) createNewChat(false);
                 else if (appConfig.activeChatId === id) appConfig.activeChatId = appConfig.chats[0].id;
-                selectChat(appConfig.activeChatId); silentAutoSave();
+                selectChat(appConfig.activeChatId);
+                silentAutoSave();
             }
         }
 
         function renderChatList() {
-            const list = document.getElementById('chat-list'); list.innerHTML = '';
+            const list = document.getElementById('chat-list');
+            list.innerHTML = '';
             appConfig.chats.forEach(c => {
                 let isActive = c.id === appConfig.activeChatId;
                 list.innerHTML += `
-                    <div onclick="selectChat('${c.id}')" class="chat-list-item flex justify-between items-center p-2 rounded cursor-pointer border ${isActive ? 'border-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#333] bg-[#1a1d24] hover:border-[#555]'}">
+                    <div onclick="selectChat('${c.id}')" class="chat-list-item flex justify-between items-center p-2 rounded cursor-pointer border ${isActive ? 'border-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#2d3748] bg-[#0b0d10] hover:border-[#555]'}">
                         <span class="text-xs text-white truncate flex-1 font-bold ${isActive ? 'text-[#3b82f6]' : ''}">${c.title}</span>
                         <button onclick="event.stopPropagation(); deleteChat('${c.id}')" class="text-red-500 hover:text-white px-2 rounded text-xs ml-2">✕</button>
                     </div>`;
             });
         }
 
-        function appendAndSaveMessage(sender, text, type) {
-            const chatBox = document.getElementById('chat-box'); const msgDiv = document.createElement('div');
-            msgDiv.className = type === 'user' ? 'msg-user' : 'msg-coach';
-            msgDiv.innerHTML = `<span class="text-[10px] font-bold text-gray-400 block mb-1 uppercase">${sender}</span><p class="text-sm leading-relaxed">${parseMarkdown(text)}</p>`;
-            chatBox.appendChild(msgDiv); chatBox.scrollTop = chatBox.scrollHeight;
-
-            const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId);
-            if(chat) {
-                chat.messages.push({ sender, text, type });
-                if(type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Sessione") {
-                    let newTitle = text.substring(0, 22).replace(/\n/g, " ");
-                    if(text.length > 22) newTitle += "...";
-                    chat.title = newTitle; renderChatList();
-                }
+        function appendAndSaveMessage(sender, text, type) { 
+            const chatBox = document.getElementById('chat-box'); 
+            const msgDiv = document.createElement('div'); 
+            msgDiv.className = type === 'user' ? 'msg-user' : 'msg-coach'; 
+            msgDiv.innerHTML = `<p>${parseMarkdown(text)}</p>`; 
+            chatBox.appendChild(msgDiv); 
+            chatBox.scrollTop = chatBox.scrollHeight; 
+            
+            const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId); 
+            if (chat) { 
+                chat.messages.push({ sender, text, type }); 
+                if (type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Sessione") { 
+                    let newTitle = text.substring(0, 22).replace(/\n/g, " "); 
+                    if (text.length > 22) newTitle += "..."; 
+                    chat.title = newTitle; 
+                    renderChatList(); 
+                } 
                 silentAutoSave(); 
-            }
+            } 
         }
 
-        // --- MOTORE AI ---
-        function saveAiKey() { appConfig.aiKey = document.getElementById('ai-key').value.trim(); saveConfig(); updateAiStatus(true); }
-        function updateAiStatus(isActive) { const el = document.getElementById('ai-status'); el.innerText = isActive ? "✅ Gemini Connesso" : "In attesa API Key"; el.className = isActive ? "text-[10px] bg-[#22c55e] text-black font-bold px-2 py-1 rounded" : "text-[10px] bg-[#333] text-gray-400 px-2 py-1 rounded"; }
+        function parseMarkdown(text) { 
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+            return html.replace(/\n/g, '<br>'); 
+        }
 
-        function parseMarkdown(text) { let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); return html.replace(/\n/g, '<br>'); }
+        // --- MOTORE AI GEMINI E PARSER ---
+        function saveAiKey() { 
+            appConfig.aiKey = document.getElementById('ai-key').value.trim(); 
+            saveConfig(); updateAiStatus(true); 
+        }
 
-        async function diagnoseAI() {
-            const key = document.getElementById('ai-key').value.trim();
-            if(!key) { appendAndSaveMessage("Sistema", "❌ Errore: Incolla prima la chiave API.", "coach"); return; }
-            appendAndSaveMessage("Sistema", "⏳ Ricerca dei modelli attivi...", "coach");
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-                const data = await res.json();
-                if(!res.ok) throw new Error(data.error.message);
-                const allModels = data.models.map(m => m.name.replace('models/', '')).filter(n => n.includes('gemini'));
+        function updateAiStatus(isActive) { 
+            const el = document.getElementById('ai-status'); 
+            el.innerText = isActive ? "✅ API Connessa" : "In attesa Key..."; 
+            el.className = isActive ? "text-[10px] bg-green-500/20 text-green-400 px-3 py-1.5 rounded-full border border-green-500/50 font-bold" : "text-[10px] bg-[#1a1d24] text-gray-400 px-3 py-1.5 rounded-full border border-[#333] font-bold"; 
+        }
+
+        async function diagnoseAI() { 
+            const key = document.getElementById('ai-key').value.trim(); 
+            if (!key) { appendAndSaveMessage("SYSTEM", "❌ Errore: Incolla prima la chiave API Gemini.", "coach"); return; } 
+            appendAndSaveMessage("SYSTEM", "⏳ Connessione ai server di Google...", "coach"); 
+            try { 
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`); 
+                const data = await res.json(); 
+                if (!res.ok) throw new Error(data.error.message); 
+                const allModels = data.models.map(m => m.name.replace('models/', '')).filter(n => n.includes('gemini')); 
                 let chosenModel = allModels[0]; 
-                if (allModels.includes("gemini-2.5-flash")) chosenModel = "gemini-2.5-flash";
-                else if (allModels.includes("gemini-flash-latest")) chosenModel = "gemini-flash-latest";
-                appConfig.aiKey = key; appConfig.aiModel = chosenModel; saveConfig(); updateAiStatus(true);
-                appendAndSaveMessage("Sistema", `✅ Successo! Modello assegnato: **${chosenModel}**.`, "coach");
-            } catch (e) { appendAndSaveMessage("Sistema", `❌ Errore: ${e.message}`, "coach"); }
+                if (allModels.includes("gemini-2.5-flash")) chosenModel = "gemini-2.5-flash"; else if (allModels.includes("gemini-flash-latest")) chosenModel = "gemini-flash-latest"; 
+                appConfig.aiKey = key; appConfig.aiModel = chosenModel; saveConfig(); updateAiStatus(true); 
+                document.getElementById('model-tag').innerText = `Status: ${chosenModel}`;
+                document.getElementById('model-tag').classList.replace('text-gray-500', 'text-green-400');
+                appendAndSaveMessage("SYSTEM", `✅ Motore AI Connesso con successo: **${chosenModel}**.`, "coach"); 
+            } catch (e) { appendAndSaveMessage("SYSTEM", `❌ Errore: ${e.message}`, "coach"); } 
         }
 
-        // --- DRAG & DROP ---
-        const chatInput = document.getElementById('chat-input');
-        chatInput.addEventListener('dragover', (e) => { e.preventDefault(); chatInput.classList.add('dropzone-active'); });
-        chatInput.addEventListener('dragleave', (e) => { e.preventDefault(); chatInput.classList.remove('dropzone-active'); });
-        chatInput.addEventListener('drop', (e) => { e.preventDefault(); chatInput.classList.remove('dropzone-active'); if(e.dataTransfer.files && e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]); });
-        function handleFileUpload(event) { if(event.target.files[0]) processFile(event.target.files[0]); }
-        function processFile(file) {
-            if(!file.name.endsWith('.txt')) { alert("Solo file .txt supportati."); return; }
-            const reader = new FileReader();
-            reader.onload = (e) => { chatInput.value += `\n[FILE HH: ${file.name}]\n${e.target.result}\n`; chatInput.scrollTop = chatInput.scrollHeight; };
-            reader.readAsText(file);
-        }
-
-        // --- MOTORE AGENTIC AI (PARSER & ESECUTORE) ---
         function processAgenticResponse(rawText) {
             const actionRegex = /<action>([\s\S]*?)<\/action>/g;
-            let match;
-            let cleanText = rawText;
-
+            let match; let cleanText = rawText;
             while ((match = actionRegex.exec(rawText)) !== null) {
                 try {
-                    let actionData = JSON.parse(match[1]);
+                    let jsonString = match[1].replace(/```json/gi, '').replace(/```/g, '').trim();
+                    let actionData = JSON.parse(jsonString);
                     executeAIAction(actionData);
-                    cleanText = cleanText.replace(match[0], `<div class="bg-[#3b82f6]/20 border border-[#3b82f6] text-[#3b82f6] p-2 rounded text-xs my-2 font-bold flex items-center gap-2"><span>⚡</span> Azione automatica: ${actionData.description}</div>`);
-                } catch(e) {
-                    console.error("Errore parsing comando IA:", e);
-                }
+                    cleanText = cleanText.replace(match[0], `<div class="action-badge"><span>⚡</span> Azione di Sistema: ${actionData.description}</div>`);
+                } catch(e) { console.error("Parse Error:", e); }
             }
             return cleanText;
         }
 
         function executeAIAction(action) {
             switch(action.type) {
-                case 'FILL_RANGE':
-                    if (!action.colorName || !action.colorHex || !action.combos) break;
-                    let existingColor = appData.palette.find(p => p.name === action.colorName);
-                    let colorId = existingColor ? existingColor.id : Math.random().toString(36).substr(2, 9);
-                    
-                    if (!existingColor) {
-                        appData.palette.push({ id: colorId, name: action.colorName, color: action.colorHex });
-                    }
-                    
+                case 'COLOR_GRID':
                     let spotKey = getSpotKey(); 
-                    if(!appData.ranges[spotKey]) appData.ranges[spotKey] = {};
-                    if(!appData.ranges[spotKey][colorId]) appData.ranges[spotKey][colorId] = [];
-                    
-                    action.combos.forEach(combo => {
-                        if (!appData.ranges[spotKey][colorId].includes(combo)) {
-                            appData.ranges[spotKey][colorId].push(combo);
-                        }
-                    });
-                    updateSpotUI(); triggerLocalSave(); switchTab('ranges'); 
-                    break;
-
-                case 'SAVE_NOTE':
-                    let notes = JSON.parse(localStorage.getItem('poker_ai_notes') || '[]');
-                    notes.push({ date: new Date().toLocaleDateString(), text: action.noteText });
-                    localStorage.setItem('poker_ai_notes', JSON.stringify(notes));
-                    break;
-                    
+                    if (!appData.ranges[spotKey]) { appData.ranges[spotKey] = {}; appData.palette.forEach(p => appData.ranges[spotKey][p.id] = []); }
+                    if (action.combosRed) fillSpecificColor('red_raise', action.combosRed, spotKey);
+                    if (action.combosGreen) fillSpecificColor('green_call', action.combosGreen, spotKey);
+                    if (action.combosBlue) fillSpecificColor('blue_fold', action.combosBlue, spotKey);
+                    updateSpotUI(); switchTab('ranges'); break;
+                case 'INJECT_HTML':
+                    const zone = document.getElementById('dynamic-injection-zone');
+                    const newPanel = document.createElement('div');
+                    newPanel.className = 'dynamic-panel';
+                    newPanel.innerHTML = `<div class="flex justify-between items-center border-b border-[#8b5cf6]/30 pb-3 mb-3"><h3 class="font-black text-white uppercase text-sm flex items-center gap-2"><span class="bg-[#8b5cf6] text-xs px-2 py-0.5 rounded text-white">SYSTEM</span> ${action.title}</h3><button onclick="this.parentElement.parentElement.remove()" class="text-gray-500 hover:text-white">✕</button></div><div class="text-sm text-gray-300 leading-relaxed">${action.htmlContent}</div>`;
+                    zone.prepend(newPanel); window.scrollTo({ top: 0, behavior: 'smooth' }); break;
                 case 'SET_SPOT':
-                    if (action.stage) setSpot('stage', action.stage);
-                    if (action.bb) setSpot('bb', action.bb);
-                    if (action.pos) setSpot('pos', action.pos);
-                    break;
+                    if (action.stage) setSpot('stage', action.stage); if (action.bb) setSpot('bb', action.bb); if (action.pos) setSpot('pos', action.pos); break;
+                case 'SAVE_NOTE':
+                    if (!appData.notes) appData.notes = []; appData.notes.unshift({ date: new Date().toLocaleDateString(), text: action.noteText }); triggerLocalSave(); updateNotesUI(); switchTab('notes'); break;
+                case 'SAVE_REPORT':
+                    if (!appData.reports) appData.reports = []; appData.reports.unshift({ date: new Date().toLocaleDateString(), author: action.author || 'AI Coach', title: action.title, content: action.content }); triggerLocalSave(); updateNotesUI(); switchTab('notes'); break;
+                case 'FILL_EV':
+                    if (action.pot) document.getElementById('ev-pot').value = action.pot; if (action.call) document.getElementById('ev-call').value = action.call; if (action.equity) document.getElementById('ev-eq').value = action.equity; calculateCallEV(); switchTab('calc'); break;
             }
         }
 
-        // --- INVIO CON PERSONA E MEMORIA (AGGIORNATO AGENTIC) ---
+        function fillSpecificColor(colorId, combos, spotKey) {
+            combos.forEach(combo => { if (!appData.ranges[spotKey][colorId].includes(combo)) { appData.ranges[spotKey][colorId].push(combo); } });
+        }
+
+        function sendQuickAction(text) { document.getElementById('chat-input').value = text; sendToCoach(); }
+
         async function sendToCoach() {
-            const message = chatInput.value.trim(); if(!message) return;
-            const btnSend = document.getElementById('btn-send'); const key = appConfig.aiKey; 
-            let model = appConfig.aiModel;
-            if (!model || model === "Nessuno") { appendAndSaveMessage("Sistema", "⚠️ Esegui la '🔍 Diagnosi API' prima di scrivermi!", "coach"); return; }
-            if(message.toLowerCase().includes("no, qui sbagli")) { appConfig.userCorrections.push(message); }
+            const inputEl = document.getElementById('chat-input');
+            const message = inputEl.value.trim(); 
+            if (!message) return;
+            const btnSend = document.getElementById('btn-send'); 
+            const key = document.getElementById('ai-key').value.trim() || appConfig.aiKey; 
+            let model = appConfig.aiModel || "gemini-2.5-flash";
+            
+            if (!key) { appendAndSaveMessage("SYSTEM", "Attenzione: Inserisci la tua API Key di Gemini e connetti il motore prima di scrivere.", "coach"); return; }
+            if (message.toLowerCase().includes("no, qui sbagli")) { appConfig.userCorrections.push(message); }
 
-            appendAndSaveMessage("Omiserez", message, "user"); 
-            chatInput.value = ''; btnSend.innerText = "..."; btnSend.disabled = true;
+            appendAndSaveMessage("Tu", message, "user"); 
+            inputEl.value = ''; btnSend.disabled = true; btnSend.innerHTML = "⏳";
 
-            const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId);
+            const chat = appConfig.chats.find(c => c.id === appConfig.activeChatId); 
             let historyText = "";
-            if(chat && chat.messages.length > 2) {
-                historyText = "\n--- STORIA DELLA CHAT RECENTE ---\n";
-                chat.messages.slice(-6).forEach(m => { if(m.text !== message) historyText += `${m.sender.toUpperCase()}: ${m.text}\n`; });
-            }
+            if (chat && chat.messages.length > 2) { historyText = "\n--- STORIA DELLA CHAT ---\n"; chat.messages.slice(-6).forEach(m => { if (m.text !== message) historyText += `${m.sender.toUpperCase()}: ${m.text}\n`; }); }
 
-            let agenticInstructions = `\n\nSEI UN AGENTE ATTIVO. Oltre a parlare, puoi interagire con la WebApp. 
-Se l'utente ti chiede di compilare un range, creare una nota, o impostare uno spot, usa ESATTAMENTE questo formato tag alla fine della tua risposta testuale. Non usare markdown per i tag <action>.
+            let currentSpotKey = getSpotKey(); let currentRangeData = appData.ranges[currentSpotKey] || {};
+            let brProfit = document.getElementById('stat-profit').innerText; let brROI = document.getElementById('stat-roi').innerText;
+            
+            let visionPrompt = `\n[CONTESTO IN TEMPO REALE (I TUOI OCCHI): - Spot matrice a schermo: '${currentSpotKey}'. Dati matrice: ${JSON.stringify(currentRangeData)}. - Bankroll Stats: Profit ${brProfit}, ROI ${brROI}. Usali se l'utente chiede pareri.]`;
 
-Per creare/compilare un range:
-<action>
-{
-  "type": "FILL_RANGE",
-  "description": "Ho compilato il range di Open",
-  "colorName": "Open Raise",
-  "colorHex": "#ef4444",
-  "combos": ["AA", "KK", "QQ", "AKs", "AKo"]
-}
-</action>
+            let agenticInstructions = `\n\nSEI UN AGENTE ATTIVO (Hai "Le Mani"). Interagisci con la UI con JSON esatti racchiusi in tag <action></action>. No markdown per i tag.
+Azione 1 COLOR_GRID: Per colorare i range sulla griglia. Usa i colori predefiniti: {"type": "COLOR_GRID", "description": "Colorato", "combosRed": ["AA", "KK"], "combosGreen": ["AQs"], "combosBlue": ["72o"]}
+Azione 2 INJECT_HTML: Per creare nuovi pannelli nell'interfaccia (Riepiloghi, Note al volo, Errori gravi): {"type": "INJECT_HTML", "title": "Referto", "htmlContent": "<strong>Errore:</strong>..."}
+Altre azioni: SET_SPOT (cambia filtri: stage, bb, pos), SAVE_REPORT (salva report in DB), SAVE_NOTE, FILL_EV.`;
 
-Per salvare una nota:
-<action>{"type": "SAVE_NOTE", "description": "Nota salvata", "noteText": "Il tuo testo qui"}</action>
-
-Per navigare lo spot (Stage, BB, Pos):
-<action>{"type": "SET_SPOT", "description": "Spot modificato in Early, 40BB, UTG", "stage": "Early", "bb": "40", "pos": "UTG"}</action>
-`;
-
-            let basePrompt = `Sei l'AI personale di omiserez (35 anni, 173cm, 92kg). DATABASE CORREZIONI: ${appConfig.userCorrections.join(' | ')}. Se applicabile, tieni conto della storia recente: ${historyText}\n\n`;
-            let personaPrompt = "";
-            if(currentPersona === 'analyst') personaPrompt = "RUOLO: Analista Tecnico GTO. Rispondi in modo analitico, matematico e focalizzato sui range e l'EV. Analizza la hand history in modo spietato.";
-            else if(currentPersona === 'coach') personaPrompt = "RUOLO: Poker Coach Strategico. Discuti di strategia generale, exploit, adattamenti e dinamiche del torneo. Tono: diretto e costruttivo.";
-            else if(currentPersona === 'mental') personaPrompt = "RUOLO: Mental Coach. Concentrati su tilt, gestione della varianza, mindset, stanchezza fisica e routine. Tono: empatico, motivazionale e calmo.";
-
+            let basePrompt = `SEI L'AI DEFINITIVA PER IL POKER TEXAS HOLD'EM (Unisci le skill di PioSolver a quelle del miglior Coach). Conosci in modo profondo e assoluto la GTO, exploit, ICM (Independent Chip Model), calcolo esatto delle equity, conteggio outs, pot odds. Sai guidare il giocatore tecnicamente e mentalmente. Correzioni utente: ${appConfig.userCorrections.join(' | ')}. ${historyText} ${visionPrompt}\n\n`;
+            let personaPrompt = currentPersona === 'analyst' ? "RUOLO ATTUALE: Analista GTO Matematico." : (currentPersona === 'coach' ? "RUOLO ATTUALE: Poker Coach Strategico." : "RUOLO ATTUALE: Mental Coach.");
             const systemPrompt = basePrompt + personaPrompt + agenticInstructions;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-
+            
             try {
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nOMISEREZ: " + message }] }] }) });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error?.message || "Errore di connessione.");
-                
-                let personaName = currentPersona === 'analyst' ? "Analista GTO" : (currentPersona === 'coach' ? "Coach" : "Mental Coach");
-                
-                let rawAiResponse = data.candidates[0].content.parts[0].text;
-                let finalProcessedResponse = processAgenticResponse(rawAiResponse);
-                
-                appendAndSaveMessage(personaName, finalProcessedResponse, "coach");
-            } catch (error) { appendAndSaveMessage("Sistema", `❌ ERRORE: ${error.message}`, "coach"); } finally { btnSend.innerText = "Invia"; btnSend.disabled = false; }
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nUTENTE: " + message }] }] }) });
+                const data = await response.json(); 
+                if (!response.ok) throw new Error(data.error?.message || "Errore API.");
+                let finalProcessedResponse = processAgenticResponse(data.candidates[0].content.parts[0].text);
+                appendAndSaveMessage("AI OPERATOR", finalProcessedResponse, "coach");
+            } catch (error) { 
+                let errorMsg = error.message;
+                if(errorMsg.includes("high demand") || errorMsg.includes("503")) {
+                    errorMsg = "I server API gratuiti di Google sono momentaneamente sovraccarichi. Attendi qualche istante e riprova.";
+                }
+                appendAndSaveMessage("SYSTEM", `❌ ERRORE CONNESSIONE: ${errorMsg}`, "coach"); 
+            } finally { btnSend.disabled = false; btnSend.innerHTML = `<svg class="w-6 h-6 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m-7 7l7-7 7 7"></path></svg>`; }
         }
 
-        // --- GTO ---
-        let spotState = { stage: 'Early', bb: '100', pos: 'UTG' }; let activeBrushId = "erase"; let isDrawing = false; const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+        // --- GESTIONE FILE E DROPZONE ---
+        const chatInput = document.getElementById('chat-input');
+        chatInput.addEventListener('dragover', (e) => { e.preventDefault(); chatInput.style.borderColor = '#3b82f6'; });
+        chatInput.addEventListener('dragleave', (e) => { e.preventDefault(); chatInput.style.borderColor = '#2d3748'; });
+        chatInput.addEventListener('drop', (e) => { e.preventDefault(); chatInput.style.borderColor = '#2d3748'; if (e.dataTransfer.files && e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]); });
+        function handleFileUpload(event) { if (event.target.files[0]) processFile(event.target.files[0]); }
+        function processFile(file) { if (!file.name.endsWith('.txt')) { alert("Solo file .txt supportati."); return; } const reader = new FileReader(); reader.onload = (e) => { chatInput.value += `\n[FILE HH: ${file.name}]\n${e.target.result}\n`; chatInput.scrollTop = chatInput.scrollHeight; }; reader.readAsText(file); }
+
+        // --- GESTIONE UI RANGES ---
         function getSpotKey() { return `${spotState.stage}_${spotState.bb}_${spotState.pos}`; }
-        function setSpot(type, val) { spotState[type] = val; document.querySelectorAll(`.btn-${type}`).forEach(b => { b.classList.remove(`btn-active-${type}`); if(b.dataset.val === val) b.classList.add(`btn-active-${type}`); }); updateSpotUI(); }
-        function updateSpotUI() { let key = getSpotKey(); if(!appData.ranges[key]) { appData.ranges[key] = {}; appData.palette.forEach(p => appData.ranges[key][p.id] = []); } renderBrushList(); renderMatrixColors(); }
-        function addPaletteColor() { const name = document.getElementById('new-color-name').value.trim(); const color = document.getElementById('new-color-hex').value; if(!name) return; const newId = Math.random().toString(36).substr(2, 9); appData.palette.push({ id: newId, name: name, color: color }); Object.keys(appData.ranges).forEach(k => appData.ranges[k][newId] = []); updateSpotUI(); triggerLocalSave(); }
-        function setBrush(id) { activeBrushId = id; document.querySelectorAll('.brush-item').forEach(el => el.classList.remove('brush-active')); let activeEl = document.getElementById(`brush-${id}`); if(activeEl) activeEl.classList.add('brush-active'); }
-        function renderBrushList() { const list = document.getElementById('brush-list'); list.innerHTML = ''; appData.palette.forEach(p => { let div = document.createElement('div'); div.className = "brush-item " + (activeBrushId === p.id ? "brush-active" : ""); div.onclick = () => setBrush(p.id); div.id = `brush-${p.id}`; div.innerHTML = `<div class="flex items-center"><div class="color-box" style="background-color: ${p.color}"></div><span class="text-sm font-bold text-white">${p.name}</span></div>`; list.appendChild(div); }); }
+        function setSpot(type, val) { spotState[type] = val; document.querySelectorAll(`.btn-${type}`).forEach(b => { b.classList.remove(`btn-active-${type}`); if (b.dataset.val === val) b.classList.add(`btn-active-${type}`); }); updateSpotUI(); document.getElementById('matrix-title').innerText = `${spotState.stage} / ${spotState.bb} BB / ${spotState.pos}`; }
+        function updateSpotUI() { let key = getSpotKey(); if (!appData.ranges[key]) { appData.ranges[key] = {}; appData.palette.forEach(p => appData.ranges[key][p.id] = []); } renderBrushList(); renderMatrixColors(); }
+        function addPaletteColor() { const name = document.getElementById('new-color-name').value.trim(); const color = document.getElementById('new-color-hex').value; if (!name) return; const newId = Math.random().toString(36).substr(2, 9); appData.palette.push({ id: newId, name: name, color: color }); Object.keys(appData.ranges).forEach(k => appData.ranges[k][newId] = []); updateSpotUI(); triggerLocalSave(); }
+        function setBrush(id) { activeBrushId = id; document.querySelectorAll('.brush-item').forEach(el => el.classList.remove('brush-active', 'border-[#3b82f6]')); let activeEl = document.getElementById(`brush-${id}`); if (activeEl) activeEl.classList.add('brush-active', 'border-[#3b82f6]'); }
+        function renderBrushList() { const list = document.getElementById('brush-list'); list.innerHTML = ''; appData.palette.forEach(p => { let div = document.createElement('div'); div.className = "brush-item " + (activeBrushId === p.id ? "brush-active border-[#3b82f6]" : "border-[#333]"); div.onclick = () => setBrush(p.id); div.id = `brush-${p.id}`; div.innerHTML = `<div class="flex items-center gap-3"><div class="w-4 h-4 rounded" style="background-color: ${p.color}; box-shadow: 0 0 8px ${p.color}"></div><span class="text-xs font-bold text-gray-200">${p.name}</span></div>`; list.appendChild(div); }); }
         function createMatrixDOM() { const container = document.getElementById('matrix'); container.innerHTML = ''; ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); const cell = document.createElement('div'); cell.innerText = combo; cell.id = `cell-${combo}`; cell.className = "cell"; cell.onmousedown = () => paintCell(combo); container.appendChild(cell); }); }); }
-        function paintCell(combo) { let spot = appData.ranges[getSpotKey()]; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id] = spot[p.id].filter(c => c !== combo); }); if(activeBrushId !== "erase") { if(!spot[activeBrushId]) spot[activeBrushId] = []; spot[activeBrushId].push(combo); } renderMatrixColors(); triggerLocalSave(); }
-        function renderMatrixColors() { let spot = appData.ranges[getSpotKey()]; let colorMap = {}; appData.palette.forEach(p => { if(spot[p.id]) spot[p.id].forEach(c => colorMap[c] = p.color); }); ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); let cell = document.getElementById(`cell-${combo}`); if(colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; } else { cell.style.backgroundColor = '#1a1d24'; } }); }); }
+        function paintCell(combo) { let spot = appData.ranges[getSpotKey()]; appData.palette.forEach(p => { if (spot[p.id]) spot[p.id] = spot[p.id].filter(c => c !== combo); }); if (activeBrushId !== "erase") { if (!spot[activeBrushId]) spot[activeBrushId] = []; spot[activeBrushId].push(combo); } renderMatrixColors(); triggerLocalSave(); }
+        function renderMatrixColors() { let spot = appData.ranges[getSpotKey()]; let colorMap = {}; appData.palette.forEach(p => { if (spot[p.id]) spot[p.id].forEach(c => colorMap[c] = p.color); }); ranks.forEach((r1, i) => { ranks.forEach((r2, j) => { const combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); let cell = document.getElementById(`cell-${combo}`); if (colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); cell.style.boxShadow = `inset 0 0 8px rgba(0,0,0,0.3)`; } else { cell.style.backgroundColor = '#1a1d24'; cell.classList.remove('cell-colored'); cell.style.boxShadow = 'none'; } }); }); }
         function clearMatrix() { appData.ranges[getSpotKey()] = {}; renderMatrixColors(); triggerLocalSave(); }
-        
-        // --- BANKROLL ---
-        let brChartInstance; 
-        function addTournament() { const buyin = parseFloat(document.getElementById('t-buyin').value) || 0; const win = parseFloat(document.getElementById('t-win').value) || 0; if(buyin === 0 && win === 0) return; appData.bankroll.push({ buyin, win, profit: win-buyin }); updateBankrollUI(); triggerLocalSave(); }
-        function updateBankrollUI() { let tProfit = 0, tBuyin = 0; appData.bankroll.forEach(t => { tProfit += t.profit; tBuyin += t.buyin; }); let count = appData.bankroll.length; let abi = count > 0 ? (tBuyin / count) : 0; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; let elP = document.getElementById('stat-profit'); elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444'; document.getElementById('stat-abi').innerText = `€ ${abi.toFixed(2)}`; let elR = document.getElementById('stat-roi'); elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444'; document.getElementById('stat-count').innerText = count; document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`; renderChart(); }
-        function renderChart() { const ctx = document.getElementById('brChart').getContext('2d'); let cum = 0; const dataPts = appData.bankroll.map(t => { cum += t.profit; return cum; }); if (brChartInstance) brChartInstance.destroy(); brChartInstance = new Chart(ctx, { type: 'line', data: { labels: dataPts.map((_,i)=>i), datasets: [{ data: dataPts, borderColor: '#3b82f6', fill: false }] }, options: { responsive: true, maintainAspectRatio: false } }); }
 
-        // --- MATH (ICM 9 GIOCATORI + EV/MC) ---
-        function initICMInputs() { const container = document.getElementById('icm-inputs'); let html = ''; for(let i=1; i<=9; i++) { html += `<div class="grid grid-cols-12 gap-2 items-center"><div class="col-span-1 text-center text-xs font-bold text-gray-500">${i}</div><div class="col-span-6"><input id="icm-s${i}" type="number" placeholder="Chips P${i}" class="text-xs py-2 px-2 text-[#8b5cf6]"></div><div class="col-span-5"><input id="icm-p${i}" type="number" placeholder="€ Premio ${i}°" class="text-xs py-2 px-2 text-[#22c55e]"></div></div>`; } container.innerHTML = html; }
-        function calculateICM() { let stacksArr = []; let payoutsArr = []; for(let i=1; i<=9; i++) { let s = parseFloat(document.getElementById('icm-s'+i).value); let p = parseFloat(document.getElementById('icm-p'+i).value); if(s > 0) stacksArr.push({id: i, chips: s}); if(p > 0) payoutsArr.push(p); } payoutsArr.sort((a,b)=>b-a); if(stacksArr.length < 2 || payoutsArr.length === 0) { document.getElementById('icm-results').innerHTML = `<p class="text-red-500 text-xs text-center font-bold">Inserisci dati validi.</p>`; return; } let chips = stacksArr.map(st => st.chips); let results = icmRecursion(chips, payoutsArr, 0, 1.0, null); let resHtml = ''; for(let i=0; i<stacksArr.length; i++) resHtml += `<div class="flex justify-between items-center p-2 bg-[#1a1d24] rounded border border-[#333]"><span class="text-gray-400 font-bold">P${stacksArr[i].id}: <span class="text-white">${stacksArr[i].chips}</span></span><span class="text-lg font-black text-[#22c55e]">€ ${results[i].toFixed(2)}</span></div>`; document.getElementById('icm-results').innerHTML = resHtml; }
-        function icmRecursion(stacks, payouts, depth, currentProb, results) { if (results === null) results = new Array(stacks.length).fill(0); if (depth >= payouts.length || depth >= stacks.length) return results; let totalChips = stacks.reduce((a, b) => a + b, 0); if (totalChips === 0) return results; for (let i = 0; i < stacks.length; i++) { if (stacks[i] > 0) { let probFirst = stacks[i] / totalChips; results[i] += currentProb * probFirst * payouts[depth]; let savedStack = stacks[i]; stacks[i] = 0; icmRecursion(stacks, payouts, depth + 1, currentProb * probFirst, results); stacks[i] = savedStack; } } return results; }
+        // --- GESTIONE NOTE E REFERTI ---
+        function updateNotesUI() {
+            const rCont = document.getElementById('reports-container'); rCont.innerHTML = ''; const nCont = document.getElementById('notes-container'); nCont.innerHTML = '';
+            if (!appData.reports) appData.reports = []; if (appData.reports.length === 0) rCont.innerHTML = '<p class="text-xs text-gray-500 italic">Nessun referto salvato.</p>';
+            appData.reports.forEach((r, idx) => { rCont.innerHTML += `<div class="report-card relative"><button onclick="deleteReport(${idx})" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 font-bold">✕</button><div class="flex justify-between items-end mb-2"><span class="text-[10px] font-bold text-[#8b5cf6] uppercase tracking-widest">${r.author}</span><span class="text-[10px] text-gray-500">${r.date}</span></div><h4 class="text-sm font-bold text-white mb-2">${r.title}</h4><p class="text-xs text-gray-300 leading-relaxed">${parseMarkdown(r.content)}</p></div>`; });
+            if (!appData.notes) appData.notes = []; if (appData.notes.length === 0) nCont.innerHTML = '<p class="text-xs text-gray-500 italic">Nessun appunto rapido.</p>';
+            appData.notes.forEach((n, idx) => { nCont.innerHTML += `<div class="note-card relative"><button onclick="deleteNote(${idx})" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 font-bold">✕</button><span class="text-[10px] text-gray-500 block mb-1">${n.date}</span><p class="text-sm text-gray-200">${n.text}</p></div>`; });
+        }
+        function deleteReport(idx) { if (confirm("Cancellare questo referto?")) { appData.reports.splice(idx, 1); triggerLocalSave(); updateNotesUI(); } }
+        function deleteNote(idx) { if (confirm("Cancellare questa nota?")) { appData.notes.splice(idx, 1); triggerLocalSave(); updateNotesUI(); } }
+
+        // --- GESTIONE BANKROLL ---
+        function addTournament() { const buyin = parseFloat(document.getElementById('t-buyin').value) || 0; const win = parseFloat(document.getElementById('t-win').value) || 0; if (buyin === 0 && win === 0) return; appData.bankroll.push({ buyin, win, profit: win-buyin }); updateBankrollUI(); triggerLocalSave(); }
+        function deleteTournament(idx) { if (confirm("Vuoi eliminare questo torneo?")) { appData.bankroll.splice(idx, 1); updateBankrollUI(); triggerLocalSave(); } }
+        function updateBankrollUI() { let tProfit = 0, tBuyin = 0; appData.bankroll.forEach(t => { tProfit += t.profit; tBuyin += t.buyin; }); let count = appData.bankroll.length; let abi = count > 0 ? (tBuyin / count) : 0; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; let elP = document.getElementById('stat-profit'); elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#22c55e' : '#ef4444'; document.getElementById('stat-abi').innerText = `€ ${abi.toFixed(2)}`; let elR = document.getElementById('stat-roi'); elR.innerText = `${roi.toFixed(2)}%`; elR.style.color = roi >= 0 ? '#3b82f6' : '#ef4444'; document.getElementById('stat-count').innerText = count; document.getElementById('stat-spent').innerText = `€ ${tBuyin.toFixed(2)}`; const list = document.getElementById('br-list'); list.innerHTML = ''; appData.bankroll.forEach((t, i) => { list.innerHTML += `<div class="flex justify-between items-center bg-[#1a1d24] p-2 rounded border border-[#333]"><span class="text-xs text-gray-400">In: <span class="text-white">€${t.buyin}</span> | Out: <span class="${t.profit >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}">€${t.win}</span></span><button onclick="deleteTournament(${i})" class="text-red-500 hover:text-white px-2">🗑️</button></div>`; }); renderChart(); }
+        function renderChart() { const ctx = document.getElementById('brChart').getContext('2d'); let cum = 0; const dataPts = appData.bankroll.map(t => { cum += t.profit; return cum; }); if (brChartInstance) brChartInstance.destroy(); brChartInstance = new Chart(ctx, { type: 'line', data: { labels: dataPts.map((_,i)=>i+1), datasets: [{ data: dataPts, borderColor: '#3b82f6', fill: false, tension: 0.1 }] }, options: { responsive: true, maintainAspectRatio: false } }); }
+
+        // --- CALCOLI (EV, SIMULATORE, ICM) ---
         function calculateCallEV() { const pot = parseFloat(document.getElementById('ev-pot').value); const callAmt = parseFloat(document.getElementById('ev-call').value); const eqStr = document.getElementById('ev-eq').value.replace('%',''); const equity = parseFloat(eqStr) / 100; if (isNaN(pot) || isNaN(callAmt) || isNaN(equity)) return; const ev = (equity * (pot + callAmt)) - callAmt; const box = document.getElementById('ev-result-box'); const verdictNode = document.getElementById('ev-verdict-text'); const valNode = document.getElementById('ev-value'); box.classList.remove('hidden'); valNode.innerText = `${ev > 0 ? '+' : ''}${ev.toFixed(2)}`; if (ev > 0) { box.style.borderColor = "#22c55e"; verdictNode.innerText = "CALL (+EV)"; verdictNode.style.color = "#22c55e"; valNode.style.color = "#22c55e"; } else { box.style.borderColor = "#ef4444"; verdictNode.innerText = "FOLD (-EV)"; verdictNode.style.color = "#ef4444"; valNode.style.color = "#ef4444"; } }
-        function copyEquityFromMC() { let heroEq = document.getElementById('res-hero').innerText.replace('%', ''); if(heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq; }
-        let activeInput = null; function setActiveInput(el) { activeInput = el; } function typeCard(val) { if(!activeInput){ activeInput = document.getElementById('mc-hero'); activeInput.focus(); } activeInput.value += val; activeInput.focus(); } function clearActiveInput() { if(activeInput){ activeInput.value = ''; activeInput.focus(); } }
-        function evaluateHand(cards) { let rankStr = '23456789TJQKA'; let ranks = cards.map(c => rankStr.indexOf(c[0].toUpperCase())); let suits = cards.map(c => c[1].toLowerCase()); let rc = new Array(13).fill(0); let sc = {s:0, h:0, d:0, c:0}; ranks.forEach(r => rc[r]++); suits.forEach(s => sc[s]++); let flushSuit = Object.keys(sc).find(k => sc[k] >= 5); let isFlush = !!flushSuit; let ur = [...new Set(ranks)].sort((a,b)=>a-b); if(ur.includes(12)) ur.unshift(-1); let isStraight = false, sHigh = -1, streak = 1; for(let i=1; i<ur.length; i++){ if(ur[i] === ur[i-1]+1) streak++; else streak=1; if(streak>=5){ isStraight = true; sHigh = ur[i]; } } let pairs = [], trips = [], quads = []; rc.forEach((count, rank) => { if(count===2) pairs.push(rank); if(count===3) trips.push(rank); if(count===4) quads.push(rank); }); let score = 0; ranks.sort((a,b)=>b-a); if(isStraight && isFlush) score = 8000000 + sHigh*10000; else if(quads.length) score = 7000000 + Math.max(...quads)*10000; else if(trips.length && pairs.length) score = 6000000 + Math.max(...trips)*10000; else if(trips.length > 1) score = 6000000 + Math.max(...trips)*10000; else if(isFlush) { let fRanks = cards.filter(c => c[1].toLowerCase()===flushSuit).map(c => rankStr.indexOf(c[0].toUpperCase())).sort((a,b)=>b-a); score = 5000000 + fRanks[0]*10000 + (fRanks[1]||0)*100; } else if(isStraight) score = 4000000 + sHigh*10000; else if(trips.length) score = 3000000 + Math.max(...trips)*10000; else if(pairs.length >= 2) score = 2000000 + Math.max(...pairs)*10000 + Math.min(...pairs)*100; else if(pairs.length === 1) score = 1000000 + pairs[0]*10000; return score + ranks[0]*100 + (ranks[1]||0)*1 + (ranks[2]||0)*0.01; }
-        function runEquitySimulation() { let heroStr = document.getElementById('mc-hero').value.trim(); let villainStr = document.getElementById('mc-villain').value.trim(); let boardStr = document.getElementById('mc-board').value.trim(); let hero = heroStr ? heroStr.split(/\s+/) : []; if(hero.length !== 2) { alert("Inserisci 2 carte."); return; } let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando..."; setTimeout(() => { let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA'; for(let r of rankStr) for(let s of suits) deck.push(r+s); let known = [...hero, ...(villainStr?villainStr.split(/\s+/):[]), ...(boardStr?boardStr.split(/\s+/):[])].map(c => c.toLowerCase()); deck = deck.filter(c => !known.includes(c.toLowerCase())); let wins = 0, ties = 0, runs = 2000; let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : []; for(let i=0; i<runs; i++){ let simDeck = [...deck]; for(let j=simDeck.length-1; j>0; j--){ let k = Math.floor(Math.random()*(j+1)); [simDeck[j], simDeck[k]] = [simDeck[k], simDeck[j]]; } let simBoard = [...board]; let deckIdx = 0; while(simBoard.length < 5) simBoard.push(simDeck[deckIdx++]); let simVillain = [...villain]; while(simVillain.length < 2) simVillain.push(simDeck[deckIdx++]); let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]); if(heroScore > villainScore) wins++; else if(heroScore === villainScore) ties++; } let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100; document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%'; document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%'; document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%'; document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula % Vittoria"; }, 50); }
+        function copyEquityFromMC() { let heroEq = document.getElementById('res-hero').innerText.replace('%', ''); if (heroEq !== "0.0") document.getElementById('ev-eq').value = heroEq; }
+        function setActiveInput(el) { activeInput = el; } function typeCard(val) { if (!activeInput) { activeInput = document.getElementById('mc-hero'); activeInput.focus(); } activeInput.value += val; activeInput.focus(); } function clearActiveInput() { if (activeInput) { activeInput.value = ''; activeInput.focus(); } }
+        function evaluateHand(cards) { let rankStr = '23456789TJQKA'; let ranks = cards.map(c => rankStr.indexOf(c[0].toUpperCase())); let suits = cards.map(c => c[1].toLowerCase()); let rc = new Array(13).fill(0); let sc = {s:0, h:0, d:0, c:0}; ranks.forEach(r => rc[r]++); suits.forEach(s => sc[s]++); let flushSuit = Object.keys(sc).find(k => sc[k] >= 5); let isFlush = !!flushSuit; let ur = [...new Set(ranks)].sort((a,b)=>a-b); if (ur.includes(12)) ur.unshift(-1); let isStraight = false, sHigh = -1, streak = 1; for (let i=1; i<ur.length; i++) { if (ur[i] === ur[i-1]+1) streak++; else streak=1; if (streak>=5) { isStraight = true; sHigh = ur[i]; } } let pairs = [], trips = [], quads = []; rc.forEach((count, rank) => { if (count===2) pairs.push(rank); if (count===3) trips.push(rank); if (count===4) quads.push(rank); }); let score = 0; ranks.sort((a,b)=>b-a); if (isStraight && isFlush) score = 8000000 + sHigh*10000; else if (quads.length) score = 7000000 + Math.max(...quads)*10000; else if (trips.length && pairs.length) score = 6000000 + Math.max(...trips)*10000; else if (trips.length > 1) score = 6000000 + Math.max(...trips)*10000; else if (isFlush) { let fRanks = cards.filter(c => c[1].toLowerCase()===flushSuit).map(c => rankStr.indexOf(c[0].toUpperCase())).sort((a,b)=>b-a); score = 5000000 + fRanks[0]*10000 + (fRanks[1]||0)*100; } else if (isStraight) score = 4000000 + sHigh*10000; else if (trips.length) score = 3000000 + Math.max(...trips)*10000; else if (pairs.length >= 2) score = 2000000 + Math.max(...pairs)*10000 + Math.min(...pairs)*100; else if (pairs.length === 1) score = 1000000 + pairs[0]*10000; return score + ranks[0]*100 + (ranks[1]||0)*1 + (ranks[2]||0)*0.01; }
+        function runEquitySimulation() { let heroStr = document.getElementById('mc-hero').value.trim(); let villainStr = document.getElementById('mc-villain').value.trim(); let boardStr = document.getElementById('mc-board').value.trim(); let hero = heroStr ? heroStr.split(/\s+/) : []; if (hero.length !== 2) { alert("Inserisci 2 carte."); return; } let btn = document.getElementById('btn-sim'); btn.innerText = "Calcolando..."; setTimeout(() => { let deck = []; let suits = ['s','h','d','c']; let rankStr = '23456789TJQKA'; for (let r of rankStr) for(let s of suits) deck.push(r+s); let known = [...hero, ...(villainStr?villainStr.split(/\s+/):[]), ...(boardStr?boardStr.split(/\s+/):[])].map(c => c.toLowerCase()); deck = deck.filter(c => !known.includes(c.toLowerCase())); let wins = 0, ties = 0, runs = 2000; let villain = villainStr ? villainStr.split(/\s+/) : []; let board = boardStr ? boardStr.split(/\s+/) : []; for (let i=0; i<runs; i++) { let simDeck = [...deck]; for (let j=simDeck.length-1; j>0; j--) { let k = Math.floor(Math.random()*(j+1)); [simDeck[j], simDeck[k]] = [simDeck[k], simDeck[j]]; } let simBoard = [...board]; let deckIdx = 0; while (simBoard.length < 5) simBoard.push(simDeck[deckIdx++]); let simVillain = [...villain]; while (simVillain.length < 2) simVillain.push(simDeck[deckIdx++]); let heroScore = evaluateHand([...hero, ...simBoard]); let villainScore = evaluateHand([...simVillain, ...simBoard]); if (heroScore > villainScore) wins++; else if (heroScore === villainScore) ties++; } let winPct = (wins/runs)*100; let tiePct = (ties/runs)*100; document.getElementById('res-hero').innerText = winPct.toFixed(1) + '%'; document.getElementById('res-tie').innerText = tiePct.toFixed(1) + '%'; document.getElementById('res-villain').innerText = (100 - winPct - tiePct).toFixed(1) + '%'; document.getElementById('eq-results').classList.remove('hidden'); btn.innerText = "Simula % Vittoria"; }, 50); }
+        function initICMInputs() { const container = document.getElementById('icm-inputs'); let html = ''; for (let i=1; i<=9; i++) { html += `<div class="grid grid-cols-12 gap-2 items-center"><div class="col-span-1 text-center text-xs font-bold text-gray-500">${i}</div><div class="col-span-6"><input id="icm-s${i}" type="number" placeholder="Chips P${i}" class="text-xs py-2 px-2 text-[#8b5cf6] bg-[#0b0d10]"></div><div class="col-span-5"><input id="icm-p${i}" type="number" placeholder="€ Premio ${i}°" class="text-xs py-2 px-2 text-[#22c55e] bg-[#0b0d10]"></div></div>`; } container.innerHTML = html; }
+        function calculateICM() { let stacksArr = []; let payoutsArr = []; for (let i=1; i<=9; i++) { let s = parseFloat(document.getElementById('icm-s'+i).value); let p = parseFloat(document.getElementById('icm-p'+i).value); if (s > 0) stacksArr.push({id: i, chips: s}); if (p > 0) payoutsArr.push(p); } payoutsArr.sort((a,b)=>b-a); if (stacksArr.length < 2 || payoutsArr.length === 0) { document.getElementById('icm-results').innerHTML = `<p class="text-red-500 text-xs text-center font-bold">Inserisci dati validi.</p>`; return; } let chips = stacksArr.map(st => st.chips); let results = icmRecursion(chips, payoutsArr, 0, 1.0, null); let resHtml = ''; for (let i=0; i<stacksArr.length; i++) { resHtml += `<div class="flex justify-between items-center p-2 bg-[#1a1d24] rounded border border-[#333]"><span class="text-gray-400 font-bold">P${stacksArr[i].id}: <span class="text-white">${stacksArr[i].chips}</span></span><span class="text-lg font-black text-[#22c55e]">€ ${results[i].toFixed(2)}</span></div>`; } document.getElementById('icm-results').innerHTML = resHtml; }
+        function icmRecursion(stacks, payouts, depth, currentProb, results) { if (results === null) results = new Array(stacks.length).fill(0); if (depth >= payouts.length || depth >= stacks.length) return results; let totalChips = stacks.reduce((a, b) => a + b, 0); if (totalChips === 0) return results; for (let i = 0; i < stacks.length; i++) { if (stacks[i] > 0) { let probFirst = stacks[i] / totalChips; results[i] += currentProb * probFirst * payouts[depth]; let savedStack = stacks[i]; stacks[i] = 0; icmRecursion(stacks, payouts, depth + 1, currentProb * probFirst, results); stacks[i] = savedStack; } } return results; }
 
-        window.onload = () => { if (!checkAuth()) return; document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); createMatrixDOM(); initICMInputs(); loadAllData(); setTimeout(downloadDualCloud, 1000); };
     </script>
 </body>
 </html>
