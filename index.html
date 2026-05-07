@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Pro Hub - TITAN Edition</title>
+    <title>Poker Pro Hub - TITAN v27</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,18 +17,18 @@
         ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
 
         /* UI PREMIUM UTILS */
-        .glass-panel { background: rgba(15, 17, 21, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+        .glass-panel { background: rgba(15, 17, 21, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
         .glow-text { text-shadow: 0 0 15px currentColor; }
         input, textarea, select { background: rgba(0,0,0,0.3); border: 1px solid #1f2937; color: white; padding: 12px 16px; border-radius: 12px; outline: none; transition: 0.3s; font-size: 0.9rem; }
         input:focus, textarea:focus, select:focus { border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139,92,246,0.3); background: rgba(0,0,0,0.5); }
 
         /* SIDEBAR NAV */
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 12px; font-weight: 700; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid transparent; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-radius: 12px; font-weight: 700; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid transparent; font-size: 0.85rem;}
         .nav-item:hover { color: #fff; background: rgba(255,255,255,0.03); transform: translateX(4px); }
         .nav-active { color: #fff; background: linear-gradient(90deg, rgba(59,130,246,0.15) 0%, transparent 100%); border-left: 4px solid #3b82f6; border-radius: 4px 12px 12px 4px; }
         .nav-active .icon { color: #3b82f6; filter: drop-shadow(0 0 8px #3b82f6); }
 
-        /* GTO GRID 2.0 */
+        /* GTO GRID */
         .matrix-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; padding: 6px; background: #0a0c10; border-radius: 16px; border: 1px solid #1f2937; aspect-ratio: 1; width: 100%; max-width: 700px; margin: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.02); }
         .cell { display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background-color: #12151c; color: #475569; border-radius: 6px; user-select: none; border: 1px solid rgba(255,255,255,0.01); }
         .cell:hover { filter: brightness(1.6); transform: scale(1.1); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); }
@@ -37,7 +37,7 @@
         /* CHAT STYLES */
         .chat-container { display: flex; flex-direction: column; gap: 24px; padding: 24px; overflow-y: auto; scroll-behavior: smooth; }
         .msg-coach { background: #12151c; border: 1px solid #1f2937; padding: 24px 30px; border-radius: 20px; border-top-left-radius: 4px; max-width: 88%; align-self: flex-start; position: relative; line-height: 1.7; color: #e2e8f0; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .msg-coach::before { content: "✨ AI COACH"; position: absolute; top: -12px; left: 16px; background: linear-gradient(90deg, #8b5cf6, #3b82f6); color: white; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 12px; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
+        .msg-coach::before { content: "✨ AI SYSTEM"; position: absolute; top: -12px; left: 16px; background: linear-gradient(90deg, #8b5cf6, #3b82f6); color: white; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 12px; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
         .msg-user { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 18px 24px; border-radius: 20px; border-top-right-radius: 4px; max-width: 75%; align-self: flex-end; box-shadow: 0 8px 25px rgba(59,130,246,0.4); font-size: 0.95rem; font-weight: 500; }
         
         .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 16px 24px; background: #12151c; border: 1px solid #1f2937; border-radius: 20px; border-top-left-radius: 4px; align-self: flex-start; width: max-content; margin-top: 10px; }
@@ -62,8 +62,10 @@
         .dash-card { background: linear-gradient(180deg, rgba(20,22,28,0.8) 0%, rgba(10,12,16,0.8) 100%); border: 1px solid #1f2937; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         .dash-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--card-color, #3b82f6); }
         .stat-value { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; background: linear-gradient(to bottom, #ffffff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .leak-card { background: #12151c; border: 1px solid #1f2937; padding: 20px; border-radius: 16px; margin-bottom: 16px; position: relative; overflow: hidden;}
+        .leak-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--leak-color, #ef4444); }
 
-        .btn-filter { background: rgba(0,0,0,0.3); border: 1px solid #1f2937; color: #64748b; padding: 10px 6px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; transition: 0.2s; }
+        .btn-filter { background: rgba(0,0,0,0.3); border: 1px solid #1f2937; color: #64748b; padding: 10px 6px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; transition: 0.2s; cursor: pointer; }
         .btn-filter:hover { background: #1f2937; color: white; }
         .btn-active-stage { background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important; color: white !important; border: none !important; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
         .btn-active-bb { background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: white !important; border: none !important; box-shadow: 0 4px 15px rgba(245,158,11,0.4); }
@@ -75,7 +77,6 @@
         .key-btn { background: #1a1d24; border: 1px solid #333; color: white; font-weight: 900; font-size: 1.2rem; padding: 10px 0; border-radius: 8px; transition: 0.1s; cursor: pointer; }
         .key-btn:active { transform: scale(0.95); background: #3b82f6; border-color: #60a5fa; }
 
-        /* REPLAYER TAVOLO VERDE */
         .poker-table { background: radial-gradient(ellipse at center, #10b981 0%, #047857 100%); border: 10px solid #451a03; border-radius: 150px; height: 260px; width: 100%; max-width: 450px; position: relative; box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; margin: auto; }
         .board-cards { display: flex; gap: 8px; background: rgba(0,0,0,0.4); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
         .card-slot { width: 45px; height: 65px; border-radius: 6px; border: 2px dashed rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; background: rgba(255,255,255,0.05); }
@@ -88,19 +89,17 @@
 </head>
 <body class="flex h-screen overflow-hidden text-gray-200 bg-[#050608]">
 
-    <script>
-        window.addEventListener('error', function(e) { console.error("Errore PPHub catturato:", e.message); });
-    </script>
+    <script>window.addEventListener('error', function(e) { console.error("PPHub Error:", e.message); });</script>
 
     <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050608] backdrop-blur-md">
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-        <h1 class="text-6xl font-black text-white mb-12 uppercase tracking-tighter glow-text text-blue-500 z-10">PRO<span class="text-white">HUB</span> <span class="text-sm bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1 rounded-full align-top ml-2">v26.6</span></h1>
+        <h1 class="text-6xl font-black text-white mb-12 uppercase tracking-tighter glow-text text-blue-500 z-10">PRO<span class="text-white">HUB</span> <span class="text-sm bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1 rounded-full align-top ml-2">v27.0</span></h1>
         
         <div class="glass-panel p-10 rounded-3xl w-full max-w-[380px] flex flex-col gap-6 z-10 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"></div>
-            <p class="text-center text-sm font-bold text-gray-400 uppercase tracking-widest">Autenticazione Sicura</p>
+            <p class="text-center text-sm font-bold text-gray-400 uppercase tracking-widest">Accesso Titan</p>
             <input type="password" id="login-pwd" class="text-center text-2xl tracking-[0.3em] font-black bg-[#0a0c10] py-4" placeholder="••••••••" onkeypress="if(event.key === 'Enter') checkPassword()">
-            <button onclick="checkPassword()" class="w-full btn-primary py-4 rounded-xl text-lg mt-2 font-black uppercase tracking-widest">Accesso</button>
+            <button onclick="checkPassword()" class="w-full btn-primary py-4 rounded-xl text-lg mt-2 font-black uppercase tracking-widest">Entra</button>
             <p id="login-error" class="text-red-400 text-sm text-center font-bold hidden bg-red-500/10 py-3 rounded-xl border border-red-500/20">❌ Password Errata!</p>
         </div>
     </div>
@@ -113,14 +112,19 @@
                 <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-bold">AI Grinding Station</p>
             </div>
             
-            <nav class="flex-1 p-4 space-y-2 mt-4">
+            <nav class="flex-1 p-4 space-y-1 mt-2 overflow-y-auto">
                 <div onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-item nav-active"><span class="icon text-lg">🏠</span> <span class="tracking-wide">Dashboard</span></div>
                 <div onclick="switchTab('ranges')" id="tab-ranges" class="nav-item"><span class="icon text-lg">🎴</span> <span class="tracking-wide">GTO Ranges</span></div>
                 <div onclick="switchTab('trainer')" id="tab-trainer" class="nav-item"><span class="icon text-lg">🎓</span> <span class="tracking-wide">GTO Trainer</span></div>
+                
+                <div class="mt-6 mb-2 px-4 text-[9px] font-black text-gray-600 uppercase tracking-widest">Tracking & Tools</div>
+                <div onclick="switchTab('leaks')" id="tab-leaks" class="nav-item"><span class="icon text-lg">🔎</span> <span class="tracking-wide">Leak Explorer</span></div>
                 <div onclick="switchTab('bankroll')" id="tab-bankroll" class="nav-item"><span class="icon text-lg">💰</span> <span class="tracking-wide">Bankroll</span></div>
                 <div onclick="switchTab('calc')" id="tab-calc" class="nav-item"><span class="icon text-lg">🧮</span> <span class="tracking-wide">Strumenti Pro</span></div>
                 <div onclick="switchTab('notes')" id="tab-notes" class="nav-item"><span class="icon text-lg">📝</span> <span class="tracking-wide">Referti IA</span></div>
-                <div class="mt-8 mb-2 px-4 text-[10px] font-black text-gray-600 uppercase tracking-widest">Intelligenza Artificiale</div>
+                
+                <div class="mt-6 mb-2 px-4 text-[9px] font-black text-gray-600 uppercase tracking-widest">Intelligenza Artificiale</div>
+                <div onclick="switchTab('school')" id="tab-school" class="nav-item border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 mb-2"><span class="icon text-lg">🏫</span> <span class="text-emerald-400">Scuola Poker</span></div>
                 <div onclick="switchTab('coach')" id="tab-coach" class="nav-item border border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/50"><span class="icon text-lg">✨</span> <span class="text-purple-400">AI Operator</span></div>
             </nav>
 
@@ -129,9 +133,7 @@
                     <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
                     <span id="cloud-status" class="text-xs font-bold text-gray-400">Cloud Sync OK</span>
                 </div>
-                <button onclick="syncDualCloud()" class="w-full btn-primary py-3 text-xs rounded-xl flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg> Sincronizza
-                </button>
+                <button onclick="syncDualCloud()" class="w-full btn-primary py-3 text-xs rounded-xl flex items-center justify-center gap-2">Sincronizza DB</button>
             </div>
         </aside>
 
@@ -143,9 +145,11 @@
                     <option value="dashboard">🏠 Dashboard</option>
                     <option value="ranges">🎴 GTO Ranges</option>
                     <option value="trainer">🎓 GTO Trainer</option>
+                    <option value="leaks">🔎 Leak Explorer</option>
                     <option value="bankroll">💰 Bankroll</option>
                     <option value="calc">🧮 Strumenti Pro</option>
                     <option value="notes">📝 Referti</option>
+                    <option value="school">🏫 Scuola Poker</option>
                     <option value="coach">✨ AI Operator</option>
                 </select>
             </header>
@@ -186,12 +190,10 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-sm font-black text-white uppercase tracking-widest">Andamento Bankroll</h3>
                             </div>
-                            <div class="flex-1 relative w-full h-full">
-                                <canvas id="mainChart"></canvas>
-                            </div>
+                            <div class="flex-1 relative w-full h-full"><canvas id="mainChart"></canvas></div>
                         </div>
 
-                        <div class="glass-panel p-6 rounded-3xl flex flex-col h-[450px]">
+                        <div class="glass-panel p-6 rounded-3xl flex flex-col h-[450px] relative z-10">
                             <div class="flex items-center gap-3 mb-6 border-b border-[#1f2937] pb-4">
                                 <div class="bg-gradient-to-br from-purple-500 to-blue-500 p-2 rounded-lg">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -205,6 +207,49 @@
                                 </div>
                             </div>
                             <button onclick="switchTab('coach')" class="mt-4 w-full bg-[#12151c] hover:bg-[#1f2937] border border-[#2d3748] text-white py-3 rounded-xl text-xs font-bold transition">Parla col Coach</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="sec-leaks" class="hidden animate-fade relative z-10">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-black text-white tracking-tight">Leak <span class="text-red-500">Explorer</span></h2>
+                            <p class="text-sm text-gray-400 mt-1">Il database dei tuoi punti deboli rilevati dall'Intelligenza Artificiale.</p>
+                        </div>
+                        <button onclick="switchTab('coach'); setTimeout(()=>{ let ci = document.getElementById('chat-input'); if(ci){ ci.value='Analizza il mio database e dimmi quali sono i miei leak. Usa il tag <add_leak> per aggiungerli al Leak Explorer.'; window.sendToCoach(); } }, 500);" class="btn-primary py-3 px-6 rounded-xl text-xs hidden md:block border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700">🔍 Cerca Nuovi Leak</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 glass-panel p-8 rounded-3xl min-h-[600px] flex flex-col">
+                            <h3 class="text-lg font-black text-white uppercase tracking-widest mb-6 border-b border-[#1f2937] pb-3">Leak Attivi</h3>
+                            <div id="leak-list-container" class="space-y-4 flex-1 overflow-y-auto pr-2">
+                                <div class="flex flex-col items-center justify-center h-full text-center opacity-50">
+                                    <span class="text-5xl mb-4">🛡️</span>
+                                    <p class="font-bold text-gray-400 text-lg">Nessun Leak rilevato!</p>
+                                    <p class="text-sm mt-2">Stai giocando perfettamente, oppure non hai ancora fatto analizzare le mani all'IA.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-8 rounded-3xl min-h-[600px] flex flex-col">
+                            <h3 class="text-lg font-black text-white uppercase tracking-widest mb-6 border-b border-[#1f2937] pb-3">Riepilogo Gravità</h3>
+                            
+                            <div class="flex-1 flex flex-col justify-center gap-8">
+                                <div>
+                                    <div class="flex justify-between mb-2"><span class="font-bold text-gray-400 uppercase text-xs">Critici (Alta)</span> <span id="leak-high-count" class="font-black text-red-500">0</span></div>
+                                    <div class="w-full bg-[#0a0c10] rounded-full h-3 border border-[#1f2937]"><div id="leak-high-bar" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-2"><span class="font-bold text-gray-400 uppercase text-xs">Aree di Miglioramento (Media)</span> <span id="leak-med-count" class="font-black text-yellow-500">0</span></div>
+                                    <div class="w-full bg-[#0a0c10] rounded-full h-3 border border-[#1f2937]"><div id="leak-med-bar" class="bg-yellow-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-2"><span class="font-bold text-gray-400 uppercase text-xs">Dettagli (Bassa)</span> <span id="leak-low-count" class="font-black text-blue-500">0</span></div>
+                                    <div class="w-full bg-[#0a0c10] rounded-full h-3 border border-[#1f2937]"><div id="leak-low-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                                </div>
+                            </div>
+
+                            <button onclick="clearLeaks()" class="mt-8 bg-red-500/10 text-red-400 border border-red-500/30 py-3 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition uppercase tracking-widest">Svuota Archivio Leak</button>
                         </div>
                     </div>
                 </section>
@@ -313,6 +358,65 @@
                         </div>
 
                         <button onclick="checkTrainerAccuracy()" class="w-full max-w-md bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-black text-lg uppercase tracking-widest hover:opacity-90 transition mt-8 shadow-[0_0_20px_rgba(139,92,246,0.4)]">Verifica Precisione</button>
+                    </div>
+                </section>
+
+                <section id="sec-school" class="hidden animate-fade relative z-10">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-black text-white tracking-tight">Scuola di <span class="text-emerald-500">Poker</span></h2>
+                            <p class="text-sm text-gray-400 mt-1">L'Accademia interattiva con il Professore AI.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="glass-panel p-6 rounded-3xl flex flex-col gap-4">
+                            <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-2 border-b border-[#1f2937] pb-3">Percorsi di Studio</h3>
+                            <button onclick="startLesson('GTO Base', 'Spiegami le basi della Game Theory Optimal applicata al Poker. Cosa significa giocare GTO e perché è importante bilanciare i range?')" class="bg-[#12151c] border border-[#1f2937] hover:border-emerald-500 p-4 rounded-xl text-left transition group">
+                                <h4 class="text-emerald-400 font-black mb-1 group-hover:text-emerald-300">📚 Basi della GTO</h4>
+                                <p class="text-xs text-gray-400">Fondamenti, Bilanciamento, Frequenze.</p>
+                            </button>
+                            <button onclick="startLesson('ICM', 'Spiegami cos è l\'Independent Chip Model (ICM) nei tornei. Come cambia il mio range di push e fold quando siamo in bolla rispetto alle fasi iniziali?')" class="bg-[#12151c] border border-[#1f2937] hover:border-emerald-500 p-4 rounded-xl text-left transition group">
+                                <h4 class="text-emerald-400 font-black mb-1 group-hover:text-emerald-300">🏆 Modello I.C.M.</h4>
+                                <p class="text-xs text-gray-400">Pressione in Bolla, Payout, Stack Effect.</p>
+                            </button>
+                            <button onclick="startLesson('Postflop', 'Fami una lezione su come classificare le texture del Flop (dry, wet, dinamiche, statiche) e su come adattare la mia C-Bet size in base ad esse.')" class="bg-[#12151c] border border-[#1f2937] hover:border-emerald-500 p-4 rounded-xl text-left transition group">
+                                <h4 class="text-emerald-400 font-black mb-1 group-hover:text-emerald-300">🃏 Postflop Master</h4>
+                                <p class="text-xs text-gray-400">Texture del board, C-Bet Sizing, Range Advantage.</p>
+                            </button>
+                            <button onclick="startLesson('Mental Game', 'Parlane come un professore di psicologia sportiva. Spiegami cos è il tilt, quali sono i trigger comuni e dammi 3 tecniche pratiche per fermare il tilt mentre sto giocando.')" class="bg-[#12151c] border border-[#1f2937] hover:border-emerald-500 p-4 rounded-xl text-left transition group">
+                                <h4 class="text-emerald-400 font-black mb-1 group-hover:text-emerald-300">🧠 Mental Game</h4>
+                                <p class="text-xs text-gray-400">Gestione del Tilt, Focus, Psicologia del Grinding.</p>
+                            </button>
+                            <div class="mt-auto pt-4">
+                                <p class="text-xs text-gray-500 italic">"Il Professore riferisce tutto al tuo Coach. Ciò che studi qui, influenzerà le tue analisi."</p>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-[#050608] rounded-3xl border border-[#1f2937] flex flex-col h-[700px] relative overflow-hidden shadow-2xl">
+                            <div class="glass-panel p-6 border-b border-[#1f2937] rounded-t-3xl flex justify-between items-center z-10 shadow-md">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                                        <span class="text-xl">👨‍🏫</span>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-lg font-black text-white tracking-widest uppercase">Il Professore AI</h2>
+                                        <p class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Accademia Online</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#0a0c10] to-[#050608]">
+                                <div id="school-chat-box" class="chat-container flex-1 w-full overflow-y-auto p-6 space-y-4">
+                                    <div class="msg-coach" style="box-shadow: 0 4px 15px rgba(16,185,129,0.1); border-color:#064e3b;"><p>Benvenuto nell'Accademia. Clicca su un corso a sinistra o fammi qualsiasi domanda di teoria per iniziare la lezione.</p></div>
+                                </div>
+                            </div>
+                            
+                            <div class="glass-panel p-6 rounded-b-3xl flex gap-3 relative items-end z-10 border-t border-[#1f2937]">
+                                <textarea id="school-input" placeholder="Fai una domanda al Professore (es. 'Come difendo il Big Blind?')..." class="text-sm p-4 h-14 resize-none flex-1 bg-[#0a0c10] border border-[#2d3748] rounded-2xl focus:border-emerald-500 transition shadow-inner font-medium leading-relaxed" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendToSchool(); }"></textarea>
+                                <button onclick="sendToSchool()" id="btn-school-send" class="bg-emerald-600 text-white p-4 rounded-2xl font-black shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-emerald-500 transition flex-shrink-0">CHIEDI</button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -483,36 +587,11 @@
                     </div>
                 </section>
 
-                <section id="sec-notes" class="hidden animate-fade relative z-10">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h2 class="text-3xl font-black text-white tracking-tight">Referti <span class="text-purple-500">Intelligenza Artificiale</span></h2>
-                            <p class="text-sm text-gray-400 mt-1">L'archivio storico delle tue analisi generate dal Coach.</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="glass-panel p-8 rounded-3xl flex flex-col h-[750px]">
-                            <div class="flex justify-between items-center mb-6 border-b border-[#1f2937] pb-4">
-                                <h2 class="text-xl font-black text-white uppercase flex items-center gap-3">📂 Documenti Formali</h2>
-                            </div>
-                            <div id="reports-container" class="space-y-5 flex-1 overflow-y-auto pr-3"></div>
-                        </div>
-                        
-                        <div class="glass-panel p-8 rounded-3xl flex flex-col h-[750px]">
-                            <div class="flex justify-between items-center mb-6 border-b border-[#1f2937] pb-4">
-                                <h2 class="text-xl font-black text-white uppercase flex items-center gap-3">📌 Appunti & Leak</h2>
-                            </div>
-                            <div id="notes-container" class="space-y-4 flex-1 overflow-y-auto pr-3"></div>
-                        </div>
-                    </div>
-                </section>
-
                 <section id="sec-coach" class="hidden animate-fade relative z-10">
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h2 class="text-3xl font-black text-white tracking-tight">AI <span class="text-blue-500">Operator</span></h2>
-                            <p class="text-sm text-gray-400 mt-1">Il tuo assistente GTO personale mosso da Gemini 2.5.</p>
+                            <p class="text-sm text-gray-400 mt-1">Il tuo assistente personale mosso da Gemini 2.5.</p>
                         </div>
                     </div>
 
@@ -548,8 +627,7 @@
                             
                             <div class="px-6 py-4 glass-panel border-t border-[#1f2937] flex gap-3 overflow-x-auto z-10">
                                 <button onclick="window.sendQuickAction('Analizza la mia sessione, trova i miei leak, sii duro ma costruttivo e genera un referto dettagliato salvandolo con i tuoi comandi tag.')" class="bg-[#12151c] border border-[#2d3748] hover:border-[#8b5cf6] text-gray-300 hover:text-white text-xs px-4 py-2.5 rounded-xl font-bold whitespace-nowrap transition shadow-md">📋 Crea Referto Analisi</button>
-                                <button onclick="window.sendQuickAction('Genera un range GTO ottimale e completo per la situazione configurata attualmente. Crea tu le categorie di colori necessarie e usa il comando XML per colorare la mia griglia in automatico.')" class="bg-[#12151c] border border-[#2d3748] hover:border-blue-500 text-gray-300 hover:text-white text-xs px-4 py-2.5 rounded-xl font-bold whitespace-nowrap transition shadow-md">🎨 Auto-Colora Range GTO</button>
-                                <button onclick="window.sendQuickAction('Spiegami in modo diretto quali sono i leak più comuni nei micro-limiti in questa fase del torneo e come posso sfruttarli per fare soldi.')" class="bg-[#12151c] border border-[#2d3748] hover:border-[#facc15] text-gray-300 hover:text-white text-xs px-4 py-2.5 rounded-xl font-bold whitespace-nowrap transition shadow-md">💡 Teoria / Exploit Leak</button>
+                                <button onclick="window.sendQuickAction('Genera un range GTO ottimale e completo per la situazione configurata attualmente. Crea tu le categorie di colori necessarie e usa il comando XML &lt;color_grid&gt; per colorare la mia griglia in automatico.')" class="bg-[#12151c] border border-[#2d3748] hover:border-blue-500 text-gray-300 hover:text-white text-xs px-4 py-2.5 rounded-xl font-bold whitespace-nowrap transition shadow-md">🎨 Auto-Colora Range GTO</button>
                             </div>
 
                             <div class="glass-panel p-6 rounded-b-3xl flex gap-3 relative items-end z-10 border-t border-[#1f2937]">
@@ -586,15 +664,6 @@
                                 </div>
                                 <div id="chat-list" class="space-y-2 overflow-y-auto pr-2 flex-1"></div>
                             </div>
-                            
-                            <div class="glass-panel p-6 rounded-3xl">
-                                <h3 class="text-xs font-black text-green-400 uppercase mb-4">Connessione AI / Supabase</h3>
-                                <div class="space-y-2 mb-4">
-                                    <input type="text" id="sb-url" placeholder="Supabase URL" class="w-full text-xs p-2 bg-[#050608] border-[#1f2937] text-gray-400" onchange="window.updateSupabaseConfig()">
-                                    <input type="password" id="sb-key" placeholder="Anon Key" class="w-full text-xs p-2 bg-[#050608] border-[#1f2937] text-gray-400" onchange="window.updateSupabaseConfig()">
-                                </div>
-                                <button onclick="diagnoseAI()" class="w-full bg-[#0b0d10] text-green-400 border border-green-500/30 py-3 rounded-xl text-xs font-black hover:bg-green-500 hover:text-[#0b0d10] transition uppercase">Testa Connessione</button>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -607,7 +676,7 @@
         const MASTER_KEY = '$2a$10$DLJTM0j02cjL6fh4znP27e5cn2Fz13dhjqMz/hor92lFotLyvC3PK';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        let appData = { palette: [], ranges: {}, bankroll: [], notes: [], reports: [] }; 
+        let appData = { palette: [], ranges: {}, bankroll: [], notes: [], reports: [], leaks: [] }; 
         let appConfig = { supabaseUrl: "https://tphnvmmisznkyubhnpkk.supabase.co", supabaseKey: "sb_publishable_qnCMSULUQdP6681VVjGGRQ_QJ0u01Q8", chats: [], activeChatId: null, userCorrections: [] }; 
         
         let supabaseClient = null;
@@ -629,123 +698,78 @@
                 if (pwdInput && pwdInput.value === "angelo2026") {
                     document.getElementById('login-screen').classList.add('hidden'); 
                     document.getElementById('app-content').classList.remove('hidden');
-                    window.initApp();
+                    document.getElementById('app-content').classList.add('flex');
+                    initApp();
                 } else { 
                     document.getElementById('login-error').classList.remove('hidden'); 
                 }
-            } catch(e) { console.error("Errore nel login:", e); }
+            } catch(e) {}
         };
 
         window.initApp = function() {
             try {
                 window.loadAllData();
-
                 if(appData.palette.length === 0) {
                     appData.palette.push({ id: 'red_raise', name: 'Raise (Rosso)', color: '#ef4444' });
                     appData.palette.push({ id: 'green_call', name: 'Call (Verde)', color: '#22c55e' });
                     appData.palette.push({ id: 'blue_fold', name: 'Fold/Mix (Blu)', color: '#3b82f6' });
                 }
-                
-                window.createMatrixDOM();
-                window.createTrainerMatrixDOM();
-                window.initICMInputs();
-                
-                window.updateSpotUI();
-                window.updateBankrollUI();
-                window.updateNotesUI();
-                window.updateDashboardUI();
-                
-                let startTab = document.getElementById('sec-dashboard') ? 'dashboard' : 'ranges';
-                window.switchTab(startTab);
-                
+                window.createMatrixDOM(); window.createTrainerMatrixDOM(); window.initICMInputs();
+                window.updateSpotUI(); window.updateBankrollUI(); window.updateNotesUI(); window.updateLeaksUI(); window.updateDashboardUI();
+                window.switchTab('dashboard');
                 setTimeout(window.downloadDualCloud, 1000);
                 window.diagnoseAI();
-            } catch (e) { console.error("Errore critico in initApp:", e); }
+            } catch (e) { console.error("Init Error:", e); }
         };
 
         window.switchTab = function(tabId) {
-            let tabsList = ['dashboard', 'ranges', 'trainer', 'bankroll', 'calc', 'notes', 'coach'];
-            
+            let tabsList = ['dashboard', 'ranges', 'trainer', 'leaks', 'bankroll', 'calc', 'notes', 'school', 'coach'];
             for(let i=0; i<tabsList.length; i++) {
                 let sectionEl = document.getElementById('sec-' + tabsList[i]);
                 if(sectionEl) { sectionEl.classList.remove('block'); sectionEl.classList.add('hidden'); }
                 let tabEl = document.getElementById('tab-' + tabsList[i]);
                 if(tabEl) { tabEl.classList.remove('nav-active'); }
             }
-            
             let targetSec = document.getElementById('sec-' + tabId);
             if(targetSec) { targetSec.classList.remove('hidden'); targetSec.classList.add('block'); }
-            
             let targetTab = document.getElementById('tab-' + tabId);
             if(targetTab) { targetTab.classList.add('nav-active'); }
             
             if (tabId === 'notes') { window.updateNotesUI(); }
             if (tabId === 'coach') { setTimeout(window.scrollToBottom, 100); }
+            if (tabId === 'school') { setTimeout(window.scrollSchoolToBottom, 100); }
             if (tabId === 'dashboard') { window.updateDashboardUI(); }
             if (tabId === 'trainer') { window.generateRandomTrainerSpot(); }
+            if (tabId === 'leaks') { window.updateLeaksUI(); }
         };
 
-        // --- DATI E CLOUD ---
+        // --- CLOUD SYNC ---
         window.setCloudStatus = function(msg, isError = false) { 
-            let el = document.getElementById('cloud-status'); 
-            if(el) { el.innerText = msg; el.style.color = isError ? '#ef4444' : '#4ade80'; }
+            let el = document.getElementById('cloud-status'); if(el) { el.innerText = msg; el.style.color = isError ? '#ef4444' : '#4ade80'; }
         };
-
         window.initSupabase = function() { 
             let url = appConfig.supabaseUrl; let key = appConfig.supabaseKey;
             if (!url || !key) return; 
             try { supabaseClient = supabase.createClient(url, key); } catch(e) {} 
         };
-        
-        window.updateSupabaseConfig = function() {
-            let urlEl = document.getElementById('sb-url');
-            let keyEl = document.getElementById('sb-key');
-            if(urlEl && urlEl.value) appConfig.supabaseUrl = urlEl.value.trim();
-            if(keyEl && keyEl.value) appConfig.supabaseKey = keyEl.value.trim();
-            window.saveConfig();
-            window.initSupabase();
-        };
-
         window.silentAutoSave = async function() { 
             window.saveConfig(); 
-            if (supabaseClient) { 
-                try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} 
-            } 
+            if (supabaseClient) { try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} } 
         };
-
         window.syncDualCloud = async function() {
             document.body.style.cursor = 'wait'; window.setCloudStatus('☁️ Sincronizzazione...'); let success = false;
-            try { 
-                let res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); 
-                if (res.ok) success = true; 
-            } catch (e) {}
-            if (supabaseClient) { 
-                try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} 
-            }
-            window.setCloudStatus(success ? '☁️ Cloud Sync OK' : '⚠️ Errore Rete', !success); 
-            document.body.style.cursor = 'default';
+            try { let res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(appData) }); if (res.ok) success = true; } catch (e) {}
+            if (supabaseClient) { try { await supabaseClient.from('app_state').upsert({ user_id: 'omiserez', data: appConfig }, { onConflict: 'user_id' }); } catch (e) {} }
+            window.setCloudStatus(success ? '☁️ Cloud Sync OK' : '⚠️ Errore Rete', !success); document.body.style.cursor = 'default';
         };
-
         window.downloadDualCloud = async function() {
-            if (!supabaseClient) window.initSupabase(); 
-            document.body.style.cursor = 'wait'; window.setCloudStatus('☁️ Scaricamento...');
-            try { 
-                let res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); 
-                if (res.ok) { 
-                    let data = await res.json(); 
-                    if (data.record) { 
-                        appData = data.record; window.triggerLocalSave(); window.updateBankrollUI(); window.updateSpotUI(); window.updateNotesUI(); window.updateDashboardUI(); 
-                    } 
-                } 
+            if (!supabaseClient) window.initSupabase(); document.body.style.cursor = 'wait'; window.setCloudStatus('☁️ Scaricamento...');
+            try { let res = await fetch(`${BIN_URL}/latest?nocache=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } }); 
+                if (res.ok) { let data = await res.json(); if (data.record) { appData = data.record; window.triggerLocalSave(); window.updateBankrollUI(); window.updateSpotUI(); window.updateNotesUI(); window.updateLeaksUI(); window.updateDashboardUI(); } } 
             } catch (e) {}
             if (supabaseClient) { 
-                try { 
-                    let { data } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); 
-                    if (data && data.data) { 
-                        appConfig = Object.assign(appConfig, data.data); 
-                        if (!appConfig.chats || appConfig.chats.length === 0) { window.createNewChat(false); } 
-                        else { window.selectChat(appConfig.activeChatId || appConfig.chats[0].id); } 
-                    } 
+                try { let { data } = await supabaseClient.from('app_state').select('data').eq('user_id', 'omiserez').single(); 
+                    if (data && data.data) { appConfig = Object.assign(appConfig, data.data); if (!appConfig.chats || appConfig.chats.length === 0) { window.createNewChat(false); } else { window.selectChat(appConfig.activeChatId || appConfig.chats[0].id); } } 
                 } catch(e) {} 
             }
             window.setCloudStatus('☁️ Cloud Sync OK'); document.body.style.cursor = 'default';
@@ -753,31 +777,14 @@
 
         window.loadAllData = function() {
             try {
-                let conf = localStorage.getItem('poker_v18_config'); 
-                let parsedConf = safeJSONParse(conf);
+                let conf = localStorage.getItem('poker_v18_config'); let parsedConf = safeJSONParse(conf);
                 if (parsedConf) appConfig = Object.assign(appConfig, parsedConf);
                 window.initSupabase();
-                
-                let data = localStorage.getItem('poker_v18_data'); 
-                let parsedData = safeJSONParse(data);
-                if (parsedData) { 
-                    appData.palette = parsedData.palette || appData.palette;
-                    appData.ranges = parsedData.ranges || appData.ranges;
-                    appData.bankroll = parsedData.bankroll || appData.bankroll;
-                    appData.notes = parsedData.notes || appData.notes;
-                    appData.reports = parsedData.reports || appData.reports;
-                }
-
-                if (!appConfig.chats || appConfig.chats.length === 0) { window.createNewChat(false); } 
-                else { window.selectChat(appConfig.activeChatId || appConfig.chats[0]?.id); }
-                
-                let urlEl = document.getElementById('sb-url');
-                let keyEl = document.getElementById('sb-key');
-                if(urlEl) urlEl.value = appConfig.supabaseUrl || "";
-                if(keyEl) keyEl.value = appConfig.supabaseKey || "";
-            } catch(e) { console.warn("Dati locali non validi"); }
+                let data = localStorage.getItem('poker_v18_data'); let parsedData = safeJSONParse(data);
+                if (parsedData) { appData.palette = parsedData.palette || []; appData.ranges = parsedData.ranges || {}; appData.bankroll = parsedData.bankroll || []; appData.notes = parsedData.notes || []; appData.reports = parsedData.reports || []; appData.leaks = parsedData.leaks || []; }
+                if (!appConfig.chats || appConfig.chats.length === 0) { window.createNewChat(false); } else { window.selectChat(appConfig.activeChatId || appConfig.chats[0]?.id); }
+            } catch(e) { }
         };
-
         window.saveConfig = function() { try { localStorage.setItem('poker_v18_config', JSON.stringify(appConfig)); } catch(e){} };
         window.triggerLocalSave = function() { try { localStorage.setItem('poker_v18_data', JSON.stringify(appData)); } catch(e){} };
 
@@ -794,14 +801,10 @@
             if(!appData.bankroll) appData.bankroll = [];
             let tProfit = 0; let tBuyin = 0; let tHours = 0;
             for(let i=0; i<appData.bankroll.length; i++) {
-                tProfit += appData.bankroll[i].profit;
-                tBuyin += appData.bankroll[i].buyin;
+                tProfit += appData.bankroll[i].profit; tBuyin += appData.bankroll[i].buyin;
                 if(appData.bankroll[i].hours) tHours += appData.bankroll[i].hours;
             }
-            
-            let count = appData.bankroll.length; 
-            let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; 
-            let hourly = tHours > 0 ? (tProfit / tHours) : 0;
+            let count = appData.bankroll.length; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; let hourly = tHours > 0 ? (tProfit / tHours) : 0;
             
             let dP = document.getElementById('dash-profit'); if(dP) dP.innerText = `€ ${tProfit.toFixed(2)}`;
             let dR = document.getElementById('dash-roi'); if(dR) dR.innerText = `${roi.toFixed(2)}%`;
@@ -817,67 +820,34 @@
                     reportBox.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-50"><span class="text-4xl mb-3">📄</span><p class="font-bold text-gray-400">Nessun referto generato.</p><p class="text-xs mt-2">Chiedi all'AI Coach di analizzare la tua sessione.</p></div>`;
                 }
             }
-            
             window.renderMainChart();
         };
 
         window.renderMainChart = function() { 
-            let canvas = document.getElementById('mainChart');
-            if(!canvas) return;
-            let ctx = canvas.getContext('2d'); 
-            let cum = 0; let dataPts = [];
-            
-            if(appData.bankroll) {
-                for(let i=0; i<appData.bankroll.length; i++) {
-                    cum += appData.bankroll[i].profit; dataPts.push(cum);
-                }
-            }
-            
+            let canvas = document.getElementById('mainChart'); if(!canvas) return;
+            let ctx = canvas.getContext('2d'); let cum = 0; let dataPts = [];
+            if(appData.bankroll) { for(let i=0; i<appData.bankroll.length; i++) { cum += appData.bankroll[i].profit; dataPts.push(cum); } }
             if (mainChartInstance) { mainChartInstance.destroy(); }
             
             let labels = []; for(let i=0; i<dataPts.length; i++) labels.push(i+1);
-            
-            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
-            gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
-
-            mainChartInstance = new Chart(ctx, { 
-                type: 'line', 
-                data: { 
-                    labels: labels, 
-                    datasets: [{ 
-                        data: dataPts, borderColor: '#8b5cf6', fill: true, backgroundColor: gradient, tension: 0.4, pointBackgroundColor: '#a78bfa', borderWidth: 3, pointRadius: 0, pointHoverRadius: 6
-                    }] 
-                }, 
-                options: { 
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15,17,21,0.9)', titleColor: '#a78bfa', bodyFont: {size: 14, weight: 'bold'} } }, 
-                    scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: {weight: 'bold'} } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } },
-                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
-                } 
-            }); 
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400); gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)'); gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+            mainChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ data: dataPts, borderColor: '#8b5cf6', fill: true, backgroundColor: gradient, tension: 0.4, pointBackgroundColor: '#a78bfa', borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15,17,21,0.9)', titleColor: '#a78bfa', bodyFont: {size: 14, weight: 'bold'} } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: {weight: 'bold'} } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } }, interaction: { mode: 'nearest', axis: 'x', intersect: false } } }); 
         };
 
-        // --- GESTIONE CHAT MARKDOWN ---
+        // --- GESTIONE CHAT MARKDOWN E SESSIONI ---
         window.createNewChat = function(doSave = true) { 
-            let newId = 'chat_' + Date.now(); 
-            appConfig.chats.unshift({ id: newId, title: "Nuova Sessione", messages: [] }); 
-            appConfig.activeChatId = newId; window.selectChat(newId); 
-            window.appendAndSaveMessage("SYSTEM", "Core inizializzato e pronto all'uso.\n\nSono il tuo AI Coach. Chiedimi di analizzare una mano o generare un Range GTO per la situazione configurata.", "coach"); 
+            let newId = 'chat_' + Date.now(); appConfig.chats.unshift({ id: newId, title: "Nuova Sessione", messages: [] }); appConfig.activeChatId = newId; window.selectChat(newId); 
+            window.appendAndSaveMessage("SYSTEM", "Core inizializzato e pronto all'uso.\n\nPuoi usare i **Quick Actions** per farmi analizzare le tue giocate.", "coach"); 
             if (doSave) window.silentAutoSave(); 
         };
         
         window.selectChat = function(id) { 
             appConfig.activeChatId = id; window.renderChatList(); 
-            let chatBox = document.getElementById('chat-box'); 
-            if(!chatBox) return;
-            chatBox.innerHTML = ''; 
-            
+            let chatBox = document.getElementById('chat-box'); if(!chatBox) return; chatBox.innerHTML = ''; 
             let chat = appConfig.chats.find(c => c.id === id); 
             if(chat && chat.messages) { 
                 for(let i=0; i<chat.messages.length; i++) {
-                    let m = chat.messages[i]; let msgDiv = document.createElement('div'); 
-                    msgDiv.className = m.type === 'user' ? 'msg-user' : 'msg-coach'; 
-                    msgDiv.innerHTML = window.parseMarkdown(m.text); chatBox.appendChild(msgDiv); 
+                    let m = chat.messages[i]; let msgDiv = document.createElement('div'); msgDiv.className = m.type === 'user' ? 'msg-user' : 'msg-coach'; msgDiv.innerHTML = window.parseMarkdown(m.text); chatBox.appendChild(msgDiv); 
                 }
                 setTimeout(window.scrollToBottom, 100);
             } 
@@ -887,83 +857,73 @@
         window.deleteChat = function(id) { 
             if (confirm("Eliminare definitivamente questa sessione?")) { 
                 appConfig.chats = appConfig.chats.filter(c => c.id !== id); 
-                if (appConfig.chats.length === 0) { window.createNewChat(false); } 
-                else if (appConfig.activeChatId === id) { appConfig.activeChatId = appConfig.chats[0].id; }
+                if (appConfig.chats.length === 0) { window.createNewChat(false); } else if (appConfig.activeChatId === id) { appConfig.activeChatId = appConfig.chats[0].id; }
                 window.selectChat(appConfig.activeChatId); window.silentAutoSave(); 
             } 
         };
         
         window.renderChatList = function() { 
-            let list = document.getElementById('chat-list'); 
-            if(!list) return;
-            list.innerHTML = ''; 
-            
+            let list = document.getElementById('chat-list'); if(!list) return; list.innerHTML = ''; 
             for(let i=0; i<appConfig.chats.length; i++) {
                 let c = appConfig.chats[i]; let isActive = (c.id === appConfig.activeChatId); 
-                let div = document.createElement('div');
-                div.className = `nav-item ${isActive ? 'nav-active' : ''} mb-1 flex justify-between`;
-                div.onclick = function() { window.selectChat(c.id); };
-                
-                let spanText = document.createElement('span');
-                spanText.className = `truncate flex-1 text-sm ${isActive ? 'text-white' : ''}`; spanText.innerText = c.title;
-                
-                let deleteBtn = document.createElement('button');
-                deleteBtn.className = "text-gray-600 hover:text-red-500 px-2 rounded text-xs ml-2 font-black transition opacity-50 hover:opacity-100";
-                deleteBtn.innerText = "✕"; deleteBtn.onclick = function(event) { event.stopPropagation(); window.deleteChat(c.id); };
-                
+                let div = document.createElement('div'); div.className = `nav-item ${isActive ? 'nav-active' : ''} mb-1 flex justify-between`; div.onclick = function() { window.selectChat(c.id); };
+                let spanText = document.createElement('span'); spanText.className = `truncate flex-1 text-sm ${isActive ? 'text-white' : ''}`; spanText.innerText = c.title;
+                let deleteBtn = document.createElement('button'); deleteBtn.className = "text-gray-600 hover:text-red-500 px-2 rounded text-xs ml-2 font-black transition opacity-50 hover:opacity-100"; deleteBtn.innerText = "✕"; deleteBtn.onclick = function(event) { event.stopPropagation(); window.deleteChat(c.id); };
                 div.appendChild(spanText); div.appendChild(deleteBtn); list.appendChild(div);
             }
         };
         
-        window.appendAndSaveMessage = function(sender, text, type) { 
-            let chatBox = document.getElementById('chat-box'); 
-            if(!chatBox) return;
+        window.appendAndSaveMessage = function(sender, text, type, isSchool = false) { 
+            let boxId = isSchool ? 'school-chat-box' : 'chat-box';
+            let chatBox = document.getElementById(boxId); if(!chatBox) return;
             
             let msgDiv = document.createElement('div'); msgDiv.className = type === 'user' ? 'msg-user' : 'msg-coach'; 
-            msgDiv.innerHTML = window.parseMarkdown(text); chatBox.appendChild(msgDiv); 
-            setTimeout(window.scrollToBottom, 50);
             
-            let chat = appConfig.chats.find(c => c.id === appConfig.activeChatId); 
-            if (chat) { 
-                chat.messages.push({ sender: sender, text: text, type: type }); 
-                if (type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Sessione") { 
-                    let newTitle = text.substring(0, 20).replace(/\n/g, " "); if (text.length > 20) newTitle += "..."; 
-                    chat.title = newTitle; window.renderChatList(); 
+            if(isSchool && type !== 'user') {
+                msgDiv.style.boxShadow = "0 4px 15px rgba(16,185,129,0.1)";
+                msgDiv.style.borderColor = "#064e3b";
+                msgDiv.innerHTML = window.parseMarkdown(text).replace("✨ AI COACH", "👨‍🏫 IL PROFESSORE");
+            } else {
+                msgDiv.innerHTML = window.parseMarkdown(text); 
+            }
+            
+            chatBox.appendChild(msgDiv); 
+            setTimeout(isSchool ? window.scrollSchoolToBottom : window.scrollToBottom, 50);
+            
+            // Salva solo le chat normali per ora
+            if(!isSchool) {
+                let chat = appConfig.chats.find(c => c.id === appConfig.activeChatId); 
+                if (chat) { 
+                    chat.messages.push({ sender: sender, text: text, type: type }); 
+                    if (type === 'user' && chat.messages.length === 2 && chat.title === "Nuova Sessione") { 
+                        let newTitle = text.substring(0, 20).replace(/\n/g, " "); if (text.length > 20) newTitle += "..."; 
+                        chat.title = newTitle; window.renderChatList(); 
+                    } 
+                    window.silentAutoSave(); 
                 } 
-                window.silentAutoSave(); 
-            } 
+            }
         };
 
         window.parseMarkdown = function(text) { 
             if(!text) return "";
             let html = text;
-            
             let codeBlocks = [];
             while(html.indexOf('```') !== -1) {
-                let start = html.indexOf('```');
-                let end = html.indexOf('```', start + 3);
-                if(end === -1) break;
-                let block = html.substring(start + 3, end);
-                if(block.startsWith('json\n')) block = block.substring(5);
+                let start = html.indexOf('```'); let end = html.indexOf('```', start + 3); if(end === -1) break;
+                let block = html.substring(start + 3, end); if(block.startsWith('json\n')) block = block.substring(5);
                 codeBlocks.push(`<pre class="bg-[#050608] p-4 rounded-xl border border-[#1f2937] text-purple-300 font-mono text-[13px] overflow-x-auto my-3 shadow-inner leading-relaxed">${block.trim()}</pre>`);
                 html = html.substring(0, start) + `%%CODEBLOCK${codeBlocks.length - 1}%%` + html.substring(end + 3);
             }
-
-            let lines = html.split('\n');
-            let inList = false;
-            let finalLines = [];
-            
+            let lines = html.split('\n'); let inList = false; let finalLines = [];
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i];
-                
                 if(line.indexOf('### ') === 0) { line = '<h3 class="text-lg font-bold text-[#60a5fa] mt-6 mb-3 tracking-wide">' + line.substring(4) + '</h3>'; } 
                 else if(line.indexOf('## ') === 0) { line = '<h2 class="text-xl font-black text-white mt-8 mb-4 border-b border-[#2d3748] pb-2 tracking-wide">' + line.substring(3) + '</h2>'; } 
                 else if(line.indexOf('# ') === 0) { line = '<h1 class="text-3xl font-black text-white mt-8 mb-6 tracking-tight">' + line.substring(2) + '</h1>'; }
 
                 while(line.indexOf('**') !== -1) {
                     let first = line.indexOf('**'); let second = line.indexOf('**', first + 2);
-                    if(second !== -1) { let inner = line.substring(first + 2, second); line = line.substring(0, first) + '<strong class="text-white font-extrabold">' + inner + '</strong>' + line.substring(second + 2); } 
-                    else { break; }
+                    if(second !== -1) { let inner = line.substring(first + 2, second); line = line.substring(0, first) + '<strong class="text-white font-extrabold">' + inner + '</strong>' + line.substring(second + 2); } else { break; }
                 }
 
                 let isListItem = false;
@@ -971,103 +931,61 @@
                 else if(line.trim().startsWith('- ')) { line = '<li class="ml-6 list-disc marker:text-blue-500 mb-2 leading-relaxed">' + line.trim().substring(2) + '</li>'; isListItem = true; }
                 
                 if(isListItem) {
-                    if(!inList) { finalLines.push('<ul class="my-4 space-y-1">'); inList = true; }
-                    finalLines.push(line);
+                    if(!inList) { finalLines.push('<ul class="my-4 space-y-1">'); inList = true; } finalLines.push(line);
                 } else {
                     if(inList) { finalLines.push('</ul>'); inList = false; }
-                    if(line.indexOf('<h') === 0 || line.indexOf('%%CODE') === 0 || line.trim() === '') { finalLines.push(line); } 
-                    else { finalLines.push(line + '<br>'); }
+                    if(line.indexOf('<h') === 0 || line.indexOf('%%CODE') === 0 || line.trim() === '') { finalLines.push(line); } else { finalLines.push(line + '<br>'); }
                 }
             }
             if(inList) finalLines.push('</ul>');
-            
-            html = finalLines.join('\n');
-            while(html.indexOf('<br>\n<br>') !== -1) { html = html.replace('<br>\n<br>', '<br><br>'); }
-            
+            html = finalLines.join('\n'); while(html.indexOf('<br>\n<br>') !== -1) { html = html.replace('<br>\n<br>', '<br><br>'); }
             for(let i=0; i<codeBlocks.length; i++) { html = html.replace(`%%CODEBLOCK${i}%%`, codeBlocks[i]); }
             return html; 
         };
 
         window.scrollToBottom = function() {
             let chatBox = document.getElementById('chat-box');
-            if(chatBox) {
-                chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-                let btn = document.getElementById('scroll-bottom-btn');
-                if(btn) btn.classList.add('hidden');
-            }
+            if(chatBox) { chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); let btn = document.getElementById('scroll-bottom-btn'); if(btn) btn.classList.add('hidden'); }
+        };
+        window.scrollSchoolToBottom = function() {
+            let chatBox = document.getElementById('school-chat-box');
+            if(chatBox) { chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); }
         };
 
         window.checkScroll = function() {
-            let chatBox = document.getElementById('chat-box');
-            let btn = document.getElementById('scroll-bottom-btn');
-            if (chatBox && btn) {
-                if (chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight > 150) { btn.classList.remove('hidden'); } 
-                else { btn.classList.add('hidden'); }
-            }
+            let chatBox = document.getElementById('chat-box'); let btn = document.getElementById('scroll-bottom-btn');
+            if (chatBox && btn) { if (chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight > 150) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); } }
         };
 
         // --- MICROFONO (VOICE COACH) ---
         let recognition;
         window.toggleVoice = function() {
-            let btn = document.getElementById('btn-mic');
-            let input = document.getElementById('chat-input');
-            
-            if (!('webkitSpeechRecognition' in window)) {
-                alert("Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge.");
-                return;
-            }
-            
+            let btn = document.getElementById('btn-mic'); let input = document.getElementById('chat-input');
+            if (!('webkitSpeechRecognition' in window)) { alert("Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge."); return; }
             if (!recognition) {
-                recognition = new webkitSpeechRecognition();
-                recognition.lang = 'it-IT';
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                
-                recognition.onstart = function() {
-                    btn.classList.add('mic-active');
-                    input.placeholder = "In ascolto...";
-                };
-                
-                recognition.onresult = function(event) {
-                    let transcript = event.results[0][0].transcript;
-                    input.value += (input.value ? ' ' : '') + transcript;
-                };
-                
-                recognition.onerror = function(event) {
-                    btn.classList.remove('mic-active');
-                    input.placeholder = "Parla col tuo Coach...";
-                };
-                
-                recognition.onend = function() {
-                    btn.classList.remove('mic-active');
-                    input.placeholder = "Parla col tuo Coach...";
-                };
+                recognition = new webkitSpeechRecognition(); recognition.lang = 'it-IT'; recognition.continuous = false; recognition.interimResults = false;
+                recognition.onstart = function() { btn.classList.add('mic-active'); input.placeholder = "In ascolto..."; };
+                recognition.onresult = function(event) { let transcript = event.results[0][0].transcript; input.value += (input.value ? ' ' : '') + transcript; };
+                recognition.onerror = function(event) { btn.classList.remove('mic-active'); input.placeholder = "Parla col tuo Coach..."; };
+                recognition.onend = function() { btn.classList.remove('mic-active'); input.placeholder = "Parla col tuo Coach..."; };
             }
-            
             try { recognition.start(); } catch(e) { recognition.stop(); }
         };
 
-        // --- MOTORE AI E COLLEGAMENTO EDGE FUNCTION ---
+        // --- MOTORE AI & PARSING XML AZIONI ---
         window.diagnoseAI = async function() {
             let sLabel = document.getElementById('ai-status');
             if(sLabel) { sLabel.innerText = "Connessione..."; sLabel.className = "text-[10px] bg-yellow-500/10 text-yellow-400 px-4 py-2 rounded-full border border-yellow-500/30 font-bold tracking-wider"; }
             try {
                 if (!appConfig.supabaseUrl || !appConfig.supabaseKey) throw new Error("Credenziali mancanti");
-                
                 let response = await fetch(`${appConfig.supabaseUrl}/functions/v1/poker-coach`, {
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${appConfig.supabaseKey}`
-                    },
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${appConfig.supabaseKey}` },
                     body: JSON.stringify({ message: "ping", systemPrompt: "Rispondi solo con 'OK'", model: "gemini-2.5-flash" }) 
                 });
                 let data = await response.json().catch(() => null);
                 if (!response.ok || (data && data.error)) { throw new Error("API Error"); }
-
                 if (sLabel) { sLabel.innerText = "🟢 Online (Gemini 2.5)"; sLabel.className = "text-[10px] bg-green-500/10 text-green-400 px-4 py-2 rounded-full border border-green-500/30 font-bold shadow-inner uppercase tracking-widest"; }
             } catch (error) { 
-                console.error("Network Error:", error);
                 if(sLabel) { sLabel.innerText = "🔴 Offline"; sLabel.className = "text-[10px] bg-red-500/10 text-red-400 px-4 py-2 rounded-full border border-red-500/30 font-bold shadow-inner uppercase tracking-widest"; }
             }
         };
@@ -1078,9 +996,7 @@
             let message = inputEl.value.trim();
             if (!message) return;
 
-            let btnSend = document.getElementById('btn-send');
-            let indicator = document.getElementById('typing-indicator');
-            
+            let btnSend = document.getElementById('btn-send'); let indicator = document.getElementById('typing-indicator');
             if (message.toLowerCase().includes("no, qui sbagli")) { appConfig.userCorrections.push(message); }
 
             window.appendAndSaveMessage("Tu", message, "user");
@@ -1093,71 +1009,94 @@
             let historyText = "";
             if (chat && chat.messages.length > 2) { 
                 historyText = "\n--- STORIA CHAT ---\n"; 
-                chat.messages.slice(-6).forEach(m => { 
-                    if (m.text !== message) { historyText += `${m.sender.toUpperCase()}: ${m.text}\n`; }
-                }); 
+                chat.messages.slice(-6).forEach(m => { if (m.text !== message) { historyText += `${m.sender.toUpperCase()}: ${m.text}\n`; } }); 
             }
 
-            let currentSpotKey = window.getSpotKey(); 
-            let currentRangeData = appData.ranges[currentSpotKey] || {};
+            let currentSpotKey = window.getSpotKey(); let currentRangeData = appData.ranges[currentSpotKey] || {};
             let brProfit = document.getElementById('dash-profit')?.innerText || "0"; 
             
-            let visionPrompt = `\n[CONTESTO]: Spot attuale a schermo: '${currentSpotKey}'. Griglia GTO in memoria: ${JSON.stringify(currentRangeData)}. Bankroll utente: Profit ${brProfit}. Utente: Maschio 35 anni.`;
+            let visionPrompt = `\n[CONTESTO]: Spot attuale: '${currentSpotKey}'. Griglia GTO in memoria: ${JSON.stringify(currentRangeData)}. Bankroll utente: Profit ${brProfit}. Utente: Maschio 35 anni.`;
             
             let agenticInstructions = `\n\n[COMANDI DI SISTEMA - USA SOLO QUESTI TAG XML]:
 
-1. PER CREARE/COLORARE UN RANGE GTO (IMPORTANTE):
-Quando l'utente ti chiede di colorare la griglia o creare un range per lo spot, DEVI rispondere con questo tag alla fine. Crea TU le categorie necessarie e copri l'intero spettro di mani.
-<color_grid>
-  <category name="Open Raise (Rosso)" color="#ef4444">AA, KK, QQ, JJ, TT, 99, 88, AKs, AQs, AJs, ATs, KQs, KJs, QJs, JTs, AKo, AQo, KQo</category>
-  <category name="Call/Flat (Verde)" color="#22c55e">77, 66, 55, 44, 33, 22, A9s, A8s, A7s, KTs, QTs, J9s, T9s, 98s, 87s, 76s, 65s, AJo, ATo, KJo</category>
-</color_grid>
+1. PER CREARE/COLORARE UN RANGE GTO:
+<color_grid><category name="Open Raise (Rosso)" color="#ef4444">AA, KK, QQ, AKs, AKo</category></color_grid>
 
 2. PER SALVARE UN REFERTO DI ANALISI:
-Scrivi il referto in chat, poi aggiungi questo formato esatto alla fine:
-<save_report title="Titolo Referto">Testo che vuoi archiviare qui...</save_report>
+<save_report title="Titolo Referto">Testo...</save_report>
 
-3. PER SALVARE UN APPUNTO SUI LEAK:
-<save_note>Testo del leak da ricordare</save_note>`;
+3. PER SALVARE UN APPUNTO:
+<save_note>Testo dell'appunto...</save_note>
+
+4. PER SEGNALARE UN LEAK AL LEAK EXPLORER (IMPORTANTE):
+Quando noti un leak chiaro nel gioco dell'utente, segnalalo così:
+<add_leak category="Preflop" title="Titolo del Leak" severity="High">Breve spiegazione del leak e come risolverlo.</add_leak>
+La "severity" può essere: High (Rosso), Medium (Giallo), Low (Blu).
+La "category" può essere: Preflop, Postflop, Mental, Sizing.`;
             
             let basePrompt = `SEI UN POKER COACH ESPERTO, MA IL TUO TONO DEVE ESSERE DA VERO "BRO", AMICHEVOLE E DIRETTO, come un compagno di grinding seduto di fianco all'utente.
-NON FARE DISCORSI LUNGHI E NOIOSI. Vai dritto al punto, sii schietto sui suoi errori.
-Regole per l'interazione:
-- Sii costruttivo ma duro sui leak (es. "Bro, qui stai bruciando chips fuori posizione, aggiusta così...").
-- Se crei un range GTO, usa sempre <color_grid> per colorarglielo a schermo e spiegagli il PERCHÈ di quei bluff o di quelle frequenze.
-- Evidenzia le parole chiave con **grassetto**.
-Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${historyText} ${visionPrompt}\n\n`;
+NON FARE DISCORSI LUNGHI E NOIOSI. Vai dritto al punto, sii schietto sui suoi errori. Evidenzia le parole chiave in grassetto. Correzioni utente: ${appConfig.userCorrections.join('|')}. ${historyText} ${visionPrompt}\n\n`;
             
-            let personaPrompt = currentPersona === 'analyst' ? "RUOLO ATTUALE: Analista GTO Matematico." : (currentPersona === 'coach' ? "RUOLO ATTUALE: Poker Coach 'Bro' focalizzato sui leak." : "RUOLO ATTUALE: Mental Coach.");
-            
+            let personaPrompt = currentPersona === 'analyst' ? "RUOLO: Analista GTO Matematico." : (currentPersona === 'coach' ? "RUOLO: Poker Coach 'Bro' focalizzato sui leak." : "RUOLO: Mental Coach.");
             let systemPrompt = basePrompt + personaPrompt + agenticInstructions;
 
             try {
                 if (!appConfig.supabaseUrl || !appConfig.supabaseKey) throw new Error("Credenziali mancanti. Inserisci URL e Key nel pannello.");
-                
                 let response = await fetch(`${appConfig.supabaseUrl}/functions/v1/poker-coach`, {
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${appConfig.supabaseKey}`
-                    },
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${appConfig.supabaseKey}` },
                     body: JSON.stringify({ message: message, systemPrompt: systemPrompt, model: "gemini-2.5-flash" }) 
                 });
-
                 let data = await response.json().catch(() => null);
-                if (!response.ok || (data && data.error)) { throw new Error("Errore Network. Il progetto Supabase potrebbe essere in PAUSA per inattività. Entra in Supabase e fai 'Restore'."); }
-                if (!data || !data.candidates || data.candidates.length === 0) { throw new Error("Risposta vuota dall'IA. Possibile blocco di sicurezza."); }
+                if (!response.ok || (data && data.error)) { throw new Error("Errore API. Progetto in Pausa?"); }
+                if (!data || !data.candidates || data.candidates.length === 0) { throw new Error("Risposta vuota."); }
 
                 let aiText = data.candidates[0].content.parts[0].text;
                 let processedResponse = window.processAgenticResponse(aiText);
                 window.appendAndSaveMessage("AI OPERATOR", processedResponse, "coach");
-
             } catch (error) {
-                console.error("Dettagli errore:", error);
                 window.appendAndSaveMessage("SYSTEM", `❌ ERRORE: ${error.message}`, "coach");
             } finally {
                 if(btnSend) { btnSend.disabled = false; btnSend.innerHTML = `INVIA`; }
                 if(indicator) indicator.classList.add('hidden');
+            }
+        };
+
+        // --- SCUOLA POKER ---
+        window.startLesson = function(title, promptText) {
+            window.switchTab('school');
+            let input = document.getElementById('school-input');
+            if(input) { input.value = promptText; window.sendToSchool(); }
+        };
+
+        window.sendToSchool = async function() {
+            let inputEl = document.getElementById('school-input');
+            if(!inputEl) return;
+            let message = inputEl.value.trim();
+            if (!message) return;
+
+            let btnSend = document.getElementById('btn-school-send');
+            window.appendAndSaveMessage("Tu", message, "user", true);
+            inputEl.value = ''; 
+            if(btnSend) { btnSend.disabled = true; btnSend.innerHTML = "⌛"; }
+
+            let systemPrompt = `SEI "IL PROFESSORE", UN'IA ACADEMICA NELLA SCUOLA DI POKER. Il tuo compito è spiegare la teoria del poker (GTO, ICM, Mental) in modo strutturato, autorevole ma accessibile. Usa paragrafi brevi, elenchi puntati ed esempi pratici. Puoi inviare leak al Leak Explorer se vedi che l'utente confonde concetti gravi usando <add_leak>. Tutte le tue conversazioni sono condivise col Coach. Rispondi alla seguente domanda didattica dell'utente.`;
+
+            try {
+                if (!appConfig.supabaseUrl || !appConfig.supabaseKey) throw new Error("Credenziali mancanti.");
+                let response = await fetch(`${appConfig.supabaseUrl}/functions/v1/poker-coach`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${appConfig.supabaseKey}` },
+                    body: JSON.stringify({ message: message, systemPrompt: systemPrompt, model: "gemini-2.5-flash" }) 
+                });
+                let data = await response.json().catch(() => null);
+                if (!response.ok || (data && data.error)) { throw new Error("Errore API."); }
+                
+                let aiText = data.candidates[0].content.parts[0].text;
+                let processedResponse = window.processAgenticResponse(aiText);
+                window.appendAndSaveMessage("IL PROFESSORE", processedResponse, "coach", true);
+            } catch (error) {
+                window.appendAndSaveMessage("SYSTEM", `❌ ERRORE: ${error.message}`, "coach", true);
+            } finally {
+                if(btnSend) { btnSend.disabled = false; btnSend.innerHTML = `CHIEDI`; }
             }
         };
 
@@ -1168,60 +1107,36 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
             try {
                 let sTag = '<color_grid>'; let eTag = '</color_grid>';
                 if (cleanText.indexOf(sTag) !== -1 && cleanText.indexOf(eTag) !== -1) {
-                    let parts = cleanText.split(sTag);
-                    let gridContent = parts[1].split(eTag)[0];
-                    
-                    let spotKey = window.getSpotKey();
-                    appData.ranges[spotKey] = {}; 
+                    let parts = cleanText.split(sTag); let gridContent = parts[1].split(eTag)[0];
+                    let spotKey = window.getSpotKey(); appData.ranges[spotKey] = {}; 
                     let hasCategories = false;
                     
                     let categoryBlocks = gridContent.split('<category');
                     for(let i=1; i<categoryBlocks.length; i++) {
                         let catPart = categoryBlocks[i];
-                        
                         let nameStart = catPart.indexOf('name="'); if (nameStart === -1) continue; nameStart += 6;
                         let nameEnd = catPart.indexOf('"', nameStart); let name = catPart.substring(nameStart, nameEnd);
-                        
                         let colorStart = catPart.indexOf('color="'); if (colorStart === -1) continue; colorStart += 7;
                         let colorEnd = catPart.indexOf('"', colorStart); let color = catPart.substring(colorStart, colorEnd);
-                        
                         let combosStart = catPart.indexOf('>'); if (combosStart === -1) continue; combosStart += 1;
                         let combosEnd = catPart.indexOf('</category>'); if (combosEnd === -1) continue;
                         let combosStr = catPart.substring(combosStart, combosEnd);
                         
                         hasCategories = true;
-                        
-                        let combosArray = combosStr.split(',');
-                        let combos = [];
-                        for(let c=0; c<combosArray.length; c++) {
-                            let cl = combosArray[c].trim().replace('\n', '').replace('\r', '');
-                            if(cl.length >= 2) combos.push(cl);
-                        }
+                        let combosArray = combosStr.split(','); let combos = [];
+                        for(let c=0; c<combosArray.length; c++) { let cl = combosArray[c].trim().replace('\n', '').replace('\r', ''); if(cl.length >= 2) combos.push(cl); }
                         
                         let existingColor = null;
-                        for(let c=0; c<appData.palette.length; c++) {
-                            if(appData.palette[c].name.toLowerCase() === name.toLowerCase()) { existingColor = appData.palette[c]; break; }
-                        }
+                        for(let c=0; c<appData.palette.length; c++) { if(appData.palette[c].name.toLowerCase() === name.toLowerCase()) { existingColor = appData.palette[c]; break; } }
                         
                         let colorId;
-                        if (existingColor) {
-                            colorId = existingColor.id; existingColor.color = color;
-                        } else {
-                            colorId = 'c_' + Math.random().toString(36).substr(2, 9);
-                            appData.palette.push({ id: colorId, name: name, color: color });
-                        }
+                        if (existingColor) { colorId = existingColor.id; existingColor.color = color; } 
+                        else { colorId = 'c_' + Math.random().toString(36).substr(2, 9); appData.palette.push({ id: colorId, name: name, color: color }); }
                         
                         if (!appData.ranges[spotKey][colorId]) { appData.ranges[spotKey][colorId] = []; }
-                        
-                        for(let c=0; c<combos.length; c++) {
-                            if(appData.ranges[spotKey][colorId].indexOf(combos[c]) === -1) { appData.ranges[spotKey][colorId].push(combos[c]); }
-                        }
+                        for(let c=0; c<combos.length; c++) { if(appData.ranges[spotKey][colorId].indexOf(combos[c]) === -1) { appData.ranges[spotKey][colorId].push(combos[c]); } }
                     }
-                    
-                    if(hasCategories) {
-                        window.updateSpotUI(); window.triggerLocalSave();
-                        cleanText = cleanText.split(sTag + gridContent + eTag).join(`<div class="action-badge"><span>🎨</span> Griglia GTO colorata con successo. Controlla il Tab Ranges!</div>`);
-                    }
+                    if(hasCategories) { window.updateSpotUI(); window.triggerLocalSave(); cleanText = cleanText.split(sTag + gridContent + eTag).join(`<div class="action-badge"><span>🎨</span> Griglia GTO colorata con successo.</div>`); }
                 }
             } catch(e) {}
 
@@ -1229,21 +1144,14 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
             try {
                 let srTag = '<save_report'; let erTag = '</save_report>';
                 if (cleanText.indexOf(srTag) !== -1 && cleanText.indexOf(erTag) !== -1) {
-                    let parts = cleanText.split(srTag);
-                    let reportBlock = parts[1].split(erTag)[0];
-                    
-                    let titleStart = reportBlock.indexOf('title="') + 7;
-                    let titleEnd = reportBlock.indexOf('"', titleStart);
-                    let title = reportBlock.substring(titleStart, titleEnd);
-                    
-                    let contentStart = reportBlock.indexOf('>') + 1;
-                    let content = reportBlock.substring(contentStart).trim();
+                    let parts = cleanText.split(srTag); let reportBlock = parts[1].split(erTag)[0];
+                    let titleStart = reportBlock.indexOf('title="') + 7; let titleEnd = reportBlock.indexOf('"', titleStart); let title = reportBlock.substring(titleStart, titleEnd);
+                    let contentStart = reportBlock.indexOf('>') + 1; let content = reportBlock.substring(contentStart).trim();
                     
                     if (!appData.reports) appData.reports = [];
                     appData.reports.unshift({ date: new Date().toLocaleDateString(), author: 'AI Coach', title: title, content: content });
                     window.triggerLocalSave(); window.updateNotesUI(); window.updateDashboardUI(); 
-                    
-                    cleanText = cleanText.split(srTag + reportBlock + erTag).join(`<div class="action-badge"><span>📋</span> Referto d'Analisi archiviato nel database.</div>`);
+                    cleanText = cleanText.split(srTag + reportBlock + erTag).join(`<div class="action-badge"><span>📋</span> Referto d'Analisi archiviato.</div>`);
                 }
             } catch(e) {}
 
@@ -1251,14 +1159,31 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
             try {
                 let snTag = '<save_note>'; let enTag = '</save_note>';
                 if (cleanText.indexOf(snTag) !== -1 && cleanText.indexOf(enTag) !== -1) {
-                    let parts = cleanText.split(snTag);
-                    let content = parts[1].split(enTag)[0].trim();
-                    
+                    let parts = cleanText.split(snTag); let content = parts[1].split(enTag)[0].trim();
                     if (!appData.notes) appData.notes = [];
                     appData.notes.unshift({ date: new Date().toLocaleDateString(), text: content });
                     window.triggerLocalSave(); window.updateNotesUI();
-                    
                     cleanText = cleanText.split(snTag + content + enTag).join(`<div class="action-badge"><span>📌</span> Leak memorizzato nei Post-it.</div>`);
+                }
+            } catch(e) {}
+
+            // 4. Leak Parsing sicuro (NUOVO)
+            try {
+                let slTag = '<add_leak'; let elTag = '</add_leak>';
+                while (cleanText.indexOf(slTag) !== -1 && cleanText.indexOf(elTag) !== -1) {
+                    let parts = cleanText.split(slTag); let block = parts[1].split(elTag)[0];
+                    
+                    let catS = block.indexOf('category="') + 10; let catE = block.indexOf('"', catS); let cat = block.substring(catS, catE);
+                    let titS = block.indexOf('title="') + 7; let titE = block.indexOf('"', titS); let title = block.substring(titS, titE);
+                    let sevS = block.indexOf('severity="') + 10; let sevE = block.indexOf('"', sevS); let sev = block.substring(sevS, sevE);
+                    
+                    let contentS = block.indexOf('>') + 1; let content = block.substring(contentS).trim();
+                    
+                    if (!appData.leaks) appData.leaks = [];
+                    appData.leaks.unshift({ date: new Date().toLocaleDateString(), category: cat, title: title, severity: sev, description: content });
+                    window.triggerLocalSave(); window.updateLeaksUI();
+                    
+                    cleanText = cleanText.split(slTag + block + elTag).join(`<div class="action-badge border-red-500 text-red-500 bg-red-500/10"><span>🛡️</span> Nuovo Leak aggiunto al Leak Explorer!</div>`);
                 }
             } catch(e) {}
 
@@ -1270,57 +1195,37 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
             if(ci) { ci.value = text; window.sendToCoach(); }
         };
 
-        // --- MATRICE GTO (TAB PRINCIPALE) ---
+        // --- MATRICE GTO ---
         window.getSpotKey = function() { return `${spotState.stage}_${spotState.bb}_${spotState.pos}`; };
-
         window.setSpot = function(type, val) { 
             spotState[type] = val; 
             let btns = document.querySelectorAll(`.btn-${type}`);
-            for(let i=0; i<btns.length; i++) {
-                btns[i].classList.remove(`btn-active-${type}`);
-                if (btns[i].dataset.val === val) { btns[i].classList.add(`btn-active-${type}`); }
-            }
+            for(let i=0; i<btns.length; i++) { btns[i].classList.remove(`btn-active-${type}`); if (btns[i].dataset.val === val) { btns[i].classList.add(`btn-active-${type}`); } }
             window.updateSpotUI(); 
             let titleEl = document.getElementById('matrix-title');
             if(titleEl) { titleEl.innerHTML = `${spotState.stage} <span class="text-gray-600 mx-1">/</span> ${spotState.bb}BB <span class="text-gray-600 mx-1">/</span> ${spotState.pos}`; }
         };
-
         window.updateSpotUI = function() { 
             let key = window.getSpotKey(); 
-            if (!appData.ranges[key]) { 
-                appData.ranges[key] = {}; 
-                for(let i=0; i<appData.palette.length; i++) { appData.ranges[key][appData.palette[i].id] = []; }
-            } 
+            if (!appData.ranges[key]) { appData.ranges[key] = {}; for(let i=0; i<appData.palette.length; i++) { appData.ranges[key][appData.palette[i].id] = []; } } 
             window.renderBrushList(); window.renderMatrixColors(); 
         };
-
         window.addPaletteColor = function() { 
             let nameInput = document.getElementById('new-color-name'); let hexInput = document.getElementById('new-color-hex');
             if(!nameInput || !hexInput) return;
-            let name = nameInput.value.trim(); let color = hexInput.value; 
-            if (!name) return; 
-            
-            let newId = 'c_' + Math.random().toString(36).substr(2, 9); 
-            appData.palette.push({ id: newId, name: name, color: color }); 
-            
-            let keys = Object.keys(appData.ranges);
-            for(let i=0; i<keys.length; i++) { appData.ranges[keys[i]][newId] = []; }
+            let name = nameInput.value.trim(); let color = hexInput.value; if (!name) return; 
+            let newId = 'c_' + Math.random().toString(36).substr(2, 9); appData.palette.push({ id: newId, name: name, color: color }); 
+            let keys = Object.keys(appData.ranges); for(let i=0; i<keys.length; i++) { appData.ranges[keys[i]][newId] = []; }
             window.updateSpotUI(); window.triggerLocalSave(); nameInput.value = '';
         };
-
         window.setBrush = function(id) { 
             activeBrushId = id; 
             let items = document.querySelectorAll('.brush-item');
             for(let i=0; i<items.length; i++) { items[i].classList.remove('brush-active', 'border-[#3b82f6]'); }
-            let activeEl = document.getElementById(`brush-${id}`); 
-            if (activeEl) { activeEl.classList.add('brush-active', 'border-[#3b82f6]'); }
+            let activeEl = document.getElementById(`brush-${id}`); if (activeEl) { activeEl.classList.add('brush-active', 'border-[#3b82f6]'); }
         };
-
         window.renderBrushList = function() { 
-            let list = document.getElementById('brush-list'); 
-            if(!list) return;
-            list.innerHTML = ''; 
-            
+            let list = document.getElementById('brush-list'); if(!list) return; list.innerHTML = ''; 
             for(let i=0; i<appData.palette.length; i++) {
                 let p = appData.palette[i]; let div = document.createElement('div'); let isActive = (activeBrushId === p.id);
                 div.className = "brush-item p-3 bg-[#0a0c10] border border-[#1f2937] rounded-xl hover:bg-[#12151c] cursor-pointer transition flex items-center justify-between " + (isActive ? "brush-active border-[#3b82f6]" : ""); 
@@ -1329,133 +1234,74 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
                 list.appendChild(div); 
             }
         };
-
         window.createMatrixDOM = function() { 
-            let container = document.getElementById('matrix'); 
-            if(!container) return;
-            container.innerHTML = ''; 
-            
+            let container = document.getElementById('matrix'); if(!container) return; container.innerHTML = ''; 
             for(let i=0; i<ranks.length; i++) {
                 for(let j=0; j<ranks.length; j++) {
-                    let r1 = ranks[i]; let r2 = ranks[j];
-                    let combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); 
+                    let r1 = ranks[i]; let r2 = ranks[j]; let combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); 
                     let cell = document.createElement('div'); cell.innerText = combo; cell.id = `cell-${combo}`; cell.className = "cell"; 
                     cell.onmousedown = function() { window.paintCell(combo); }; container.appendChild(cell); 
                 }
             }
         };
-
         window.paintCell = function(combo) { 
-            let spot = appData.ranges[window.getSpotKey()]; 
-            if(!spot) return;
+            let spot = appData.ranges[window.getSpotKey()]; if(!spot) return;
             for(let i=0; i<appData.palette.length; i++) {
                 let pId = appData.palette[i].id;
                 if (spot[pId]) {
-                    let newCombos = [];
-                    for(let c=0; c<spot[pId].length; c++) {
-                        if(spot[pId][c] !== combo) newCombos.push(spot[pId][c]);
-                    }
-                    spot[pId] = newCombos;
+                    let newCombos = []; for(let c=0; c<spot[pId].length; c++) { if(spot[pId][c] !== combo) newCombos.push(spot[pId][c]); } spot[pId] = newCombos;
                 }
             }
-            if (activeBrushId !== "erase") { 
-                if (!spot[activeBrushId]) spot[activeBrushId] = []; 
-                spot[activeBrushId].push(combo); 
-            } 
+            if (activeBrushId !== "erase") { if (!spot[activeBrushId]) spot[activeBrushId] = []; spot[activeBrushId].push(combo); } 
             window.renderMatrixColors(); window.triggerLocalSave(); 
         };
-
         window.renderMatrixColors = function() { 
-            let spot = appData.ranges[window.getSpotKey()]; 
-            if(!spot) return;
-            let colorMap = {}; 
-            for(let i=0; i<appData.palette.length; i++) {
-                let p = appData.palette[i];
-                if (spot[p.id]) {
-                    for(let j=0; j<spot[p.id].length; j++) { colorMap[spot[p.id][j]] = p.color; }
-                }
-            }
+            let spot = appData.ranges[window.getSpotKey()]; if(!spot) return; let colorMap = {}; 
+            for(let i=0; i<appData.palette.length; i++) { let p = appData.palette[i]; if (spot[p.id]) { for(let j=0; j<spot[p.id].length; j++) { colorMap[spot[p.id][j]] = p.color; } } }
             for(let i=0; i<ranks.length; i++) {
                 for(let j=0; j<ranks.length; j++) {
                     let combo = i < j ? ranks[i] + ranks[j] + 's' : (i > j ? ranks[j] + ranks[i] + 'o' : ranks[i] + ranks[i]); 
-                    let cell = document.getElementById(`cell-${combo}`); 
-                    if(!cell) continue;
-                    if (colorMap[combo]) { 
-                        cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); cell.style.boxShadow = `inset 0 0 15px rgba(0,0,0,0.5)`; 
-                    } else { 
-                        cell.style.backgroundColor = '#12151c'; cell.classList.remove('cell-colored'); cell.style.boxShadow = 'none'; 
-                    } 
+                    let cell = document.getElementById(`cell-${combo}`); if(!cell) continue;
+                    if (colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); cell.style.boxShadow = `inset 0 0 15px rgba(0,0,0,0.5)`; } 
+                    else { cell.style.backgroundColor = '#12151c'; cell.classList.remove('cell-colored'); cell.style.boxShadow = 'none'; } 
                 }
             }
         };
-
         window.clearMatrix = function() { appData.ranges[window.getSpotKey()] = {}; window.renderMatrixColors(); window.triggerLocalSave(); };
 
         // --- GTO TRAINER ---
         window.createTrainerMatrixDOM = function() { 
-            let container = document.getElementById('trainer-matrix'); 
-            if(!container) return;
-            container.innerHTML = ''; 
-            
+            let container = document.getElementById('trainer-matrix'); if(!container) return; container.innerHTML = ''; 
             for(let i=0; i<ranks.length; i++) {
                 for(let j=0; j<ranks.length; j++) {
-                    let r1 = ranks[i]; let r2 = ranks[j];
-                    let combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); 
+                    let r1 = ranks[i]; let r2 = ranks[j]; let combo = i < j ? r1 + r2 + 's' : (i > j ? r2 + r1 + 'o' : r1 + r2); 
                     let cell = document.createElement('div'); cell.innerText = combo; cell.id = `tcell-${combo}`; cell.className = "cell"; 
                     cell.onmousedown = function() { window.paintTrainerCell(combo); }; container.appendChild(cell); 
                 }
             }
         };
-
         window.generateRandomTrainerSpot = function() {
-            let keys = Object.keys(appData.ranges);
-            let validKeys = [];
+            let keys = Object.keys(appData.ranges); let validKeys = [];
             for(let i=0; i<keys.length; i++) {
-                let k = keys[i];
-                let hasData = false;
-                for(let c=0; c<appData.palette.length; c++) {
-                    if(appData.ranges[k][appData.palette[c].id] && appData.ranges[k][appData.palette[c].id].length > 0) {
-                        hasData = true; break;
-                    }
-                }
+                let k = keys[i]; let hasData = false;
+                for(let c=0; c<appData.palette.length; c++) { if(appData.ranges[k][appData.palette[c].id] && appData.ranges[k][appData.palette[c].id].length > 0) { hasData = true; break; } }
                 if(hasData) validKeys.push(k);
             }
-            
             let spotNameEl = document.getElementById('trainer-spot-name');
-            if(validKeys.length === 0) {
-                if(spotNameEl) spotNameEl.innerText = "Nessun Range Salvato nel DB!";
-                return;
-            }
-            
-            let randomKey = validKeys[Math.floor(Math.random() * validKeys.length)];
-            trainerCurrentSpot = randomKey;
-            
-            let parts = randomKey.split('_');
-            if(spotNameEl) spotNameEl.innerText = `${parts[0]} / ${parts[1]}BB / ${parts[2]}`;
-            
-            trainerUserRange = {};
-            for(let i=0; i<appData.palette.length; i++) { trainerUserRange[appData.palette[i].id] = []; }
-            
-            let resBox = document.getElementById('trainer-result-box');
-            if(resBox) resBox.classList.add('hidden');
-            
-            window.renderTrainerBrushList();
-            window.renderTrainerMatrixColors();
+            if(validKeys.length === 0) { if(spotNameEl) spotNameEl.innerText = "Nessun Range Salvato nel DB!"; return; }
+            let randomKey = validKeys[Math.floor(Math.random() * validKeys.length)]; trainerCurrentSpot = randomKey;
+            let parts = randomKey.split('_'); if(spotNameEl) spotNameEl.innerText = `${parts[0]} / ${parts[1]}BB / ${parts[2]}`;
+            trainerUserRange = {}; for(let i=0; i<appData.palette.length; i++) { trainerUserRange[appData.palette[i].id] = []; }
+            let resBox = document.getElementById('trainer-result-box'); if(resBox) resBox.classList.add('hidden');
+            window.renderTrainerBrushList(); window.renderTrainerMatrixColors();
         };
-
         window.setTrainerBrush = function(id) {
-            trainerActiveBrush = id;
-            let items = document.querySelectorAll('.tbrush-item');
+            trainerActiveBrush = id; let items = document.querySelectorAll('.tbrush-item');
             for(let i=0; i<items.length; i++) { items[i].classList.remove('brush-active', 'border-[#3b82f6]'); }
-            let activeEl = document.getElementById(`tbrush-${id}`); 
-            if (activeEl) { activeEl.classList.add('brush-active', 'border-[#3b82f6]'); }
+            let activeEl = document.getElementById(`tbrush-${id}`); if (activeEl) { activeEl.classList.add('brush-active', 'border-[#3b82f6]'); }
         };
-
         window.renderTrainerBrushList = function() {
-            let list = document.getElementById('trainer-brush-list'); 
-            if(!list) return;
-            list.innerHTML = ''; 
-            
+            let list = document.getElementById('trainer-brush-list'); if(!list) return; list.innerHTML = ''; 
             for(let i=0; i<appData.palette.length; i++) {
                 let p = appData.palette[i]; let div = document.createElement('div'); let isActive = (trainerActiveBrush === p.id);
                 div.className = "tbrush-item p-3 bg-[#0a0c10] border border-[#1f2937] rounded-xl hover:bg-[#12151c] cursor-pointer transition flex items-center justify-between " + (isActive ? "brush-active border-[#3b82f6]" : ""); 
@@ -1464,76 +1310,46 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
                 list.appendChild(div); 
             }
         };
-
         window.paintTrainerCell = function(combo) {
             if(!trainerCurrentSpot) return;
             for(let i=0; i<appData.palette.length; i++) {
                 let pId = appData.palette[i].id;
                 if (trainerUserRange[pId]) { 
-                    let newCombos = [];
-                    for(let c=0; c<trainerUserRange[pId].length; c++) {
-                        if(trainerUserRange[pId][c] !== combo) newCombos.push(trainerUserRange[pId][c]);
-                    }
-                    trainerUserRange[pId] = newCombos;
+                    let newCombos = []; for(let c=0; c<trainerUserRange[pId].length; c++) { if(trainerUserRange[pId][c] !== combo) newCombos.push(trainerUserRange[pId][c]); } trainerUserRange[pId] = newCombos;
                 }
             }
-            if (trainerActiveBrush !== "erase") { 
-                if (!trainerUserRange[trainerActiveBrush]) trainerUserRange[trainerActiveBrush] = []; 
-                trainerUserRange[trainerActiveBrush].push(combo); 
-            } 
+            if (trainerActiveBrush !== "erase") { if (!trainerUserRange[trainerActiveBrush]) trainerUserRange[trainerActiveBrush] = []; trainerUserRange[trainerActiveBrush].push(combo); } 
             window.renderTrainerMatrixColors();
         };
-
         window.renderTrainerMatrixColors = function() {
-            let colorMap = {}; 
-            appData.palette.forEach(p => { 
-                if (trainerUserRange[p.id]) {
-                    for(let j=0; j<trainerUserRange[p.id].length; j++) { colorMap[trainerUserRange[p.id][j]] = p.color; }
-                }
-            }); 
+            let colorMap = {}; appData.palette.forEach(p => { if (trainerUserRange[p.id]) { for(let j=0; j<trainerUserRange[p.id].length; j++) { colorMap[trainerUserRange[p.id][j]] = p.color; } } }); 
             for(let i=0; i<ranks.length; i++) {
                 for(let j=0; j<ranks.length; j++) {
                     let combo = i < j ? ranks[i] + ranks[j] + 's' : (i > j ? ranks[j] + ranks[i] + 'o' : ranks[i] + ranks[i]); 
-                    let cell = document.getElementById(`tcell-${combo}`); 
-                    if(!cell) continue;
-                    if (colorMap[combo]) { 
-                        cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); cell.style.boxShadow = `inset 0 0 15px rgba(0,0,0,0.5)`; 
-                    } else { 
-                        cell.style.backgroundColor = '#12151c'; cell.classList.remove('cell-colored'); cell.style.boxShadow = 'none'; 
-                    } 
+                    let cell = document.getElementById(`tcell-${combo}`); if(!cell) continue;
+                    if (colorMap[combo]) { cell.style.backgroundColor = colorMap[combo]; cell.classList.add('cell-colored'); cell.style.boxShadow = `inset 0 0 15px rgba(0,0,0,0.5)`; } 
+                    else { cell.style.backgroundColor = '#12151c'; cell.classList.remove('cell-colored'); cell.style.boxShadow = 'none'; } 
                 }
             }
         };
-
         window.checkTrainerAccuracy = function() {
             if(!trainerCurrentSpot) return;
-            let realRange = appData.ranges[trainerCurrentSpot];
-            
-            let totalCombos = 0;
-            let correctCombos = 0;
-            
+            let realRange = appData.ranges[trainerCurrentSpot]; let totalCombos = 0; let correctCombos = 0;
             for(let i=0; i<ranks.length; i++) {
                 for(let j=0; j<ranks.length; j++) {
                     totalCombos++;
                     let combo = i < j ? ranks[i] + ranks[j] + 's' : (i > j ? ranks[j] + ranks[i] + 'o' : ranks[i] + ranks[i]); 
-                    
-                    let realColor = null;
-                    let userColor = null;
-                    
+                    let realColor = null; let userColor = null;
                     for(let c=0; c<appData.palette.length; c++) {
                         let pid = appData.palette[c].id;
                         if(realRange[pid] && realRange[pid].includes(combo)) realColor = pid;
                         if(trainerUserRange[pid] && trainerUserRange[pid].includes(combo)) userColor = pid;
                     }
-                    
                     if(realColor === userColor) correctCombos++;
                 }
             }
-            
             let accuracy = (correctCombos / totalCombos) * 100;
-            let resBox = document.getElementById('trainer-result-box');
-            let resScore = document.getElementById('trainer-score');
-            
+            let resBox = document.getElementById('trainer-result-box'); let resScore = document.getElementById('trainer-score');
             if(resBox) resBox.classList.remove('hidden');
             if(resScore) {
                 resScore.innerText = accuracy.toFixed(1) + '%';
@@ -1543,11 +1359,55 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
             }
         };
 
+        // --- LEAKS (NUOVO) ---
+        window.updateLeaksUI = function() {
+            let container = document.getElementById('leak-list-container');
+            if(!container) return;
+            
+            if(!appData.leaks) appData.leaks = [];
+            
+            let high=0; let med=0; let low=0;
+            
+            if(appData.leaks.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-50"><span class="text-5xl mb-4">🛡️</span><p class="font-bold text-gray-400 text-lg">Nessun Leak rilevato!</p><p class="text-sm mt-2">Stai giocando perfettamente, oppure non hai ancora fatto analizzare le mani all'IA.</p></div>`;
+            } else {
+                container.innerHTML = '';
+                for(let i=0; i<appData.leaks.length; i++) {
+                    let l = appData.leaks[i];
+                    let col = l.severity.toLowerCase() === 'high' ? '#ef4444' : (l.severity.toLowerCase() === 'medium' ? '#facc15' : '#3b82f6');
+                    if(l.severity.toLowerCase() === 'high') high++; else if(l.severity.toLowerCase() === 'medium') med++; else low++;
+                    
+                    container.innerHTML += `<div class="leak-card" style="--leak-color: ${col}"><button onclick="window.deleteLeak(${i})" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 w-6 h-6 flex items-center justify-center font-bold">✕</button><div class="flex justify-between items-center mb-2"><span class="text-[10px] font-bold text-gray-500 bg-[#050608] px-2 py-1 rounded border border-[#1f2937] uppercase">${l.category}</span><span class="text-[10px] text-gray-500 font-mono">${l.date}</span></div><h4 class="text-white font-black mb-2">${l.title}</h4><p class="text-sm text-gray-400">${l.description}</p></div>`;
+                }
+            }
+            
+            let total = high+med+low;
+            document.getElementById('leak-high-count').innerText = high;
+            document.getElementById('leak-med-count').innerText = med;
+            document.getElementById('leak-low-count').innerText = low;
+            
+            document.getElementById('leak-high-bar').style.width = total > 0 ? (high/total*100) + '%' : '0%';
+            document.getElementById('leak-med-bar').style.width = total > 0 ? (med/total*100) + '%' : '0%';
+            document.getElementById('leak-low-bar').style.width = total > 0 ? (low/total*100) + '%' : '0%';
+        };
+        
+        window.deleteLeak = function(idx) {
+            if(confirm("Hai risolto questo leak? Vuoi rimuoverlo?")) {
+                appData.leaks.splice(idx, 1);
+                window.triggerLocalSave();
+                window.updateLeaksUI();
+            }
+        };
+        window.clearLeaks = function() {
+            if(confirm("Sei sicuro di voler svuotare tutto l'archivio leak?")) {
+                appData.leaks = []; window.triggerLocalSave(); window.updateLeaksUI();
+            }
+        };
+
         // --- NOTE E REFERTI ---
         window.updateNotesUI = function() {
             let rCont = document.getElementById('reports-container'); let nCont = document.getElementById('notes-container'); 
             if(!rCont || !nCont) return;
-            
             rCont.innerHTML = ''; nCont.innerHTML = '';
             
             if (!appData.reports) appData.reports = []; 
@@ -1572,32 +1432,23 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
             let bInput = document.getElementById('t-buyin'); let wInput = document.getElementById('t-win'); let hInput = document.getElementById('t-hours'); let sInput = document.getElementById('t-stake');
             if(!bInput || !wInput) return;
             let buyin = parseFloat(bInput.value) || 0; let win = parseFloat(wInput.value) || 0; let hours = parseFloat(hInput.value) || 0; let stake = sInput ? sInput.value : "Low";
-            
             if (buyin === 0 && win === 0) return; 
             
             if(!appData.bankroll) appData.bankroll = [];
             appData.bankroll.push({ buyin: buyin, win: win, profit: win - buyin, hours: hours, stake: stake }); 
-            
             window.updateBankrollUI(); window.updateDashboardUI(); window.triggerLocalSave(); 
             bInput.value = ''; wInput.value = ''; if(hInput) hInput.value = ''; 
         };
-
         window.deleteTournament = function(idx) { if (confirm("Vuoi eliminare questo torneo?")) { appData.bankroll.splice(idx, 1); window.updateBankrollUI(); window.updateDashboardUI(); window.triggerLocalSave(); } };
 
         window.updateBankrollUI = function() { 
             if(!appData.bankroll) appData.bankroll = [];
             let tProfit = 0; let tBuyin = 0; let tHours = 0;
-            
             for(let i=0; i<appData.bankroll.length; i++) {
-                tProfit += appData.bankroll[i].profit;
-                tBuyin += appData.bankroll[i].buyin;
+                tProfit += appData.bankroll[i].profit; tBuyin += appData.bankroll[i].buyin;
                 if(appData.bankroll[i].hours) tHours += appData.bankroll[i].hours;
             }
-            
-            let count = appData.bankroll.length; 
-            let abi = count > 0 ? (tBuyin / count) : 0; 
-            let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; 
-            let hourly = tHours > 0 ? (tProfit / tHours) : 0;
+            let count = appData.bankroll.length; let abi = count > 0 ? (tBuyin / count) : 0; let roi = tBuyin > 0 ? ((tProfit / tBuyin) * 100) : 0; let hourly = tHours > 0 ? (tProfit / tHours) : 0;
             
             let elP = document.getElementById('stat-profit'); if(elP) { elP.innerText = `€ ${tProfit.toFixed(2)}`; elP.style.color = tProfit >= 0 ? '#4ade80' : '#ef4444'; }
             let elA = document.getElementById('stat-abi'); if(elA) elA.innerText = `€ ${abi.toFixed(2)}`; 
@@ -1612,11 +1463,9 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
                 list.innerHTML = ''; 
                 let reversedBankroll = appData.bankroll.slice().reverse();
                 for(let index=0; index<reversedBankroll.length; index++) {
-                    let t = reversedBankroll[index];
-                    let origIndex = appData.bankroll.length - 1 - index; 
+                    let t = reversedBankroll[index]; let origIndex = appData.bankroll.length - 1 - index; 
                     let colorClass = t.profit >= 0 ? 'text-[#4ade80]' : 'text-[#ef4444]';
                     let stakeBadge = t.stake ? `<span class="bg-[#1f2937] px-2 py-0.5 rounded text-[9px] text-gray-300 ml-2 border border-[#333]">${t.stake}</span>` : "";
-                    
                     list.innerHTML += `<div class="flex justify-between items-center bg-[#0a0c10] p-3 rounded-xl border border-[#1f2937] mb-2"><span class="text-xs font-bold text-gray-400 uppercase tracking-widest">In: <span class="text-white">€${t.buyin}</span> <span class="mx-1 text-[#333]">|</span> Out: <span class="${colorClass}">€${t.win}</span>${stakeBadge}</span><button onclick="window.deleteTournament(${origIndex})" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white w-7 h-7 rounded-lg flex items-center justify-center font-bold transition">✕</button></div>`; 
                 }
             }
@@ -1624,23 +1473,13 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
         };
 
         window.renderChart = function() { 
-            let canvas = document.getElementById('brChart');
-            if(!canvas) return;
-            let ctx = canvas.getContext('2d'); 
-            let cum = 0; let dataPts = [];
-            
-            if(appData.bankroll) {
-                for(let i=0; i<appData.bankroll.length; i++) {
-                    cum += appData.bankroll[i].profit; dataPts.push(cum);
-                }
-            }
+            let canvas = document.getElementById('brChart'); if(!canvas) return;
+            let ctx = canvas.getContext('2d'); let cum = 0; let dataPts = [];
+            if(appData.bankroll) { for(let i=0; i<appData.bankroll.length; i++) { cum += appData.bankroll[i].profit; dataPts.push(cum); } }
             if (brChartInstance) { brChartInstance.destroy(); }
             
             let labels = []; for(let i=0; i<dataPts.length; i++) labels.push(i+1);
-            
-            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
-            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400); gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
 
             brChartInstance = new Chart(ctx, { 
                 type: 'line', 
@@ -1651,14 +1490,9 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
 
         // --- STRUMENTI PRO ---
         window.sendReplayerToCoach = function() {
-            let input = document.getElementById('replayer-input');
-            if(!input || !input.value.trim()) return;
-            window.switchTab('coach');
-            let chatInp = document.getElementById('chat-input');
-            if(chatInp) {
-                chatInp.value = "Analizza questa mano e dimmi i miei leak in modo diretto:\n\n" + input.value;
-                window.sendToCoach();
-            }
+            let input = document.getElementById('replayer-input'); if(!input || !input.value.trim()) return;
+            window.switchTab('coach'); let chatInp = document.getElementById('chat-input');
+            if(chatInp) { chatInp.value = "Analizza questa mano e dimmi i miei leak in modo diretto. Se noti errori critici, salvali nel Leak Explorer con il comando <add_leak>:\n\n" + input.value; window.sendToCoach(); }
         };
 
         window.calculateCallEV = function() { 
@@ -1676,8 +1510,7 @@ Correzioni dell'utente da ricordare: ${appConfig.userCorrections.join('|')}. ${h
         window.copyEquityFromMC = function() { 
             let heroEqEl = document.getElementById('res-hero'); let evEqEl = document.getElementById('ev-eq');
             if(!heroEqEl || !evEqEl) return;
-            let heroEq = heroEqEl.innerText.replace('%', ''); 
-            if (heroEq !== "0.0") { evEqEl.value = heroEq; }
+            let heroEq = heroEqEl.innerText.replace('%', ''); if (heroEq !== "0.0") { evEqEl.value = heroEq; }
         };
 
         window.setActiveInput = function(el) { activeInput = el; }; 
